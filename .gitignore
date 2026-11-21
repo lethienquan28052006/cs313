@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Data (raw data is never committed; see data/README.md)
+data/raw/
+*.csv.gz
+*.npy
+*.npz
+!data/processed/*.csv.gz
+!data/processed/*.npy
+
+# Official D-Tracker code is cloned locally, not committed (see third_party/README.md)
+third_party/D-Tracker/
+
+# Experiment outputs (commit only small summaries in experiments/results/)
+result/
+results/raw/
+
+# LaTeX build files
+report/*.aux
+report/*.log
+report/*.out
+report/*.bbl
+report/*.blg
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz
+report/main.pdf
