@@ -1,0 +1,27 @@
+# Ai review thư mục nào. Thay các _TBD_ bằng GitHub username (ví dụ @lethienquan28052006).
+# Dòng nào bắt đầu bằng # là chưa có hiệu lực: bỏ dấu # khi đã điền username.
+# Thứ tự quan trọng: dòng sau ghi đè dòng trước.
+
+# Mặc định: trưởng nhóm review mọi thứ
+# *                       @lethienquan28052006
+
+# Tài liệu chung và hợp đồng dữ liệu/API: cả nhóm reproduce và nhóm demo cùng duyệt
+# /docs/interfaces.md     @_TBD_3 @_TBD_4 @_TBD_5 @_TBD_6
+# /docs/                  @lethienquan28052006
+
+# #3 Reproduce 1, #4 Reproduce 2
+# /dtracker/              @_TBD_3 @_TBD_4
+# /experiments/           @_TBD_4
+# /tests/                 @_TBD_3 @_TBD_4
+
+# #5 Demo Trường Giang, #6 Demo GTA VI
+# /data/                  @_TBD_5 @_TBD_6
+# /demos/common/          @_TBD_5 @_TBD_6
+# /demos/truong-giang/    @_TBD_5
+# /demos/gta6/            @_TBD_6
+
+# #7 Report
+# /report/                @_TBD_7
+
+# #1, #2 Thuyết trình
+# /slides/                @_TBD_1 @_TBD_2
