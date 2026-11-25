@@ -1,0 +1,178 @@
+\section{Công cụ tự học và tổng kết}
+\label{app:learning}
+
+\subsection*{D-Tracker trong một trang}
+
+\begin{keypoint}
+\textbf{Đầu vào:} cửa sổ tensor $k\times l\times L_c$ (từ khóa $\times$ địa điểm $\times$ thời gian).
+\textbf{Đầu ra:} dự báo $L_f$ bước và một mô hình có thể đọc được.
+\textbf{Cách làm:} tách dữ liệu thành trend + seasonal + outlier; nén trend thành lõi nhỏ; cho lõi
+tiến hóa bằng reaction--diffusion; dùng ALS để ước lượng; dùng MDL để chọn số chiều, outlier và
+regime; cập nhật theo cửa sổ.
+\end{keypoint}
+
+\begin{enumerate}
+  \item \textbf{Vì sao khó?} Dữ liệu đa chiều, có trend/mùa vụ/diffusion/outlier, các pattern lại
+        đổi theo thời gian và stream gần như vô hạn.
+  \item \textbf{Vì sao tách ba thành phần?} Để không nhầm mùa vụ với trend và không để một cú sốc
+        làm hỏng toàn bộ hệ số.
+  \item \textbf{Vì sao nén trend?} Để biến hàng chục nghìn quan sát thành vài dynamics ẩn và hai
+        bảng hệ số từ khóa/địa điểm.
+  \item \textbf{Vì sao reaction--diffusion?} Để biểu diễn cả tăng trưởng cục bộ lẫn lan truyền giữa
+        các nhóm địa điểm bằng tham số có ý nghĩa.
+  \item \textbf{Vì sao ALS?} Vì tối ưu đồng thời mọi khối là khó; cập nhật lần lượt dễ triển khai
+        hơn và giữ được các ràng buộc.
+  \item \textbf{Vì sao MDL?} Để chọn độ phức tạp có căn cứ thay vì thử tay, đồng thời quyết định
+        outlier và regime.
+  \item \textbf{Vì sao streaming được?} Mỗi bước chỉ dùng cửa sổ $L_c$ cố định, không quét lại toàn
+        bộ lịch sử.
+  \item \textbf{Kết quả?} Paper báo cáo MAE tốt nhất trên sáu dataset, thời gian gần như không tăng
+        theo chiều dài stream, và các nhóm diffusion đọc được; không chứng minh nhân quả.
+\end{enumerate}
+
+\subsection*{Lộ trình đọc lại paper}
+
+\begin{center}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.27\linewidth}>{\raggedright\arraybackslash}p{0.31\linewidth}>{\raggedright\arraybackslash}p{0.34\linewidth}@{}}
+  \toprule
+  Đọc gì & Mục tiêu & Tự kiểm tra \\
+  \midrule
+  Abstract + §1 & Nắm bài toán, ba tính chất và Figure~1 & Kể được ba thách thức bằng lời \\
+  §3.1 + paper Table~2 & Hiểu ký hiệu và Problem~1 & Viết input/output bằng ký hiệu \\
+  §3.2--3.3 + Eq.~(1)--(4) & Hiểu decomposition và ODE & Giải thích từng số hạng \\
+  §4.1 + Eq.~(5)--(9) & Hiểu ALS, LM, multiplicative update & Nêu thứ tự cập nhật \\
+  §4.2--4.3 + Eq.~(10) & Hiểu MDL và ModelUpdate & Giải thích đánh đổi fit/complexity \\
+  §5 + paper Table~3 + Figure~3--5 & Đọc kết quả và ablation & Phân biệt MAE/RMSE, claim và bằng chứng \\
+  Appendix A.1--A.4 & Chi tiết khởi tạo và thuật toán & Chỉ ra các chỗ paper mơ hồ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Gợi ý thời lượng cho lần đọc đầu: 20 phút cho §1--3, 35 phút cho §4, 25 phút cho §5, 20 phút cho
+phụ lục. Không cần hiểu hết các phép biến đổi đại số ngay lần đầu; hãy viết lại mỗi công thức thành
+một câu tiếng Việt trước.
+
+\subsection*{Bảng ký hiệu}
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.23\linewidth}>{\raggedright\arraybackslash}p{0.35\linewidth}>{\raggedright\arraybackslash}p{0.35\linewidth}@{}}
+  \caption{Ký hiệu, kích thước và nghĩa.}\label{tab:appendix-symbols}\\
+  \toprule
+  Ký hiệu & Kích thước & Nghĩa \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Ký hiệu & Kích thước & Nghĩa \\
+  \midrule
+  \endhead
+  $k,l$ & số nguyên & số từ khóa, số địa điểm \\
+  $t_c$ & thời điểm & thời điểm hiện tại \\
+  $L_c,L_f$ & số bước & độ dài cửa sổ, tầm dự báo \\
+  $\mathcal{X}^{c}$ & $k\times l\times L_c$ & tensor quan sát hiện tại \\
+  $d_k,d_l$ & số nguyên & số nhóm từ khóa, địa điểm \\
+  $d_s$ & số nguyên & số pattern mùa vụ \\
+  $\mathcal{W}^{(\mathrm{core})}$ & $d_k\times d_l\times L_c$ & lõi trend ẩn \\
+  $\mathbf{W}^{(\mathrm{key})}$ & $d_k\times k$ & hệ số từ khóa, không âm \\
+  $\mathbf{W}^{(\mathrm{loc})}$ & $d_l\times l$ & hệ số địa điểm, không âm \\
+  $\mathbf{A}$ & $d_k\times d_l$ & tốc độ tăng trưởng $a_{ij}$ \\
+  $\mathcal{D}$ & $d_k\times d_l\times d_l$ & độ mạnh diffusion $d_{ijj'}$ \\
+  $\theta$ & --- & $\{\mathbf{A},\mathcal{D}\}$ \\
+  $\theta_d,\theta_s$ & --- & tham số trend, tham số mùa vụ \\
+  $\Theta$ & --- & một mô hình đầy đủ \\
+  $\mathcal{F}$ & --- & tập các mô hình theo regime \\
+  $\widehat{\mathcal{X}}_d,\widehat{\mathcal{X}}_s,\widehat{\mathcal{X}}_o$ & $k\times l\times L_c$ & trend, seasonal, outlier \\
+  $\mathbf{S}^{(\mathrm{time})}$ & $d_s\times L_c$ & pattern mùa vụ theo thời gian \\
+  $\mathbf{S}^{(\mathrm{key})},\mathbf{S}^{(\mathrm{loc})}$ & $d_s\times k$, $d_s\times l$ & hệ số mùa vụ \\
+  \bottomrule
+\end{longtable}
+
+\subsection*{Thuật ngữ Việt--Anh}
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.27\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}@{}}
+  \caption{Thuật ngữ dùng trong tài liệu.}\label{tab:glossary}\\
+  \toprule
+  Tiếng Việt & English & Ghi chú ngắn \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Tiếng Việt & English & Ghi chú \\
+  \midrule
+  \endhead
+  tensor & tensor & mảng nhiều chiều \\
+  luồng tensor & tensor stream & chuỗi tensor theo thời gian \\
+  cửa sổ & window & phần gần nhất dùng để ước lượng \\
+  tầm dự báo & forecast horizon & số bước cần dự báo \\
+  phân rã tensor & tensor factorization & biểu diễn tensor bằng các nhân tố nhỏ \\
+  lõi & core & tensor nhỏ chứa dynamics ẩn \\
+  nhân tố/hệ số & factor & mức liên hệ của đối tượng với nhóm \\
+  động học ẩn & latent dynamics & chuỗi ẩn mô tả pattern \\
+  phản ứng & reaction & tăng/giảm cục bộ \\
+  khuếch tán & diffusion & lan truyền giữa các nhóm \\
+  mùa vụ & seasonality & pattern lặp theo chu kỳ \\
+  ngoại lai & outlier & giá trị bất thường, thưa \\
+  chế độ & regime & giai đoạn có cấu trúc tương đối ổn định \\
+  bình phương tối thiểu xen kẽ & alternating least squares (ALS) & tối ưu từng khối \\
+  mô tả ngắn nhất & minimum description length (MDL) & chọn mô hình theo tổng số bit \\
+  không âm & non-negative & $\ge 0$ \\
+  dự báo theo luồng & stream forecasting & dự báo khi dữ liệu đến dần \\
+  độ phức tạp & computational complexity & cách chi phí tăng theo kích thước \\
+  \bottomrule
+\end{longtable}
+
+\subsection*{Câu hỏi tự kiểm tra phân tầng}
+
+\paragraph{Tầng 1 --- Nhớ và hiểu.}
+\begin{enumerate}
+  \item Ba thành phần của D-Tracker là gì và mỗi thành phần xử lý loại pattern nào?
+  \item Vì sao $\mathbf{W}^{(\mathrm{key})}$ và $\mathbf{W}^{(\mathrm{loc})}$ phải không âm?
+  \item MDL gồm hai loại chi phí nào?
+  \item Vì sao chỉ dùng cửa sổ gần nhất lại giúp xử lý stream?
+\end{enumerate}
+
+\paragraph{Tầng 2 --- Áp dụng và tính toán.}
+\begin{enumerate}
+  \item Với $d_k=3,d_l=2,L_c=104$, lõi có bao nhiêu phần tử? Hai bảng hệ số có bao nhiêu nếu
+        $k=8,l=50$?
+  \item Nếu $w_{j'}=3,w_j=1,d_{jj'}=0.4,a_j=0$, đạo hàm reaction--diffusion bằng bao nhiêu?
+  \item Một mô hình tăng $d_s$ từ 2 lên 3: chi phí mô hình thay đổi theo hướng nào, và vì sao
+        chất lượng fit có thể tăng?
+\end{enumerate}
+
+\paragraph{Tầng 3 --- Phản biện.}
+\begin{enumerate}
+  \item Nêu một cơ chế ngoài diffusion có thể tạo ra pattern trễ giữa hai quốc gia.
+  \item Nếu chọn cửa sổ ngắn hơn chu kỳ mùa vụ, điều gì có thể xảy ra với thành phần seasonal?
+  \item Vì sao ``MAE tốt nhất'' chưa đủ để kết luận mô hình tốt cho mọi quyết định?
+  \item Cần thêm thí nghiệm gì để kiểm tra các nhóm địa điểm có ổn định không?
+\end{enumerate}
+
+\subsection*{Gợi ý trả lời}
+
+\paragraph{Tầng 1.}
+(1) Trend chứa thay đổi có cấu trúc và diffusion; seasonal chứa pattern lặp; outlier chứa bất thường
+thưa. (2) Để phép chiếu không đảo dấu dynamics và giữ cách đọc ``nhóm này tăng/giảm''. (3) Chi phí
+mô tả mô hình và chi phí mã hóa dữ liệu dưới mô hình. (4) Chi phí mỗi bước không phụ thuộc tổng
+chiều dài lịch sử, và mô hình cũ có thể được thay khi pattern đổi.
+
+\paragraph{Tầng 2.}
+(1) Lõi $3\cdot2\cdot104=624$; hệ số $3\cdot8+2\cdot50=124$. (2)
+$0+0.4(3-1)=0.8$. (3) Chi phí mô hình tăng vì thêm tham số; fit có thể tốt hơn vì biểu diễn được
+nhiều pattern mùa vụ hơn, nhưng chỉ giữ nếu tổng MDL giảm.
+
+\paragraph{Tầng 3.}
+(1) Một chiến dịch toàn cầu, tin tức lan nhanh, hoặc cùng chịu ảnh hưởng của một mùa/ sự kiện.
+(2) Seasonal có thể bị hấp thụ sai vào trend/outlier vì mô hình không thấy đủ một chu kỳ.
+(3) MAE bỏ qua bất định, chi phí, khả năng diễn giải, drift và phân bố lỗi; quyết định rủi ro cần
+thêm khoảng tin cậy và kiểm định. (4) Chạy nhiều khởi tạo/seed, so sánh nhóm qua các regime, và
+kiểm tra độ ổn định của hệ số hoặc dùng dữ liệu held-out theo địa điểm.
+
+\subsection*{Checklist trước khi nói ``đã hiểu paper''}
+
+\begin{itemize}
+  \item Tôi có thể vẽ lại pipeline từ tensor đến forecast mà không nhìn tài liệu.
+  \item Tôi giải thích được Eq.~(1)--(4) bằng lời, kể cả kích thước các tensor.
+  \item Tôi phân biệt được $\theta$, $\theta_d$, $\Theta$, $\mathcal{F}$.
+  \item Tôi nêu được vai trò của LM, multiplicative update, ALS và MDL.
+  \item Tôi đọc được paper Table~3 mà không nhầm đơn vị, và không biến ``57\%'' thành một kết luận chắc chắn.
+  \item Tôi nói rõ được ba điều: kết quả paper, giả định của mô hình, và giới hạn của kết luận.
+\end{itemize}

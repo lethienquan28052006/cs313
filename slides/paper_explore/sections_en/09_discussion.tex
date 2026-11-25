@@ -1,0 +1,136 @@
+\section{Context and a critical reading}
+\label{sec:discussion}
+
+\subsection{Related work in one page}
+
+The paper groups related work into three families. Understanding them shows what D-Tracker inherits
+and what it tries to add.
+
+\paragraph{Tensor analysis.}
+Tucker, PARAFAC, and PARAFAC2 are standard tensor factorizations; online variants exist for large data.
+MLDS combines a linear dynamical system with Tucker; SMF and SSMF focus on seasonality and forecasting.
+DISMO combines PARAFAC with nonlinear differential equations and is interpretable, but it does
+\emph{not} model diffusion across locations. D-Tracker adds that missing piece through
+reaction--diffusion.
+
+\paragraph{Time-series forecasting.}
+Classical methods include autoregression and Kalman filters. Deep models use CNNs, RNNs, and
+Transformers such as PatchTST and Autoformer; LaST/CoST learn trend/seasonal representations. They are
+accurate on many tasks but hard to interpret and often expensive to retrain, which is awkward in a
+stream.
+
+\paragraph{Social-activity modeling.}
+Earlier work models competition among search keywords. FluxCube uses physics-informed neural networks
+to learn diffusion in temporal tensors, but repeatedly estimating location groups is expensive.
+D-Tracker puts diffusion into a small ODE system and updates incrementally.
+
+\begin{table}[htbp]
+  \centering
+  \scriptsize
+  \caption{Capability comparison from paper Table~1. ``Yes'' means supported, ``--'' means not reported as
+  supported. D-Tracker is the only method satisfying all six requirements in this table.}
+  \label{tab:capabilities}
+  \begin{tabular}{@{}lccccccc@{}}
+    \toprule
+    & DISMO & FluxCube & PatchTST & Autoformer & DeepAR & LaST/CoST & D-Tracker \\
+    \midrule
+    Forecasting & Yes & Yes & Yes & Yes & Yes & Yes & Yes \\
+    Seasonality & Yes & Yes & -- & Yes & -- & Yes & Yes \\
+    Diffusion & -- & Yes & -- & -- & -- & -- & Yes \\
+    Independent of length & -- & -- & -- & -- & -- & -- & Yes \\
+    Parameter free & Yes & -- & -- & -- & -- & -- & Yes \\
+    Outlier & -- & -- & -- & -- & -- & -- & Yes \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Genuine strengths}
+
+The strength is not only ``more accurate forecasts''. D-Tracker combines three things that are usually
+separate:
+\begin{enumerate}
+  \item a \textbf{generative} model with interpretable parameters (growth and diffusion between groups);
+  \item a \textbf{streaming} mechanism that uses only the latest window;
+  \item an \textbf{MDL} criterion that selects structure instead of manual trial and error.
+\end{enumerate}
+For an analyst, the benefit is the ability to ask, across a long series, ``which dynamics dominate,
+for which groups, and in which direction?'' rather than receiving only a forecast.
+
+\subsection{Assumptions and limitations to read alongside}
+
+The following is this guide's assessment, not a set of results proven by the paper:
+
+\begin{description}[leftmargin=1.8em,style=nextline]
+  \item[Interpretation is not causation.] Reaction--diffusion is a \emph{structural assumption}. It can
+  fit a delayed pattern caused by a third factor. The paper has no causal design, instrument, or
+  intervention.
+  \item[Additive three-part model.] Assuming
+  $\mathcal{X}^{c}\approx\widehat{\mathcal{X}}_d+\widehat{\mathcal{X}}_s+\widehat{\mathcal{X}}_o$
+  is strong. If trend and seasonality
+  interact nonlinearly, or outliers are not sparse, the model may need too many outlier entries and
+  lose interpretability.
+  \item[Non-negative factors.] $\mathbf{W}\ge0$ makes groups readable and preserves signs, but limits
+  relationships that require negative weights (for example, one keyword suppressing another) unless
+  they are represented indirectly through several dynamics.
+  \item[Non-identifiability.] Tensor factorizations are usually non-unique; groups may rotate or
+  permute while reconstructing the same approximate tensor. Do not over-invest in the label ``Group
+  1''; read relative structure and test stability.
+  \item[Fixed window.] A fixed $L_c$ can miss cycles longer than the window or events from earlier
+  history. Too-short or too-long windows both matter; the paper uses 104 weeks for GoogleTrends and 56
+  days for Covid-19.
+  \item[No uncertainty.] The model returns point forecasts, not confidence intervals or predictive
+  distributions. High-stakes decisions need an uncertainty layer.
+  \item[Missing/irregular data.] The paper does not present a formal mechanism for missing values,
+  irregular timestamps, or changing location definitions. These are gaps to handle in application.
+\end{description}
+
+\subsection{How strong is the empirical evidence?}
+
+The evidence has real strengths: six real streams, seven baselines, multiple horizons, component
+ablations, and a runtime analysis. But read it with limits:
+\begin{itemize}
+  \item no statistical tests or confidence intervals for MAE differences;
+  \item ``up to 57\%'' does not state its denominator at that point, so it is not a single effect size;
+  \item the 8.0$\times$ speed-up depends on the paper's hardware and baseline training;
+  \item ablations show that some components do not help on some datasets, as the paper acknowledges;
+  \item the Covid-19 experiment has only two signals (cases and deaths) and does not represent all
+        epidemiological dynamics.
+\end{itemize}
+None of this negates the results; it bounds the conclusions.
+
+\subsection{When should D-Tracker be used?}
+
+\textbf{Consider it} when data form a location/keyword-by-time tensor, short-horizon forecasting is
+needed, group/diffusion hypotheses are useful, and updates should arrive with new data.
+
+\textbf{Do not use it alone} for causal inference, under severe missing/irregular data, when calibrated
+uncertainty is required, or when the tensor is so small that factorization offers no advantage. In
+those settings D-Tracker can be a useful \emph{hypothesis generator}, not the final answer.
+
+\subsection{Critical questions to prepare}
+
+\begin{enumerate}
+  \item If two regions rise together because of a global campaign, does the model always label it diffusion?
+  \item As the number of regimes grows, how large can $\mathcal{F}$ become, and what is the memory cost?
+  \item Are location groups stable across runs and initializations?
+  \item What happens if $L_c$ is shorter than the seasonal period?
+  \item Why use MDL rather than cross-validation for structure selection?
+  \item Would the conclusions survive a different missing-value imputation?
+\end{enumerate}
+These are legitimate discussion questions, not proven flaws. The paper answers some partially; others
+need additional experiments.
+
+\begin{keypoint}
+D-Tracker's value is in \textbf{connecting a generative model, MDL compression, and streaming}, not in
+a single MAE number. A fair reading records the strong results while keeping their assumptions and
+limits visible.
+\end{keypoint}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item Which capability in paper Table~1 is unique to D-Tracker?
+  \item Why is ``diffusion did not help Language'' useful information rather than a flaw to hide?
+  \item Name two assumptions that may fail when D-Tracker is applied to real data.
+  \item If causal conclusions are required, what evidence must be added beyond this model?
+\end{enumerate}
+\end{selfcheck}

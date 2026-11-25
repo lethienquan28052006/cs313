@@ -1,0 +1,52 @@
+\def\DTExplainerLanguage{en}
+\documentclass[11pt,a4paper]{article}
+\input{dtracker_style.tex}
+
+\newcommand{\DTLanguageName}{English}
+\newcommand{\DTShortTitle}{D-Tracker --- a first-principles guide}
+\newcommand{\DTTitle}{D-Tracker}
+\newcommand{\DTSubtitle}{Understanding the paper from its first ideas}
+\newcommand{\DTPaperTitle}{Modeling Interest Diffusion in Social Activity Tensor Data Streams}
+\newcommand{\DTDisclaimer}{This is an independent explanatory document, not a translation or a substitute for the paper. Read it alongside arXiv:2505.00242v1.}
+\newcommand{\DTAuthorLine}{A study guide for the CS313 project}
+\newcommand{\DTDate}{25 November 2026}
+\newcommand{\DTKeyPointName}{Key idea}
+\newcommand{\DTPlainWordsName}{In plain words}
+\newcommand{\DTMistakeName}{Common mistake}
+\newcommand{\DTSelfCheckName}{Check yourself}
+\newcommand{\DTFigureSource}{Image source: Higashiguchi et al. (2025), arXiv:2505.00242v1; author-owned figure, CC BY 4.0.}
+\newcommand{\DTReferencesName}{Source and further reading}
+
+\begin{document}
+\hypersetup{pageanchor=false}
+\DTTitlePage
+\hypersetup{pageanchor=true}
+
+\pagenumbering{roman}
+\section*{How to read this document}
+This guide is written for a reader who has never studied a tensor-stream paper. You do not
+need to know reaction--diffusion equations, tensor factorization, or MDL beforehand: each
+idea begins with a small example, then moves to the formula and its role in the paper. The
+boxes \textbf{Key idea}, \textbf{In plain words}, \textbf{Common mistake}, and
+\textbf{Check yourself} can be read independently for quick revision. Notation follows the
+paper; a symbol table is provided in the appendix.
+
+\tableofcontents
+\clearpage
+
+\pagenumbering{arabic}
+\input{sections_en/01_orientation}
+\input{sections_en/02_data_and_problem}
+\input{sections_en/03_tensor_primer}
+\input{sections_en/04_reaction_diffusion}
+\input{sections_en/05_model}
+\input{sections_en/06_estimation}
+\input{sections_en/07_mdl_streaming}
+\input{sections_en/08_experiments}
+\input{sections_en/09_discussion}
+
+\appendix
+\input{sections_en/10_learning_aids}
+\input{references}
+
+\end{document}

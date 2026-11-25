@@ -1,0 +1,124 @@
+\section{Reaction--diffusion: why does interest spread?}
+\label{sec:reaction-diffusion}
+
+\subsection{Two reservoirs and one idea}
+
+In chemistry, a substance diffuses from high concentration to low concentration. D-Tracker borrows
+that picture for interest: if a keyword receives strong attention in location group $j'$, some of
+that attention may flow to group $j$ where activity is lower. The general reaction--diffusion
+equation cited by the paper is
+\begin{equation}
+  \frac{\partial u_i}{\partial t}
+  =f(u_i)+\sum_j D\,(u_j-u_i),
+  \label{eq:rd-background}
+\end{equation}
+where $u_i$ is the concentration at position $i$ and $D$ is diffusion strength. The term $f(u_i)$ is
+the \textbf{reaction}: local change at a position. The term $\sum_j D(u_j-u_i)$ is
+\textbf{diffusion}: it is non-zero only when positions differ, and its sign says whether flow enters
+or leaves.
+
+\begin{center}
+\begin{tikzpicture}[
+  >=Latex,
+  place/.style={circle, draw=DTNavy, thick, minimum size=18mm, fill=DTMist,
+                align=center, font=\sffamily\small},
+  flow/.style={->, very thick, DTTeal},
+  label/.style={font=\small, align=center}
+]
+  \node[place] (b) at (0,0) {group $j'$\\$w_{ij'}=4$};
+  \node[place] (a) at (4.2,0) {group $j$\\$w_{ij}=1$};
+  \draw[flow] (b) to[bend left=12] node[above,label] {inflow because $4>1$} (a);
+  \draw[flow, DTClaret] (a) to[bend left=12] node[below,label] {outflow if $1>4$} (b);
+\end{tikzpicture}
+\end{center}
+
+\subsection{D-Tracker's latent version}
+
+D-Tracker does not impose the equation on every keyword--location pair. It imposes it on a
+\emph{latent core} of $d_k\cdot d_l$ dynamics. With $i=1,\ldots,d_k$ indexing keyword groups and
+$j=1,\ldots,d_l$ indexing location groups, the paper writes
+\begin{equation}
+  \frac{dw_{ij}}{dt}
+  =a_{ij}w_{ij}
+   +\sum_{j'=1}^{d_l} d_{ijj'}\,(w_{ij'}-w_{ij}),
+  \qquad 1\leq i\leq d_k,\;1\leq j\leq d_l.
+  \label{eq:rd-latent}
+\end{equation}
+Two parameters need careful reading:
+\begin{itemize}
+  \item $a_{ij}$ is the \textbf{growth rate}. If $a_{ij}>0$, dynamics $w_{ij}$ tends to rise; if
+        $a_{ij}<0$, it tends to fall. This is the ``reaction''.
+  \item $d_{ijj'}$ is the \textbf{diffusion strength} from location group $j'$ to group $j$. The
+        paper describes $\mathcal{D}\in\mathbb{R}_{+}^{d_k\times d_l\times d_l}$ as non-negative.
+        The actual direction also depends on $(w_{ij'}-w_{ij})$: if $w_{ij'}>w_{ij}$, group $j$
+        receives; if it is lower, group $j$ loses.
+\end{itemize}
+
+Here $w_{ij}$ is the activity of the dynamics for keyword group $i$ and location group $j$. Dynamics
+from different keyword groups do not diffuse directly in this sum; they interact through the core
+and the multilinear projection in Section~\ref{sec:model}. The full system has $d_k\cdot d_l$
+equations with parameters $\mathbf{A}\in\mathbb{R}^{d_k\times d_l}$ and
+$\mathcal{D}\in\mathbb{R}_{+}^{d_k\times d_l\times d_l}$.
+
+\begin{keypoint}
+$w>0$ makes ``activity'' readable; $a$ says rise or fall; $(w_{j'}-w_j)$ says flow direction; $d$
+says how strong the flow is. This is why the model can be interpretable rather than a black-box
+forecaster.
+\end{keypoint}
+
+\subsection{A concrete one-step calculation}
+
+Suppose a dynamics in group $j$ has $w_j=1$, another dynamics in the same keyword group but location
+group $j'$ has $w_{j'}=4$, $a_j=0.1$, and $d_{jj'}=0.5$. Ignoring other groups, the derivative is
+\[
+  \frac{dw_j}{dt}=0.1\cdot1+0.5\cdot(4-1)=0.1+1.5=1.6.
+\]
+With an Euler step $\Delta t=1$, the next value is approximately $1+1.6=2.6$. The dynamics is rising
+because it has both growth and inflow from a higher group. If $w_{j'}=0$ instead, the diffusion term
+becomes $0.5(0-1)=-0.5$: the same strength $d$ but the opposite direction.
+
+\begin{plainwords}
+Do not memorize the equation. Read three sentences: ``it grows or shrinks on its own'', ``it is
+pulled toward another group'', and ``the larger the gap, the stronger the pull''. All three sentences live
+in the two terms of Equation~\eqref{eq:rd-latent}.
+\end{plainwords}
+
+\subsection{Connecting back to observations}
+
+The core $w_{ij}$ is latent. To connect it to an observed series $X_{uv}$ for real keyword $u$ and
+real location $v$, the paper differentiates the projection and obtains
+\begin{equation}
+  \frac{dX_{uv}}{dt}
+  =\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}
+   W^{(\mathrm{key})}_{iu}W^{(\mathrm{loc})}_{jv}
+   \underbrace{\left(
+     a_{ij}w_{ij}+\sum_{j'=1}^{d_l}d_{ijj'}(w_{ij'}-w_{ij})
+   \right)}_{\text{latent reaction--diffusion system}}.
+  \label{eq:observed-derivative}
+\end{equation}
+Read from right to left: the latent system creates $d_k d_l$ dynamics; the non-negative weights
+$W^{(\mathrm{key})}_{iu}W^{(\mathrm{loc})}_{jv}$ decide which dynamics contribute to pair $(u,v)$.
+Because the weights are non-negative, the projection cannot flip a sign: a rising dynamics still
+contributes positively to its series. This is the bridge from the ``small core'' to the ``real series''.
+
+\subsection{Interpretation is not causation}
+
+The reaction--diffusion assumption says that a level gap can create flow. The model learns $a,d$ and
+group factors to fit data; it does \emph{not} prove that a rise in the United States caused a rise in
+Vietnam. A third factor (a global launch, news, social media) can create the same delayed pattern.
+Read the result as a \textbf{structured diffusion hypothesis}, to be checked with domain knowledge and
+additional experiments.
+
+\begin{commonmistake}
+``$d_{ijj'}>0$ means $j'$ always sends to $j$'' is incomplete. Flow also depends on
+$w_{ij'}-w_{ij}$; if $w_{ij'}<w_{ij}$, the term is negative. The paper calls $d$ a strength, not a
+fixed direction. Likewise, ``$a>0$'' only describes local tendency, not guaranteed growth forever.
+\end{commonmistake}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item With $w_j=2,w_{j'}=5,a_j=0,d_{jj'}=0.2$, what is the derivative?
+  \item If $a_{ij}<0$ and the diffusion inflow is positive, must the dynamics fall? Why or why not?
+  \item Describe a situation with a delay between two places that is not causal diffusion.
+\end{enumerate}
+\end{selfcheck}

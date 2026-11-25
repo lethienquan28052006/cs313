@@ -1,0 +1,182 @@
+\section{Ước lượng tham số: vòng lặp ALS}
+\label{sec:estimation}
+
+\subsection{Bài toán tối ưu bằng trực giác}
+
+Ta có dữ liệu $\mathcal{X}^{c}$ và một mô hình gồm nhiều khối: lõi trend, hệ reaction--diffusion,
+hệ số từ khóa/địa điểm, hệ số mùa vụ và outlier. Nếu tối ưu tất cả cùng lúc, bài toán vừa phi
+tuyến vừa nhiều tham số. Paper dùng \textbf{ALS} (alternating least squares): giữ phần lớn tham
+số cố định, cập nhật một khối; lặp lại đến khi hội tụ.
+
+\begin{keypoint}
+ALS là chiến lược ``mỗi lần chỉ sửa một phần, nhưng sửa đến khi phần còn lại cho phép''. Nó không
+đảm bảo tìm cực trị toàn cục cho bài toán không lồi; paper dùng nó như một thủ tục thực dụng và
+báo cáo kết quả thực nghiệm.
+\end{keypoint}
+
+Để dễ theo dõi, tài liệu gọi sai số bình phương của một mô hình là
+\begin{equation}
+  \mathcal{L}(\Theta)
+  =\left\|\mathcal{X}^{c}
+    -\widehat{\mathcal{X}}_d-\widehat{\mathcal{X}}_s-\widehat{\mathcal{X}}_o
+   \right\|_F^2.
+  \label{eq:als-loss}
+\end{equation}
+Paper không đặt tên ký hiệu này trong mục 4.1, nhưng mọi bước cập nhật dưới đây đều nhằm giảm
+sai số đó (hoặc giảm chi phí MDL ở bước outlier). Chuẩn Frobenius $\|\cdot\|_F$ chỉ là căn bậc hai
+tổng bình phương mọi phần tử, tức một cách đo ``mô hình lệch dữ liệu bao nhiêu''.
+
+\subsection{Khởi tạo: STL, PARAFAC và NTD}
+
+Thuật toán ModelEstimation cần điểm bắt đầu. Paper mô tả ba bước khởi tạo:
+\begin{enumerate}
+  \item Dùng \textbf{STL} (seasonal-trend decomposition using LOESS) để tách cửa sổ hiện tại
+        thành trend, seasonal và residual. STL là phương pháp thống kê cổ điển, mạnh với chuỗi
+        có mùa vụ; nó cho ta xấp xỉ ban đầu của $\widehat{\mathcal{X}}_d$ và
+        $\widehat{\mathcal{X}}_s$.
+  \item Phân rã $\widehat{\mathcal{X}}_s$ bằng \textbf{PARAFAC} để có các hệ số mùa vụ ban đầu
+        $\mathbf{S}^{(\mathrm{time})},\mathbf{S}^{(\mathrm{key})},\mathbf{S}^{(\mathrm{loc})}$.
+  \item Áp dụng \textbf{Nonnegative Tucker Decomposition (NTD)} cho $\widehat{\mathcal{X}}_d$ để
+        lấy $\mathbf{W}^{(\mathrm{key})},\mathbf{W}^{(\mathrm{loc})}$ ban đầu.
+\end{enumerate}
+Sau đó $\widehat{\mathcal{X}}_o$ được đặt bằng 0: giả định ban đầu là chưa có outlier. Việc khởi
+tạo không phải chi tiết phụ; nó quyết định vòng ALS có rơi vào một nghiệm xấu hay không, và paper
+ghi rõ cách làm trong Appendix A.1.
+
+\subsection{Cập nhật hệ reaction--diffusion}
+
+Giữ $\mathbf{W}^{(\mathrm{key})},\mathbf{W}^{(\mathrm{loc})}$ và các thành phần khác cố định,
+paper giải bài toán bình phương tối thiểu phi tuyến
+\begin{equation}
+  \{\theta,w_0\}
+  =\arg\min_{\theta',w_0'}
+   \left\|
+     \mathcal{X}^{c}-\widehat{\mathcal{X}}_s-\widehat{\mathcal{X}}_o
+     -f_\theta(\theta',w_0',L_c)
+       \times_{\mathrm{key}}\mathbf{W}^{(\mathrm{key})}
+       \times_{\mathrm{loc}}\mathbf{W}^{(\mathrm{loc})}
+   \right\|_F^2,
+  \label{eq:lm-estimation}
+\end{equation}
+đây là Eq.~(5) trong paper. Ký hiệu $\arg\min$ nghĩa là ``chọn bộ tham số làm biểu thức nhỏ nhất''.
+Vì $f_\theta$ chứa nghiệm của ODE, đạo hàm theo $\theta$ không có dạng đóng đơn giản. Paper dùng
+\textbf{Levenberg--Marquardt (LM)}, một phương pháp số cho bình phương tối thiểu phi tuyến, để cập
+nhật đồng thời các tham số $\mathbf{A},\mathcal{D}$ và trạng thái ban đầu $w_0$.
+
+Ta không cần tự viết LM để hiểu paper, nhưng cần nhớ ba điều: (i) đây là bước đắt nhất về mặt
+tính toán; (ii) nó cần một bộ giải ODE; (iii) kết quả phụ thuộc vào điểm khởi tạo và có thể chỉ là
+cực trị địa phương.
+
+\subsection{Cập nhật hệ số trend bằng multiplicative update}
+
+Khi đã có lõi $\mathcal{W}^{(\mathrm{core})}$, paper cập nhật từng hệ số trend. Với
+``mode'' là key hoặc loc, đặt
+\begin{align}
+  \mathbf{P}^{(\mathrm{mode})}
+  &=\max\!\left(\epsilon,\;
+    \mathbf{X}_d^{(\mathrm{mode})}\cdot\mathbf{G}^{(\mathrm{mode})}
+   \right), \label{eq:w-p}\\
+  \mathbf{Q}^{(\mathrm{mode})}
+  &=\max\!\left(\epsilon,\;
+    \mathbf{W}^{(\mathrm{mode})}\cdot\mathbf{G}^{(\mathrm{mode})}
+    \cdot(\mathbf{G}^{(\mathrm{mode})})^{\mathsf T}
+   \right), \label{eq:w-q}\\
+  \mathbf{W}^{(\mathrm{mode})}
+  &\leftarrow
+    \mathbf{W}^{(\mathrm{mode})}
+    \otimes\mathbf{P}^{(\mathrm{mode})}
+    \oslash\mathbf{Q}^{(\mathrm{mode})}.
+  \label{eq:multiplicative}
+\end{align}
+Đây là Eq.~(6) trong paper. Các ký hiệu:
+\begin{itemize}
+  \item $\mathbf{X}_d^{(\mathrm{mode})}$ là tensor residual
+        $\mathcal{X}^{c}-\widehat{\mathcal{X}}_s-\widehat{\mathcal{X}}_o$ sau khi \emph{unfold}
+        theo mode tương ứng (Eq.~7);
+  \item $\mathbf{G}^{(\mathrm{mode})}$ là phần còn lại của phép chiếu, cũng được unfold;
+  \item $\otimes$ là nhân từng phần tử (Hadamard), $\oslash$ là chia từng phần tử;
+  \item $\epsilon$ là hằng số dương rất nhỏ để tránh chia cho 0.
+\end{itemize}
+Vì $\mathbf{W}$ ban đầu không âm và phép cập nhật chỉ nhân/chia các đại lượng dương, hệ số vẫn
+không âm. Đây là lý do ``multiplicative'' quan trọng: nó vừa tối ưu vừa giữ ràng buộc.
+
+\begin{plainwords}
+Công thức~(6) nghe phức tạp, nhưng ý tưởng là: so sánh phần dữ liệu còn thiếu với phần mô hình
+dự đoán, rồi tăng/giảm từng trọng số theo tỉ lệ. Không có phép trừ tự do nào có thể đẩy trọng số
+xuống âm.
+\end{plainwords}
+
+\subsection{Cập nhật hệ số mùa vụ}
+
+Với phần mùa vụ, paper giữ các thành phần khác cố định và dùng một bước ALS có dạng đóng. Với mỗi
+mode trong $\{\mathrm{time},\mathrm{key},\mathrm{loc}\}$, đặt
+\begin{align}
+  \mathbf{U}^{(\mathrm{mode})}
+  &=\odot_{i\neq\mathrm{mode}}\mathbf{S}^{(i)},&
+  \mathbf{V}^{(\mathrm{mode})}
+  &=\otimes_{i\neq\mathrm{mode}}
+    (\mathbf{S}^{(i)})^{\mathsf T}\mathbf{S}^{(i)},\\
+  \mathbf{S}^{(\mathrm{mode})}
+  &\leftarrow
+    \mathbf{X}_s^{(\mathrm{mode})}
+    \mathbf{U}^{(\mathrm{mode})}
+    (\mathbf{V}^{(\mathrm{mode})})^{\dagger}.
+  \label{eq:seasonal-update}
+\end{align}
+Đây là Eq.~(8); $\odot$ và $\otimes$ lần lượt là tích Khatri--Rao và tích từng phần tử,
+$\dagger$ là giả nghịch đảo Moore--Penrose, còn $\mathbf{X}_s^{(\mathrm{mode})}$ là residual
+$\mathcal{X}^{c}-\widehat{\mathcal{X}}_d-\widehat{\mathcal{X}}_o$ được unfold (Eq.~9). Về bản
+chất, đây là nghiệm bình phương tối thiểu tuyến tính khi giữ hai mode còn lại; không cần chứng
+minh lại trong tài liệu này.
+
+\subsection{Cập nhật outlier bằng sparsification}
+
+Sau khi cập nhật trend và mùa vụ, residual còn lại là
+$\mathcal{R}=\mathcal{X}^{c}-\widehat{\mathcal{X}}_d-\widehat{\mathcal{X}}_s$. Paper không dùng
+một ngưỡng thủ công kiểu ``lớn hơn 3 thì là outlier''. Nó xét từng phần tử của $\mathcal{R}$ và
+quyết định giữ hay đặt về 0 sao cho tổng chi phí MDL nhỏ nhất. Chi tiết chi phí ở
+Chương~\ref{sec:mdl-streaming}; ở đây chỉ cần hiểu kết quả là một tensor thưa.
+
+\subsection{Toàn bộ vòng lặp và độ phức tạp}
+
+\begin{tcolorbox}[enhanced,breakable,colback=white,colframe=DTNavy,arc=1.5mm,
+  title={\sffamily\bfseries Algorithm 2 --- ModelEstimation (tóm tắt)},fonttitle=\small,
+  coltitle=white,colbacktitle=DTNavy,left=3mm,right=3mm,top=2mm,bottom=2mm]
+\textbf{Input:} $\mathcal{X}^{c},d_k,d_l,d_s$.\quad
+\textbf{Output:} $\Theta=\{\theta_d,\theta_s,\widehat{\mathcal{X}}_o\}$.
+\begin{enumerate}[leftmargin=1.5em]
+  \item Khởi tạo $\theta_d,\theta_s$ bằng STL + PARAFAC + NTD; đặt $\widehat{\mathcal{X}}_o=0$.
+  \item \textbf{repeat}
+  \item \quad Cập nhật $\theta=\{\mathbf{A},\mathcal{D}\}$ và $w_0$ bằng LM (Eq.~5).
+  \item \quad Sinh $\mathcal{W}^{(\mathrm{core})}=f_\theta(\theta,w_0,L_c)$.
+  \item \quad Cập nhật $\mathbf{W}^{(\mathrm{key})},\mathbf{W}^{(\mathrm{loc})}$ (Eq.~6).
+  \item \quad Cập nhật $\mathbf{S}^{(\mathrm{time})},\mathbf{S}^{(\mathrm{key})},
+        \mathbf{S}^{(\mathrm{loc})}$ (Eq.~8).
+  \item \quad Sparsify residual để cập nhật $\widehat{\mathcal{X}}_o$.
+  \item \textbf{until} hội tụ.
+\end{enumerate}
+\end{tcolorbox}
+
+Lemma~1 (trong §4.1; HTML đặt nhãn là Lemma~4.1) phát biểu độ phức tạp thời gian của ModelEstimation là
+\[
+  O(d_k d_l^2+kd_k+ld_l).
+\]
+Con số này đến từ $d_k d_l^2$ tham số của hệ reaction--diffusion và chi phí cập nhật hai bảng hệ
+số. Tuy nhiên, biểu thức đã bỏ qua số vòng lặp ALS, chi phí giải ODE, chi phí cập nhật mùa vụ và
+outlier. Vì vậy, hãy đọc đây là độ phức tạp của \emph{một vòng cập nhật chính} theo cách paper
+trình bày, không phải bảo đảm cho toàn bộ pipeline.
+
+\begin{commonmistake}
+``Hội tụ'' không có nghĩa tìm được nghiệm tốt nhất toàn cục. ALS trên bài toán không lồi có thể
+dừng ở cực trị địa phương; paper không chứng minh tính tối ưu toàn cục. Ngoài ra, $\epsilon$ không
+phải tham số mô hình cần học; nó chỉ bảo vệ phép chia.
+\end{commonmistake}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item Vì sao bước cập nhật $\theta$ cần LM thay vì một nghiệm đóng?
+  \item Phép cập nhật nhân $\mathbf{W}\otimes\mathbf{P}\oslash\mathbf{Q}$ giữ được tính không âm nhờ đâu?
+  \item Kể tên ba bước khởi tạo và phương pháp tương ứng.
+  \item Độ phức tạp $O(d_kd_l^2+kd_k+ld_l)$ bỏ qua những chi phí nào?
+\end{enumerate}
+\end{selfcheck}

@@ -1,0 +1,124 @@
+\section{Reaction--diffusion: vì sao mức quan tâm lan truyền?}
+\label{sec:reaction-diffusion}
+
+\subsection{Hai bể nước và một ý tưởng}
+
+Trong hóa học, một chất khuếch tán từ nơi có nồng độ cao sang nơi có nồng độ thấp. D-Tracker
+mượn hình ảnh đó cho mức quan tâm: nếu một từ khóa đang được chú ý mạnh ở nhóm địa điểm $j'$,
+sự chú ý có thể chảy sang nhóm $j$ đang thấp hơn. Phương trình reaction--diffusion tổng quát mà
+paper dẫn ra có dạng
+\begin{equation}
+  \frac{\partial u_i}{\partial t}
+  =f(u_i)+\sum_j D\,(u_j-u_i),
+  \label{eq:rd-background}
+\end{equation}
+trong đó $u_i$ là nồng độ tại vị trí $i$ và $D$ là độ mạnh khuếch tán. Số hạng $f(u_i)$ được gọi
+là \textbf{reaction}: nó mô tả thay đổi cục bộ tại chỗ. Số hạng $\sum_j D(u_j-u_i)$ là
+\textbf{diffusion}: nó chỉ khác 0 khi các vị trí có mức khác nhau, và dấu của nó cho biết dòng
+chảy vào hay ra.
+
+\begin{center}
+\begin{tikzpicture}[
+  >=Latex,
+  place/.style={circle, draw=DTNavy, thick, minimum size=18mm, fill=DTMist,
+                align=center, font=\sffamily\small},
+  flow/.style={->, very thick, DTTeal},
+  label/.style={font=\small, align=center}
+]
+  \node[place] (b) at (0,0) {nhóm $j'$\\$w_{ij'}=4$};
+  \node[place] (a) at (4.2,0) {nhóm $j$\\$w_{ij}=1$};
+  \draw[flow] (b) to[bend left=12] node[above,label] {dòng vào vì $4>1$} (a);
+  \draw[flow, DTClaret] (a) to[bend left=12] node[below,label] {dòng ra nếu $1>4$} (b);
+\end{tikzpicture}
+\end{center}
+
+\subsection{Phiên bản latent của D-Tracker}
+
+D-Tracker không áp đặt phương trình lên từng cặp từ khóa--địa điểm. Nó áp đặt lên \emph{lõi ẩn}
+gồm $d_k\cdot d_l$ dynamics. Với $i=1,\ldots,d_k$ là nhóm từ khóa và $j=1,\ldots,d_l$ là nhóm
+địa điểm, paper viết
+\begin{equation}
+  \frac{dw_{ij}}{dt}
+  =a_{ij}w_{ij}
+   +\sum_{j'=1}^{d_l} d_{ijj'}\,(w_{ij'}-w_{ij}),
+  \qquad 1\leq i\leq d_k,\;1\leq j\leq d_l.
+  \label{eq:rd-latent}
+\end{equation}
+Hai tham số mới cần đọc đúng:
+\begin{itemize}
+  \item $a_{ij}$ là \textbf{tốc độ tăng trưởng}. Nếu $a_{ij}>0$, dynamics $w_{ij}$ có xu hướng
+        tăng; nếu $a_{ij}<0$, nó có xu hướng giảm. Đây là ``reaction''.
+  \item $d_{ijj'}$ là \textbf{độ mạnh khuếch tán} từ nhóm địa điểm $j'$ sang nhóm $j$. Trong paper,
+        $\mathcal{D}\in\mathbb{R}_{+}^{d_k\times d_l\times d_l}$ được mô tả là không âm. Dấu của
+        dòng chảy thực tế còn phụ thuộc vào $(w_{ij'}-w_{ij})$: nếu $w_{ij'}>w_{ij}$ thì $j$ nhận
+        thêm; nếu nhỏ hơn thì $j$ mất bớt.
+\end{itemize}
+
+Ở đây $w_{ij}$ là mức hoạt động của dynamics thuộc nhóm từ khóa $i$ và nhóm địa điểm $j$. Các
+dynamics khác nhóm từ khóa không khuếch tán trực tiếp trong số hạng này; chúng tương tác qua lõi
+và qua phép chiếu đa tuyến tính ở Chương~\ref{sec:model}. Toàn bộ hệ có $d_k\cdot d_l$ phương
+trình, tham số gồm ma trận $\mathbf{A}\in\mathbb{R}^{d_k\times d_l}$ và tensor
+$\mathcal{D}\in\mathbb{R}_{+}^{d_k\times d_l\times d_l}$.
+
+\begin{keypoint}
+$w>0$ giúp đọc ``mức hoạt động''; $a$ nói tăng hay giảm; $(w_{j'}-w_j)$ nói hướng chảy; $d$ nói
+dòng chảy mạnh đến đâu. Đây là lý do mô hình có thể diễn giải được, chứ không chỉ là một hộp đen
+dự báo.
+\end{keypoint}
+
+\subsection{Một bước số cụ thể}
+
+Giả sử một dynamics ở nhóm $j$ có $w_j=1$, một dynamics cùng nhóm từ khóa ở nhóm $j'$ có
+$w_{j'}=4$, $a_j=0.1$ và $d_{jj'}=0.5$. Bỏ qua các nhóm khác, đạo hàm tại thời điểm này là
+\[
+  \frac{dw_j}{dt}=0.1\cdot1+0.5\cdot(4-1)=0.1+1.5=1.6.
+\]
+Nếu xấp xỉ Euler với bước $\Delta t=1$, giá trị kế tiếp xấp xỉ $1+1.6=2.6$. Dynamics đang tăng
+vì vừa có growth vừa nhận dòng từ nơi cao hơn. Nếu đổi $w_{j'}=0$, số hạng khuếch tán thành
+$0.5(0-1)=-0.5$: cùng một độ mạnh $d$ nhưng dòng chảy đổi chiều.
+
+\begin{plainwords}
+Đừng học thuộc phương trình. Hãy đọc ba câu: ``tự nó tăng/giảm'', ``nó bị kéo về phía nhóm khác'',
+và ``mức chênh càng lớn thì lực kéo càng mạnh''. Tất cả nằm trong hai số hạng của
+Công thức~\eqref{eq:rd-latent}.
+\end{plainwords}
+
+\subsection{Liên hệ với dữ liệu quan sát}
+
+Lõi $w_{ij}$ là ẩn. Để nối nó với chuỗi quan sát $X_{uv}$ của từ khóa thật $u$ và địa điểm thật
+$v$, paper lấy đạo hàm của phép chiếu và thu được
+\begin{equation}
+  \frac{dX_{uv}}{dt}
+  =\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}
+   W^{(\mathrm{key})}_{iu}W^{(\mathrm{loc})}_{jv}
+   \underbrace{\left(
+     a_{ij}w_{ij}+\sum_{j'=1}^{d_l}d_{ijj'}(w_{ij'}-w_{ij})
+   \right)}_{\text{hệ reaction--diffusion ẩn}}.
+  \label{eq:observed-derivative}
+\end{equation}
+Đọc từ phải sang trái: hệ ẩn tạo ra $d_k d_l$ động học; các trọng số không âm
+$W^{(\mathrm{key})}_{iu}W^{(\mathrm{loc})}_{jv}$ quyết định dynamics nào đóng góp vào cặp
+$(u,v)$. Vì trọng số không âm, phép chiếu không đảo dấu: một dynamics tăng vẫn đóng góp dương
+vào chuỗi quan sát tương ứng. Đây là cầu nối giữa ``lõi nhỏ'' và ``chuỗi thật''.
+
+\subsection{Diễn giải không đồng nghĩa với nhân quả}
+
+Giả định reaction--diffusion nói rằng mức chênh có thể tạo ra dòng chảy. Mô hình học các tham số
+$a,d$ và hệ số nhóm để khớp dữ liệu; nó \emph{không} chứng minh rằng sự tăng ở Mỹ gây ra sự tăng
+ở Việt Nam. Một yếu tố thứ ba (ra mắt sản phẩm toàn cầu, tin tức, mạng xã hội) có thể tạo ra cùng
+một pattern trễ. Vì vậy, hãy đọc kết quả là \textbf{giả thuyết lan truyền có cấu trúc}, cần kiểm
+tra bằng kiến thức miền và thí nghiệm bổ sung.
+
+\begin{commonmistake}
+``$d_{ijj'}>0$ nghĩa là $j'$ luôn truyền sang $j$'' là chưa đủ. Dòng chảy còn phụ thuộc vào
+$w_{ij'}-w_{ij}$; nếu $w_{ij'}<w_{ij}$, số hạng này âm. Paper gọi $d$ là độ mạnh, không phải một
+chiều cố định. Tương tự, ``$a>0$'' chỉ nói xu hướng cục bộ, không đảm bảo tăng mãi mãi.
+\end{commonmistake}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item Với $w_j=2,w_{j'}=5,a_j=0,d_{jj'}=0.2$, đạo hàm bằng bao nhiêu?
+  \item Nếu $a_{ij}<0$ và dòng khuếch tán dương, dynamics có chắc chắn giảm không? Vì sao?
+  \item Nêu một tình huống dữ liệu có độ trễ giữa hai nơi nhưng không phải lan truyền nhân quả.
+\end{enumerate}
+\end{selfcheck}

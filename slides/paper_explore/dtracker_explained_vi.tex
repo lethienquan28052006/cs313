@@ -1,0 +1,51 @@
+\def\DTExplainerLanguage{vi}
+\documentclass[11pt,a4paper]{article}
+\input{dtracker_style.tex}
+
+\newcommand{\DTLanguageName}{Tiếng Việt}
+\newcommand{\DTShortTitle}{D-Tracker --- giải thích cho người mới}
+\newcommand{\DTTitle}{D-Tracker}
+\newcommand{\DTSubtitle}{Hiểu bài báo từ những ý tưởng đầu tiên}
+\newcommand{\DTPaperTitle}{Modeling Interest Diffusion in Social Activity Tensor Data Streams}
+\newcommand{\DTDisclaimer}{Đây là tài liệu giải thích độc lập, không phải bản dịch hay bài báo gốc. Hãy đọc cùng paper arXiv:2505.00242v1.}
+\newcommand{\DTAuthorLine}{Tài liệu học tập cho dự án CS313}
+\newcommand{\DTDate}{25 tháng 11, 2026}
+\newcommand{\DTKeyPointName}{Ý chính}
+\newcommand{\DTPlainWordsName}{Nói bằng lời}
+\newcommand{\DTMistakeName}{Đừng nhầm}
+\newcommand{\DTSelfCheckName}{Tự kiểm tra}
+\newcommand{\DTFigureSource}{Nguồn hình: Higashiguchi et al. (2025), arXiv:2505.00242v1; hình của tác giả, CC BY 4.0.}
+\newcommand{\DTReferencesName}{Nguồn và tài liệu đọc thêm}
+
+\begin{document}
+\hypersetup{pageanchor=false}
+\DTTitlePage
+\hypersetup{pageanchor=true}
+
+\pagenumbering{roman}
+\section*{Cách đọc tài liệu này}
+Tài liệu được viết cho người chưa từng đọc một bài báo về tensor stream. Bạn không cần biết
+reaction--diffusion, phân rã tensor hay MDL trước khi bắt đầu: mỗi khái niệm được dẫn từ
+một ví dụ nhỏ, sau đó mới đến công thức và vị trí của nó trong paper. Các hộp
+\textbf{Ý chính}, \textbf{Nói bằng lời}, \textbf{Đừng nhầm} và \textbf{Tự kiểm tra} có thể
+đọc riêng để ôn nhanh. Ký hiệu được giữ thống nhất với paper; bảng tra cứu nằm ở phụ lục.
+
+\tableofcontents
+\clearpage
+
+\pagenumbering{arabic}
+\input{sections_vi/01_orientation}
+\input{sections_vi/02_data_and_problem}
+\input{sections_vi/03_tensor_primer}
+\input{sections_vi/04_reaction_diffusion}
+\input{sections_vi/05_model}
+\input{sections_vi/06_estimation}
+\input{sections_vi/07_mdl_streaming}
+\input{sections_vi/08_experiments}
+\input{sections_vi/09_discussion}
+
+\appendix
+\input{sections_vi/10_learning_aids}
+\input{references}
+
+\end{document}

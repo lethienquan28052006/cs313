@@ -1,0 +1,196 @@
+\section{Mô hình D-Tracker hoàn chỉnh}
+\label{sec:model}
+
+\subsection{Ba thành phần cộng lại}
+
+Với cửa sổ hiện tại $\mathcal{X}^{c}$, paper giả định dữ liệu quan sát là xấp xỉ tổng của một
+tensor trend, một tensor seasonal và một tensor outlier (Eq.~(1) trong paper):
+\begin{equation}
+  \mathcal{X}^{c}\;\approx\;\widehat{\mathcal{X}}_d
+  +\widehat{\mathcal{X}}_s+\widehat{\mathcal{X}}_o,
+  \qquad
+  \widehat{\mathcal{X}}_d,\widehat{\mathcal{X}}_s,\widehat{\mathcal{X}}_o
+  \in\mathbb{R}^{k\times l\times L_c}.
+  \label{eq:model-sum}
+\end{equation}
+Mục đích của phép tách không phải là trang trí. Mỗi thành phần có một giả định riêng:
+\begin{itemize}
+  \item $\widehat{\mathcal{X}}_d$ chứa \textbf{trend và diffusion}, phần thay đổi có cấu trúc;
+  \item $\widehat{\mathcal{X}}_s$ chứa \textbf{mùa vụ}, phần lặp lại theo chu kỳ;
+  \item $\widehat{\mathcal{X}}_o$ chứa \textbf{outlier}, phần bất thường và được giả định thưa.
+\end{itemize}
+Nếu không tách, một đợt khuyến mãi có thể bị học như một xu hướng dài hạn; nếu không có outlier,
+một cú sốc có thể làm hỏng mọi hệ số.
+
+\subsection{Trend: nén lõi và chiếu trở lại}
+
+Tensor trend vẫn có kích thước $k\times l\times L_c$, quá lớn để đọc trực tiếp. Paper phân rã nó
+thành một lõi nhỏ và hai bảng hệ số (Eq.~(2) trong paper):
+\begin{equation}
+  \widehat{\mathcal{X}}_d
+  =\mathcal{W}^{(\mathrm{core})}
+   \times_{\mathrm{key}}\mathbf{W}^{(\mathrm{key})}
+   \times_{\mathrm{loc}}\mathbf{W}^{(\mathrm{loc})},
+  \label{eq:trend-factorization}
+\end{equation}
+với
+\[
+  \mathcal{W}^{(\mathrm{core})}\in\mathbb{R}^{d_k\times d_l\times L_c},
+  \quad
+  \mathbf{W}^{(\mathrm{key})}\in\mathbb{R}_{+}^{d_k\times k},
+  \quad
+  \mathbf{W}^{(\mathrm{loc})}\in\mathbb{R}_{+}^{d_l\times l},
+\]
+và $d_k\ll k$, $d_l\ll l$. Viết theo từng phần tử, công thức này là
+\begin{equation}
+  \widehat{x}_{d,uv}(t)
+  =\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}
+    w^{(\mathrm{core})}_{ij}(t)\,
+    W^{(\mathrm{key})}_{iu}W^{(\mathrm{loc})}_{jv}.
+  \label{eq:trend-elementwise}
+\end{equation}
+Từng ký hiệu có nghĩa rất cụ thể: $u$ là từ khóa thật, $v$ là địa điểm thật, $i,j$ là nhóm ẩn.
+Nếu $W^{(\mathrm{key})}_{iu}$ lớn, từ khóa $u$ ``thuộc về'' nhóm $i$; nếu
+$W^{(\mathrm{loc})}_{jv}$ lớn, địa điểm $v$ thuộc nhóm $j$. Lõi $w^{(\mathrm{core})}_{ij}(t)$ là
+đường hoạt động của cặp nhóm đó.
+
+\begin{keypoint}
+Đẳng thức~\eqref{eq:trend-elementwise} là trái tim của khả năng diễn giải: giá trị thật của một
+cặp $(u,v)$ bằng tổng các dynamics ẩn, mỗi dynamics được nhân với mức liên hệ của từ khóa và địa
+điểm. Hệ số không âm giữ cho phép cộng không đảo chiều.
+\end{keypoint}
+
+\subsection{Lõi được sinh bởi hệ reaction--diffusion}
+
+Paper không cho $w^{(\mathrm{core})}_{ij}(t)$ biến đổi tự do. Nó giả định lõi được sinh bởi hệ
+phương trình~\eqref{eq:rd-latent} ở Chương~\ref{sec:reaction-diffusion}, tức Eq.~(3) trong paper:
+\begin{equation}
+  \frac{dw_{ij}}{dt}
+  =a_{ij}w_{ij}
+   +\sum_{j'=1}^{d_l}d_{ijj'}(w_{ij'}-w_{ij}).
+  \label{eq:core-ode}
+\end{equation}
+Đây là một hệ \textbf{phương trình vi phân thường (ODE)} theo thời gian. Dữ liệu được quan sát
+theo các bước rời rạc (tuần hoặc ngày), nhưng mô hình định nghĩa động học liên tục theo $t$ rồi
+tích phân để tạo ra chuỗi $L_c$ bước. Điểm cần nhớ: vị trí là rời rạc (các nhóm địa điểm), còn
+thời gian trong phương trình là liên tục.
+
+Gọi $\theta=\{\mathbf{A},\mathcal{D}\}$ là tham số của hệ, và $w_0\in\mathbb{R}_{+}^{d_k\times d_l}$
+là trạng thái ban đầu. Paper ký hiệu $f_\theta(\theta,w_0,L)$ là hàm sinh ra một chuỗi lõi dài $L$
+từ $w_0$. Như vậy, phần trend hoàn chỉnh có tham số
+\[
+  \theta_d=\{\mathbf{W}^{(\mathrm{key})},\mathbf{W}^{(\mathrm{loc})},\theta\}.
+\]
+Nói cách khác, $\theta_d$ chứa cả ``các dynamics tiến hóa thế nào'' và ``các dynamics được gắn
+với từ khóa/địa điểm nào''.
+
+\subsection{Seasonal: một phép phân rã tương tự}
+
+Phần mùa vụ cũng được nén, nhưng không dùng ODE. Paper phân rã (Eq.~(4)):
+\begin{equation}
+  \widehat{\mathcal{X}}_s
+  =\mathbf{S}^{(\mathrm{time})}
+   \times_{\mathrm{key}}\mathbf{S}^{(\mathrm{key})}
+   \times_{\mathrm{loc}}\mathbf{S}^{(\mathrm{loc})},
+  \label{eq:seasonal-factorization}
+\end{equation}
+với $d_s$ pattern mùa vụ và
+\[
+  \mathbf{S}^{(\mathrm{time})}\in\mathbb{R}^{d_s\times L_c},
+  \quad
+  \mathbf{S}^{(\mathrm{key})}\in\mathbb{R}^{d_s\times k},
+  \quad
+  \mathbf{S}^{(\mathrm{loc})}\in\mathbb{R}^{d_s\times l}.
+\]
+Theo từng phần tử:
+\begin{equation}
+  \widehat{x}_{s,uv}(t)
+  =\sum_{r=1}^{d_s}
+    S^{(\mathrm{time})}_{r,t}S^{(\mathrm{key})}_{r,u}S^{(\mathrm{loc})}_{r,v}.
+  \label{eq:seasonal-elementwise}
+\end{equation}
+Mỗi $r$ là một ``khuôn'' mùa vụ theo thời gian; hai hệ số còn lại nói khuôn đó mạnh thế nào ở từng
+từ khóa và địa điểm. Đây là dạng phân rã PARAFAC: mỗi pattern là một tổng hạng nhất (rank-one) của
+ba vector. Paper không nói các hệ số mùa vụ bắt buộc không âm như $\mathbf{W}$ của trend, nên tài
+liệu này không tự thêm ràng buộc đó.
+
+\subsection{Outlier: thưa, không phải mọi nhiễu}
+
+Tensor outlier $\widehat{\mathcal{X}}_o$ được giả định \emph{sparse}: hầu hết phần tử bằng 0, chỉ
+giữ những giá trị bất thường không giải thích được bởi trend và mùa vụ. Trong tối ưu, paper tách
+residual $\mathcal{X}^{c}-\widehat{\mathcal{X}}_d-\widehat{\mathcal{X}}_s$ và chỉ giữ các phần tử
+làm giảm tổng chi phí MDL. Vì vậy ``outlier'' ở đây là một thành phần có cấu trúc, không phải
+nhãn ``dữ liệu xấu''.
+
+\subsection{Bộ tham số và nhiều regime}
+
+Một mô hình đơn lẻ được gói trong
+\[
+  \Theta=\{\theta_d,\theta_s,\widehat{\mathcal{X}}_o\},
+  \qquad
+  \theta_s=\{\mathbf{S}^{(\mathrm{time})},\mathbf{S}^{(\mathrm{key})},
+             \mathbf{S}^{(\mathrm{loc})}\}.
+\]
+Khi pattern thay đổi, một $\Theta$ không còn đủ. Paper cho phép dùng $N$ mô hình:
+\[
+  \mathcal{F}=\{\Theta_1,\Theta_2,\ldots,\Theta_N\}.
+\]
+Mỗi $\Theta_n$ mô tả một giai đoạn tương đối ổn định; $N$ và thời điểm chuyển được chọn tự động
+bằng MDL ở Chương~\ref{sec:mdl-streaming}, không phải chia đoạn bằng mắt. Vì vậy, khi đọc một
+hình như Hình~\ref{fig:preview}(a), các đường chấm dọc không phải sự kiện dữ liệu; chúng là ranh
+giới của các mô hình.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.24\linewidth}p{0.68\linewidth}@{}}
+  \toprule
+  Tham số & Chứa gì \\
+  \midrule
+  $\theta$ & $\mathbf{A}$ (growth) và $\mathcal{D}$ (diffusion) của hệ ẩn. \\
+  $\theta_d$ & Lõi trend, hai bảng hệ số từ khóa/địa điểm và $\theta$. \\
+  $\theta_s$ & Các pattern mùa vụ và hệ số từ khóa/địa điểm. \\
+  $\Theta$ & Một mô hình đầy đủ: trend, mùa vụ và outlier. \\
+  $\mathcal{F}$ & Tập nhiều $\Theta$, tương ứng các giai đoạn của stream. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Đọc một dynamics từ lõi đến dữ liệu thật}
+
+Giả sử mô hình học được $d_k=3$ nhóm từ khóa và $d_l=2$ nhóm địa điểm. Muốn hiểu ``Dynamics \#1
+của Group 1'' trong Hình~\ref{fig:preview}(b), ta đi theo bốn bước:
+\begin{enumerate}
+  \item Xem đường lõi của dynamics đó đang tăng, giảm hay đổi hướng.
+  \item Xem cột hệ số từ khóa tương ứng: từ khóa nào có trọng số cao? Trong ví dụ 2019--2021,
+        paper cho thấy ``iPhone'' liên hệ mạnh với Dynamics \#1.
+  \item Xem hàng hệ số địa điểm: nhóm nào có trọng số cao? Paper mô tả Group~1 gồm Hoa Kỳ, châu
+        Âu và Trung Quốc; Group~2 là phần còn lại.
+  \item Xem các $d_{ijj'}$ và dấu của $(w_{ij'}-w_{ij})$ để đọc hướng lan truyền. Paper mô tả
+        Dynamics \#1 lan từ Group~1 sang Group~2, tức quan tâm ``iPhone'' lan từ các khu vực dẫn
+        đầu ra phần còn lại của thế giới trong giai đoạn đó.
+\end{enumerate}
+Đây là \emph{diễn giải theo mô hình}, không phải nhãn do con người gán trước. Tên ``Group 1'' chỉ
+có nghĩa sau khi học hệ số; nhóm không nhất thiết trùng với châu lục hay ngôn ngữ.
+
+\begin{plainwords}
+Muốn đọc kết quả, hãy tưởng tượng ba lớp: lõi nhỏ nói ``chuyện gì đang xảy ra'', hàng/cột hệ số
+nói ``ở đâu và với từ khóa nào'', còn mũi tên diffusion nói ``đi từ nhóm nào sang nhóm nào''.
+Bạn không cần nhìn toàn bộ tensor gốc.
+\end{plainwords}
+
+\begin{commonmistake}
+Một lỗi phổ biến là đọc $d_l\ll k$ trong phần mô tả của paper như một ràng buộc thật. Kích thước
+của $\mathbf{W}^{(\mathrm{loc})}$ là $d_l\times l$ và ý tưởng là giảm số nhóm địa điểm, nên tài
+liệu dùng $d_k\ll k$, $d_l\ll l$. Đây là chỗ paper có khả năng đánh máy; ta nêu rõ thay vì lặng lẽ
+sao chép. Một lỗi khác là coi $\Theta$ và $\mathcal{F}$ là một; $\mathcal{F}$ là \emph{tập} các
+mô hình cho các giai đoạn khác nhau.
+\end{commonmistake}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item Viết kích thước của bốn đối tượng trong Công thức~\eqref{eq:trend-factorization}.
+  \item Phân biệt $\theta$, $\theta_d$, $\Theta$ và $\mathcal{F}$ trong một câu mỗi ký hiệu.
+  \item Vì sao seasonal không cần ODE reaction--diffusion? Nó khác trend ở giả định nào?
+  \item Nếu $N=1$ trong toàn bộ stream, mô hình đang giả định điều gì?
+\end{enumerate}
+\end{selfcheck}

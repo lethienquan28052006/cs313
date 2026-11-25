@@ -1,0 +1,143 @@
+\section{Dữ liệu tensor stream và bài toán dự báo}
+\label{sec:problem}
+
+\subsection{Từ bảng đến tensor}
+
+Một chuỗi thời gian thông thường có dạng $x_1,x_2,\ldots,x_T$: một giá trị tại mỗi thời điểm.
+Dữ liệu của D-Tracker có thêm hai chiều. Với $k$ từ khóa, $l$ địa điểm và $t$ thời điểm, mỗi
+lát cắt thời gian là một \emph{ma trận} $X_t\in\mathbb{R}^{k\times l}$, trong đó
+$x_{ij}(t)$ là mức quan tâm của từ khóa $i$ tại địa điểm $j$ ở thời điểm $t$. Ghép các ma trận
+lại, ta có tensor bậc ba
+\begin{equation}
+  \mathcal{X}=\{X_1,\ldots,X_{t_c}\}\in\mathbb{N}^{k\times l\times t_c},
+  \label{eq:stream}
+\end{equation}
+với $t_c$ là thời điểm hiện tại. Paper hiển thị tensor thực nghiệm theo thứ tự thời gian, từ khóa,
+địa điểm; khi viết công thức, tác giả dùng các chiều $k,l,L_c$. Hai cách viết mô tả cùng một đối
+tượng, chỉ khác thứ tự trục.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  Ký hiệu & Ý nghĩa & Ví dụ \\
+  \midrule
+  $k$ & số từ khóa & iPhone, Galaxy, iPad \\
+  $l$ & số địa điểm & Hoa Kỳ, Việt Nam, Nhật Bản \\
+  $t_c$ & thời điểm hiện tại & tuần thứ 676 \\
+  $L_c$ & độ dài cửa sổ hiện tại & 104 tuần (hai năm) \\
+  $L_f$ & tầm dự báo & 13, 26 hoặc 39 tuần \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Stream: dữ liệu không có điểm kết thúc}
+
+Trong ứng dụng thật, mỗi tuần ta nhận thêm một ma trận $X_{t_c+1}$. Không thể giữ toàn bộ lịch
+sử mãi mãi, và mô hình cũ có thể không còn đúng. Paper định nghĩa \emph{cửa sổ hiện tại} bằng
+$L_c$ lát cắt gần nhất. Bài in công thức với hai đầu mút
+$\{X_t\}_{t=t_c-L_c}^{t_c}$; nếu hiểu cả hai đầu mút theo nghĩa bao gồm thì đó là $L_c+1$ lát cắt,
+nên tài liệu dùng dạng nhất quán với độ dài đã nêu:
+\begin{equation}
+  \mathcal{X}^{c}=\{X_{t_c-L_c+1},\ldots,X_{t_c}\},
+  \label{eq:window}
+\end{equation}
+gồm đúng $L_c$ lát cắt. Đây là điểm rất quan trọng: D-Tracker không học lại từ toàn bộ
+stream ở mỗi bước. Nó ước lượng lại trên cửa sổ hiện tại, rồi dùng cơ chế cập nhật để quyết định
+có thêm một mô hình mới vào bộ mô hình hay không.
+
+\begin{center}
+\begin{tikzpicture}[
+  >=Latex,
+  box/.style={draw=DTNavy, fill=DTMist, rounded corners=1.5pt,
+              minimum height=8mm, align=center, font=\sffamily\small},
+  obs/.style={draw=DTTeal, fill=white, minimum width=9mm, minimum height=8mm,
+              align=center, font=\small},
+  future/.style={draw=DTClaret, dashed, fill=DTWarm, minimum width=12mm,
+                 minimum height=8mm, align=center, font=\small}
+]
+  \node[font=\sffamily\bfseries\color{DTNavy}] at (0,1.15) {Quá khứ};
+  \node[font=\sffamily\bfseries\color{DTTeal}] at (5.1,1.15) {Cửa sổ hiện tại $L_c$};
+  \node[font=\sffamily\bfseries\color{DTClaret}] at (10.3,1.15) {Tương lai $L_f$};
+  \draw[->, thick, DTNavy] (-0.5,0) -- (12,0);
+  \foreach \x in {0,...,4} {
+    \node[obs] (h\x) at (\x*1.05,0) {};
+  }
+  \foreach \x in {0,...,2} {
+    \node[obs, draw=DTTeal, fill=DTTeal!12] (c\x) at (5.1+\x*1.05,0) {};
+  }
+  \node[future] (f1) at (10.05,0) {$\cdots$};
+  \node[future] (f2) at (11.35,0) {$X_{t_c+1}$};
+  \draw[decorate,decoration={brace,amplitude=4pt},DTTeal]
+    (4.6,0.55) -- (7.65,0.55) node[midway,above=3pt,font=\small] {$L_c$};
+  \draw[decorate,decoration={brace,amplitude=4pt},DTClaret]
+    (9.45,0.55) -- (11.85,0.55) node[midway,above=3pt,font=\small] {$L_f$};
+  \node[box, below=8mm of c1, xshift=6mm] {dùng để ước lượng mô hình hiện tại};
+  \node[box, below=8mm of f2] {cần dự báo};
+\end{tikzpicture}
+\end{center}
+
+\subsection{Bài toán chính thức}
+
+Paper phát biểu bài toán \emph{stream forecasting} như sau: cho cửa sổ $\mathcal{X}^{c}$ dài
+$L_c$, hãy tìm các động học thay đổi theo thời gian gồm trend, mùa vụ và lan truyền, rồi dự báo
+giá trị tại tầm $L_f$. Đầu ra là ma trận tại thời điểm đích
+$\widehat{X}_{t_c+L_f}\in\mathbb{R}_{+}^{k\times l}$; khi đánh giá nhiều horizon, paper chạy từng
+tầm riêng và không nói rằng mô hình phải sinh mọi ma trận trung gian.
+
+\begin{keypoint}
+\textbf{Đầu vào:} $L_c$ ma trận quan sát gần nhất, mỗi ma trận kích thước $k\times l$.\\
+\textbf{Đầu ra:} dự báo tại thời điểm $t_c+L_f$, cùng một mô hình có các thành phần trend,
+seasonal, outlier và lan truyền có thể đọc được.\\
+\textbf{Ràng buộc:} không giữ toàn bộ stream; mỗi bước chỉ được xử lý trong thời gian không
+phụ thuộc vào tổng chiều dài đã quan sát.
+\end{keypoint}
+
+Trong ví dụ ở Chương~\ref{sec:orientation}, $k=2$ (iPhone, Galaxy), $l=2$ (Hoa Kỳ, Việt Nam),
+$L_c=3$ (ba tuần đã có), và $L_f=1$ nếu ta muốn dự báo tuần kế tiếp. Một mô hình tốt không chỉ
+khớp ba tuần đó; nó phải tách được xu hướng của từng cặp và biểu diễn được việc mức quan tâm
+có thể lan giữa hai địa điểm.
+
+\subsection{Vì sao không dự báo từng chuỗi riêng lẻ?}
+
+Ta có thể chạy một mô hình chuỗi thời gian cho từng cặp $(i,j)$. Cách đó bỏ qua hai điều:
+\begin{itemize}
+  \item các địa điểm và từ khóa chia sẻ những \emph{nhóm động học} tiềm ẩn; và
+  \item dữ liệu có cấu trúc đa tuyến tính, nên một hệ số nhỏ có thể mô tả đồng thời nhiều cặp.
+\end{itemize}
+D-Tracker tìm một lõi nhỏ $\mathcal{W}^{(\mathrm{core})}$ và các hệ số địa điểm/từ khóa để tái tạo
+toàn bộ tensor. Nhờ đó mô hình vừa giảm số tham số vừa tạo ra các nhóm có thể diễn giải. Cái giá
+là phải giải một bài toán tối ưu khó hơn và phải kiểm tra giả định rằng cấu trúc nhóm đó thật sự
+hữu ích.
+
+\begin{plainwords}
+Đừng nghĩ ``tensor'' là một khối dữ liệu bí ẩn. Hãy nghĩ đến một chồng bảng: mỗi tuần là một
+bảng từ khóa $\times$ địa điểm. D-Tracker tìm một vài kiểu bảng chung, rồi trộn chúng với trọng
+số khác nhau cho từng từ khóa và địa điểm.
+\end{plainwords}
+
+\begin{commonmistake}
+Có hai nhầm lẫn thường gặp. Thứ nhất, tensor bậc ba không phải ``ba chiều không gian''; ba trục
+ở đây là các thuộc tính dữ liệu. Thứ hai, mô hình không dự báo toàn bộ stream vô hạn cùng lúc:
+nó chỉ dự báo $L_f$ bước từ cửa sổ hiện tại, rồi lặp lại khi có dữ liệu mới.
+\end{commonmistake}
+
+\subsection{Ba câu hỏi mà mô hình phải trả lời}
+
+Paper đánh giá mô hình theo ba câu hỏi, và ta sẽ dùng chúng như khung đọc:
+\begin{enumerate}
+  \item \textbf{Accuracy:} dự báo tương lai chính xác đến đâu? (MAE, RMSE)
+  \item \textbf{Scalability:} thời gian chạy thay đổi thế nào khi stream dài hơn?
+  \item \textbf{Effectiveness:} mô hình có tách được trend, mùa vụ và lan truyền theo cách
+        diễn giải được không?
+\end{enumerate}
+Ba câu hỏi này độc lập: một mô hình có thể khớp tốt nhưng không giải thích được, hoặc giải thích
+đẹp nhưng dự báo kém. Toàn bộ thiết kế của D-Tracker là một nỗ lực cân bằng cả ba.
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item Với tensor $k=8,l=50,L_c=104$, mỗi lát cắt thời gian có bao nhiêu phần tử?
+  \item Phân biệt $t_c$, $L_c$ và $L_f$ trong một câu.
+  \item Tại sao chỉ dùng cửa sổ gần nhất lại giúp mô hình thích nghi với pattern thay đổi?
+\end{enumerate}
+\end{selfcheck}

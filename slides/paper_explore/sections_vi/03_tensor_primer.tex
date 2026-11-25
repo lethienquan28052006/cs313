@@ -1,0 +1,130 @@
+\section{Kiến thức nền: tensor, phân rã và ba thành phần}
+\label{sec:tensor-primer}
+
+\subsection{Scalar, vector, ma trận, tensor}
+
+Từ ``tensor'' nghe đáng sợ, nhưng với bài này chỉ cần hiểu là \emph{mảng nhiều chiều}. Bảng
+dưới đây là toàn bộ kiến thức tối thiểu cần cho các công thức của paper.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+  \toprule
+  Đối tượng & Bậc & Ký hiệu ví dụ & Cách đọc \\
+  \midrule
+  Scalar & 0 & $x=7$ & một số \\
+  Vector & 1 & $\mathbf{w}=(w_1,\ldots,w_k)$ & danh sách theo từ khóa \\
+  Ma trận & 2 & $\mathbf{W}\in\mathbb{R}^{k\times l}$ & bảng từ khóa $\times$ địa điểm \\
+  Tensor & 3 & $\mathcal{X}\in\mathbb{R}^{k\times l\times L_c}$ & chồng bảng theo thời gian \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Chỉ số được viết từ trái sang phải theo đúng thứ tự trục. Với tensor bậc ba, $x_{ij}(t)$ là phần
+tử ở từ khóa $i$, địa điểm $j$, thời điểm $t$. Nếu $k=2,l=2,L_c=3$, tensor có $2\cdot2\cdot3=12$
+phần tử. Phép ``unfold'' (trải phẳng) biến tensor thành ma trận bằng cách gộp một số trục; ví dụ
+unfold theo trục từ khóa cho ta một ma trận để giải bằng đại số tuyến tính. Ta không cần tự làm
+phép unfold bằng tay, nhưng cần hiểu nó chỉ là \emph{đổi cách xếp các số}, không tạo thêm dữ liệu.
+
+\subsection{Phân rã Tucker bằng trực giác}
+
+Giả sử ta có $k$ từ khóa và $l$ địa điểm. Thay vì lưu mọi giá trị của tensor, ta giả định dữ liệu
+được tạo bởi một số ít \emph{kiểu động học} chung. Gọi $d_k$ là số nhóm từ khóa và $d_l$ là số
+nhóm địa điểm, với $d_k\ll k$ và $d_l\ll l$. Khi đó, phần trend được xấp xỉ
+\begin{equation}
+  \widehat{\mathcal{X}}_d
+  =\mathcal{W}^{(\mathrm{core})}
+   \times_{\mathrm{key}}\mathbf{W}^{(\mathrm{key})}
+   \times_{\mathrm{loc}}\mathbf{W}^{(\mathrm{loc})},
+  \label{eq:tucker-intuition}
+\end{equation}
+trong đó $\mathcal{W}^{(\mathrm{core})}$ là một tensor nhỏ $d_k\times d_l\times L_c$, còn
+$\mathbf{W}^{(\mathrm{key})}$ và $\mathbf{W}^{(\mathrm{loc})}$ là các bảng hệ số không âm kích
+thước $d_k\times k$ và $d_l\times l$.
+
+Ký hiệu $\times_{\mathrm{key}},\times_{\mathrm{loc}}$ gọi là \emph{mode product}. Có thể đọc
+công thức~\eqref{eq:tucker-intuition} bằng lời như sau: lấy lõi nhỏ, trải nó ra theo các nhóm
+từ khóa với trọng số $\mathbf{W}^{(\mathrm{key})}$, rồi trải theo các nhóm địa điểm với trọng số
+$\mathbf{W}^{(\mathrm{loc})}$. Nếu một từ khóa có trọng số cao ở nhóm 2, nó sẽ nhận nhiều hơn
+dynamics của nhóm 2. Nếu mọi trọng số đều không âm, việc trộn không đảo dấu của dynamics, nên
+ta vẫn đọc được ``nhóm này tăng'' hay ``nhóm này giảm''.
+
+\begin{keypoint}
+Phân rã Tucker không phải là nén file tùy tiện. Nó tạo ra một lõi nhỏ chứa \emph{động học chung}
+và các hệ số nói \emph{thành viên nào thuộc nhóm nào}. Đây là cầu nối giữa dự báo và diễn giải.
+\end{keypoint}
+
+\subsection{Ví dụ \texorpdfstring{$2\times2\times3$}{2x2x3} và lợi ích nén}
+
+Hãy tưởng tượng hai từ khóa, hai địa điểm, ba tuần. Raw tensor có 12 số. Nếu giả sử chỉ có một
+nhóm từ khóa và một nhóm địa điểm ($d_k=d_l=1$), lõi có $1\cdot1\cdot3=3$ số, hai hệ số có
+$1\cdot2+1\cdot2=4$ số: tổng 7 tham số thay cho 12. Với dữ liệu thật, khoảng cách lớn hơn nhiều.
+Một cửa sổ Device có $8\cdot50\cdot104=41{,}600$ phần tử. Với $d_k=3,d_l=2$, lõi có
+$3\cdot2\cdot104=624$ phần tử và hai hệ số có $3\cdot8+2\cdot50=124$ phần tử: khoảng 748 tham số,
+chưa bằng 2\% kích thước cửa sổ.
+
+\begin{plainwords}
+Nén ở đây không phải để tiết kiệm ổ đĩa. Mục đích là buộc mô hình giải thích hàng chục nghìn
+quan sát bằng một vài dynamics và một bảng ``ai thuộc nhóm nào''. Nếu mô hình vẫn khớp tốt, cấu
+trúc nhóm là một giả thuyết có ích.
+\end{plainwords}
+
+\subsection{Trend, seasonal và outlier trong một chuỗi nhỏ}
+
+Ba thành phần trong D-Tracker cộng lại xấp xỉ dữ liệu:
+\begin{equation}
+  \mathcal{X}^{c}\approx\widehat{\mathcal{X}}_d
+  +\widehat{\mathcal{X}}_s+\widehat{\mathcal{X}}_o.
+  \label{eq:decompose-primer}
+\end{equation}
+Bảng~\ref{tab:three-components} là ví dụ số \textbf{do tài liệu tạo}. Dòng ``quan sát'' bằng
+đúng tổng ba dòng còn lại; dấu gạch ngang ở outlier nghĩa là 0.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Ví dụ minh họa phép cộng trend + seasonal + outlier.}
+  \label{tab:three-components}
+  \begin{tabular}{lrrrrrrrr}
+    \toprule
+    Thành phần & Tuần 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+    \midrule
+    Quan sát      & 10 & 12 & 15 & 14 & 11 & 13 & 17 & 25 \\
+    Trend         & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 \\
+    Seasonal      &  0 &  1 &  3 &  1 & $-3$ & $-2$ &  1 &  3 \\
+    Outlier       &  -- & -- & -- & -- & -- & -- & -- &  5 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Trend là phần thay đổi tương đối mượt. Seasonal là phần lặp lại có chu kỳ (ở đây minh họa bằng
+một pattern ngắn; dữ liệu thật dùng chu kỳ tuần/năm). Outlier là phần bất thường và được giả định
+\emph{thưa}: chỉ một số ít ô khác 0. Tách như vậy giúp mô hình không dùng một cú tăng đột biến
+để kết luận rằng cả xu hướng đã thay đổi.
+
+\subsection{Từ phân rã đến câu hỏi của paper}
+
+Ta đã có ba mảnh: một tensor quan sát, một cách nén trend bằng lõi và hệ số, và một phép tách
+thành ba thành phần. Paper thêm hai ý tưởng nữa:
+\begin{itemize}
+  \item lõi trend không tiến hóa tùy ý, mà tuân theo một hệ \textbf{reaction--diffusion}; và
+  \item mô hình được cập nhật theo stream, với cấu trúc (số nhóm) và thời điểm đổi mô hình được
+        chọn tự động.
+\end{itemize}
+Chương~\ref{sec:reaction-diffusion} giải thích ý tưởng thứ nhất; Chương~\ref{sec:model} ghép tất
+cả lại thành mô hình hoàn chỉnh.
+
+\begin{commonmistake}
+Ba lỗi hiểu thường gặp: (1) coi $\mathcal{W}^{(\mathrm{core})}$ là tensor dữ liệu gốc thu nhỏ ---
+nó là \emph{tham số ẩn} được học; (2) coi hệ số $\mathbf{W}$ là xác suất --- chúng là trọng số
+không âm, không nhất thiết cộng lại bằng 1; (3) coi phép tách là duy nhất --- các phép phân rã
+tensor thường chỉ xác định tới một phép biến đổi, và paper giải một bài tối ưu cụ thể.
+\end{commonmistake}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item Với $d_k=2,d_l=3,L_c=10$, lõi có bao nhiêu phần tử?
+  \item Giải thích bằng một câu vì sao hệ số không âm giúp giữ chiều của dynamics.
+  \item Trong bảng ba thành phần, nếu bỏ outlier ở tuần 8 thì mô hình sẽ hiểu sai điều gì?
+\end{enumerate}
+\end{selfcheck}

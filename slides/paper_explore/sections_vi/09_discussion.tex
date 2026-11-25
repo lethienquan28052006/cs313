@@ -1,0 +1,136 @@
+\section{Đặt D-Tracker trong bối cảnh và đọc phản biện}
+\label{sec:discussion}
+
+\subsection{Related work trong một trang}
+
+Paper chia công trình liên quan thành ba nhóm. Hiểu ba nhóm này giúp thấy D-Tracker kế thừa gì và
+cố giải quyết điều gì.
+
+\paragraph{Tensor analysis.}
+Tucker, PARAFAC và PARAFAC2 là các cách phân rã tensor quen thuộc; nhiều biến thể online đã được
+phát triển cho dữ liệu lớn. MLDS ghép linear dynamical system với Tucker; SMF và SSMF tập trung
+vào mùa vụ và dự báo. DISMO ghép PARAFAC với phương trình vi phân phi tuyến, cho kết quả diễn giải
+tốt, nhưng \emph{không} mô hình hóa lan truyền giữa các địa điểm. D-Tracker thêm đúng phần còn
+thiếu đó bằng reaction--diffusion.
+
+\paragraph{Time-series forecasting.}
+Các phương pháp thống kê cổ điển gồm autoregression và Kalman filter. Họ mô hình sâu dùng CNN, RNN,
+Transformer như PatchTST và Autoformer; LaST/CoST học biểu diễn trend/mùa vụ. Ưu điểm là độ chính
+xác trên nhiều bài toán, nhược điểm là khó diễn giải và thường cần huấn luyện lại tốn kém, không
+phù hợp trực tiếp với stream.
+
+\paragraph{Social-activity modeling.}
+Các mô hình web search từng nghiên cứu quan hệ cạnh tranh giữa từ khóa. FluxCube dùng ý tưởng
+physics-informed neural network để học diffusion trong tensor, nhưng tốn thời gian vì phải ước lượng
+nhóm địa điểm lặp lại. D-Tracker đặt diffusion vào một hệ phương trình nhỏ, cập nhật tăng dần.
+
+\begin{table}[htbp]
+  \centering
+  \scriptsize
+  \caption{So sánh khả năng theo paper Table~1. ``Có'' là đáp ứng, ``--'' là không được báo cáo
+  là đáp ứng. D-Tracker là phương pháp duy nhất đáp ứng cả sáu yêu cầu theo bảng này.}
+  \label{tab:capabilities}
+  \begin{tabular}{@{}lccccccc@{}}
+    \toprule
+    & DISMO & FluxCube & PatchTST & Autoformer & DeepAR & LaST/CoST & D-Tracker \\
+    \midrule
+    Forecasting & Có & Có & Có & Có & Có & Có & Có \\
+    Seasonality & Có & Có & -- & Có & -- & Có & Có \\
+    Diffusion & -- & Có & -- & -- & -- & -- & Có \\
+    Independent of length & -- & -- & -- & -- & -- & -- & Có \\
+    Parameter free & Có & -- & -- & -- & -- & -- & Có \\
+    Outlier & -- & -- & -- & -- & -- & -- & Có \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Điểm mạnh thật sự}
+
+Điểm mạnh không chỉ là ``dự báo chính xác hơn''. D-Tracker kết hợp ba thứ thường tách rời:
+\begin{enumerate}
+  \item một mô hình \textbf{sinh} có tham số diễn giải được (trend tăng/giảm, diffusion giữa nhóm);
+  \item một cơ chế \textbf{streaming} chỉ dùng cửa sổ gần nhất;
+  \item một tiêu chuẩn \textbf{MDL} để chọn cấu trúc thay vì thử tay.
+\end{enumerate}
+Với người làm phân tích, lợi ích là có thể nhìn một chuỗi dài và hỏi ``dynamics nào đang chi phối,
+ở nhóm nào, lan theo hướng nào?'' thay vì chỉ nhận một con số dự báo.
+
+\subsection{Giả định và giới hạn cần đọc kèm}
+
+Đây là phần đánh giá của tài liệu, không phải các kết luận được paper chứng minh:
+
+\begin{description}[leftmargin=1.8em,style=nextline]
+  \item[Diễn giải không phải nhân quả.] Hệ reaction--diffusion là một \emph{giả định cấu trúc}. Nó
+  có thể khớp một pattern trễ do yếu tố thứ ba gây ra. Paper không có thiết kế nhân quả, biến công
+  cụ hay thí nghiệm can thiệp.
+  \item[Phép cộng ba thành phần.] Giả định $\mathcal{X}^{c}\approx\widehat{\mathcal{X}}_d+
+  \widehat{\mathcal{X}}_s+\widehat{\mathcal{X}}_o$ là mạnh. Nếu trend và mùa vụ tương tác phi tuyến,
+  hoặc outlier không thưa, mô hình
+  có thể phải dùng outlier quá nhiều và mất tính diễn giải.
+  \item[Hệ số không âm.] Ràng buộc $\mathbf{W}\ge0$ giúp đọc nhóm và giữ dấu, nhưng cũng hạn chế
+  các quan hệ cần trọng số âm (ví dụ một từ khóa làm giảm quan tâm từ khóa khác) trừ khi chúng
+  được biểu diễn gián tiếp qua nhiều dynamics.
+  \item[Không duy nhất.] Phân rã tensor thường không xác định duy nhất; các nhóm có thể xoay/hoán vị
+  mà vẫn cho cùng tensor xấp xỉ. Vì vậy, đừng quá tập trung vào nhãn ``Group 1''; hãy đọc cấu trúc
+  tương đối và kiểm tra tính ổn định.
+  \item[Cửa sổ cố định.] Một cửa sổ $L_c$ cố định có thể bỏ lỡ chu kỳ dài hơn cửa sổ hoặc một sự
+  kiện xảy ra trước đó. Chọn $L_c$ quá ngắn hoặc quá dài đều có hậu quả; paper dùng 104 tuần cho
+  GoogleTrends và 56 ngày cho Covid-19.
+  \item[Không có bất định.] Mô hình trả về điểm dự báo, không có khoảng tin cậy hay phân phối dự báo.
+  Với quyết định rủi ro cao, cần bổ sung đánh giá bất định.
+  \item[Dữ liệu thiếu và không đều.] Paper không trình bày cơ chế chính thức cho missing values,
+  timestamp không đều hoặc thay đổi định nghĩa địa điểm. Đây là khoảng trống cần xử lý khi áp dụng.
+\end{description}
+
+\subsection{Độ tin cậy của bằng chứng thực nghiệm}
+
+Các kết quả có điểm mạnh: sáu stream thật, bảy baseline, nhiều horizon, ablation cho từng module và
+phân tích thời gian chạy. Nhưng cần đọc kèm:
+\begin{itemize}
+  \item không có kiểm định thống kê hay khoảng tin cậy cho chênh lệch MAE;
+  \item ``tối đa 57\%'' không nêu rõ mẫu số tại chỗ, nên không thể diễn giải như một effect size
+        thống nhất;
+  \item tốc độ 8.0 lần gắn với phần cứng và cách huấn luyện baseline cụ thể;
+  \item ablation cho thấy một số module không cải thiện ở một số dataset, đúng như paper thừa nhận;
+  \item kết quả Covid-19 chỉ có hai tín hiệu (ca nhiễm, tử vong) và không đại diện cho toàn bộ động
+        học dịch tễ.
+\end{itemize}
+Những điều này không phủ định kết quả; chúng giới hạn phạm vi kết luận.
+
+\subsection{Khi nào nên và không nên dùng D-Tracker?}
+
+\textbf{Nên cân nhắc} khi dữ liệu là tensor nhiều địa điểm/từ khóa theo thời gian, cần dự báo ngắn
+hạn, cần gợi ý về nhóm và hướng lan truyền, và muốn cập nhật khi dữ liệu mới đến.
+
+\textbf{Không nên dùng một mình} khi mục tiêu là suy luận nhân quả, khi dữ liệu thiếu/không đều
+nghiêm trọng, khi cần khoảng tin cậy, hoặc khi số chiều quá nhỏ đến mức mô hình tensor không có lợi
+thế. Trong những trường hợp đó, D-Tracker có thể là một \emph{nguồn giả thuyết} hữu ích, không phải
+câu trả lời cuối cùng.
+
+\subsection{Những câu hỏi phản biện nên chuẩn bị}
+
+\begin{enumerate}
+  \item Nếu hai vùng tăng cùng lúc do một chiến dịch toàn cầu, mô hình có luôn gán là diffusion không?
+  \item Khi số regime tăng, $\mathcal{F}$ có thể lớn đến mức nào, và chi phí bộ nhớ ra sao?
+  \item Các nhóm địa điểm có ổn định qua các lần chạy/khởi tạo khác nhau không?
+  \item Điều gì xảy ra nếu chọn $L_c$ ngắn hơn chu kỳ mùa vụ?
+  \item Vì sao dùng MDL thay vì cross-validation cho cấu trúc?
+  \item Kết quả có còn đúng nếu missing values được điền theo cách khác?
+\end{enumerate}
+Đây là các câu hỏi hợp lệ để thảo luận, không phải lỗi chắc chắn của paper. Một số câu paper trả lời
+một phần; số khác cần thực nghiệm bổ sung.
+
+\begin{keypoint}
+Giá trị của D-Tracker nằm ở \textbf{cách nó kết nối mô hình sinh, nén MDL và streaming}, không phải
+ở một con số MAE đơn lẻ. Đọc paper công bằng nghĩa là vừa ghi nhận kết quả mạnh, vừa giữ rõ giả định
+và giới hạn của chúng.
+\end{keypoint}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item Trong paper Table~1, khả năng nào chỉ D-Tracker có?
+  \item Vì sao ``diffusion không cải thiện ở Language'' lại là thông tin hữu ích, không phải lỗi cần che?
+  \item Nêu hai giả định có thể bị vi phạm khi áp dụng D-Tracker vào dữ liệu thực tế.
+  \item Nếu cần kết luận nhân quả, cần thêm loại bằng chứng nào ngoài mô hình này?
+\end{enumerate}
+\end{selfcheck}

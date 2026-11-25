@@ -1,0 +1,176 @@
+\section{Learning aids and summary}
+\label{app:learning}
+
+\subsection*{D-Tracker on one page}
+
+\begin{keypoint}
+\textbf{Input:} a $k\times l\times L_c$ tensor window (keywords $\times$ locations $\times$ time).
+\textbf{Output:} forecasts for $L_f$ steps and a readable model.
+\textbf{Method:} split data into trend + seasonal + outlier; compress trend into a small core; evolve
+the core with reaction--diffusion; estimate with ALS; select dimensions, outliers, and regimes with
+MDL; update on a fixed window.
+\end{keypoint}
+
+\begin{enumerate}
+  \item \textbf{Why is it hard?} Data are multi-dimensional with trend/seasonality/diffusion/outliers;
+        patterns change over time; the stream is effectively unbounded.
+  \item \textbf{Why split into three components?} To avoid confusing seasonality with trend and letting
+        one shock corrupt every coefficient.
+  \item \textbf{Why compress trend?} To turn tens of thousands of observations into a few latent
+        dynamics and two keyword/location factor tables.
+  \item \textbf{Why reaction--diffusion?} To represent both local growth and spread between location
+        groups with meaningful parameters.
+  \item \textbf{Why ALS?} Joint optimization is hard; alternating updates are easier to implement and
+        preserve constraints.
+  \item \textbf{Why MDL?} To select complexity with a principled criterion instead of manual search,
+        and to decide outliers/regimes.
+  \item \textbf{Why does streaming work?} Each step uses only the fixed $L_c$ window instead of
+        rescanning the entire history.
+  \item \textbf{What are the results?} The paper reports the best MAE on six datasets, nearly flat
+        runtime as streams grow, and readable diffusion groups; it does not prove causation.
+\end{enumerate}
+
+\subsection*{A route back through the paper}
+
+\begin{center}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.27\linewidth}>{\raggedright\arraybackslash}p{0.31\linewidth}>{\raggedright\arraybackslash}p{0.34\linewidth}@{}}
+  \toprule
+  Read & Goal & Self-check \\
+  \midrule
+  Abstract + §1 & Grasp the problem, three properties, and Figure~1 & State the three challenges aloud \\
+  §3.1 + paper Table~2 & Understand notation and Problem~1 & Write input/output in symbols \\
+  §3.2--3.3 + Eq.~(1)--(4) & Understand decomposition and ODE & Explain every term in words \\
+  §4.1 + Eq.~(5)--(9) & Understand ALS, LM, multiplicative updates & Recite the update order \\
+  §4.2--4.3 + Eq.~(10) & Understand MDL and ModelUpdate & Explain the fit/complexity trade-off \\
+  §5 + paper Table~3 + Figure~3--5 & Read results and ablations & Separate MAE/RMSE, claim, evidence \\
+  Appendix A.1--A.4 & Initialization and algorithm details & Identify ambiguities \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Suggested first-pass timing: 20 minutes for §1--3, 35 for §4, 25 for §5, and 20 for the appendix. You
+need not follow every algebraic step immediately; first rewrite each equation as one English sentence.
+
+\subsection*{Symbol table}
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.23\linewidth}>{\raggedright\arraybackslash}p{0.35\linewidth}>{\raggedright\arraybackslash}p{0.35\linewidth}@{}}
+  \caption{Symbols, shapes, and meaning.}\label{tab:appendix-symbols}\\
+  \toprule
+  Symbol & Shape & Meaning \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Symbol & Shape & Meaning \\
+  \midrule
+  \endhead
+  $k,l$ & integers & number of keywords, locations \\
+  $t_c$ & time & current time \\
+  $L_c,L_f$ & steps & window length, forecast horizon \\
+  $\mathcal{X}^{c}$ & $k\times l\times L_c$ & current observed tensor \\
+  $d_k,d_l$ & integers & number of keyword/location groups \\
+  $d_s$ & integer & number of seasonal patterns \\
+  $\mathcal{W}^{(\mathrm{core})}$ & $d_k\times d_l\times L_c$ & latent trend core \\
+  $\mathbf{W}^{(\mathrm{key})}$ & $d_k\times k$ & non-negative keyword factors \\
+  $\mathbf{W}^{(\mathrm{loc})}$ & $d_l\times l$ & non-negative location factors \\
+  $\mathbf{A}$ & $d_k\times d_l$ & growth rates $a_{ij}$ \\
+  $\mathcal{D}$ & $d_k\times d_l\times d_l$ & diffusion strengths $d_{ijj'}$ \\
+  $\theta$ & --- & $\{\mathbf{A},\mathcal{D}\}$ \\
+  $\theta_d,\theta_s$ & --- & trend parameters, seasonal parameters \\
+  $\Theta$ & --- & one complete model \\
+  $\mathcal{F}$ & --- & a set of regime models \\
+  $\widehat{\mathcal{X}}_d,\widehat{\mathcal{X}}_s,\widehat{\mathcal{X}}_o$ & $k\times l\times L_c$ & trend, seasonal, outlier \\
+  $\mathbf{S}^{(\mathrm{time})}$ & $d_s\times L_c$ & seasonal patterns over time \\
+  $\mathbf{S}^{(\mathrm{key})},\mathbf{S}^{(\mathrm{loc})}$ & $d_s\times k$, $d_s\times l$ & seasonal factors \\
+  \bottomrule
+\end{longtable}
+
+\subsection*{Vietnamese--English glossary}
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.27\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}@{}}
+  \caption{Terms used in this guide.}\label{tab:glossary}\\
+  \toprule
+  Vietnamese & English & Brief note \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Vietnamese & English & Brief note \\
+  \midrule
+  \endhead
+  tensor & tensor & multi-dimensional array \\
+  luồng tensor & tensor stream & sequence of tensors over time \\
+  cửa sổ & window & most recent slice used for estimation \\
+  tầm dự báo & forecast horizon & number of future steps \\
+  phân rã tensor & tensor factorization & represent a tensor with smaller factors \\
+  lõi & core & small tensor of latent dynamics \\
+  nhân tố/hệ số & factor & strength of association with a group \\
+  động học ẩn & latent dynamics & hidden series describing a pattern \\
+  phản ứng & reaction & local growth/decay \\
+  khuếch tán & diffusion & spread between groups \\
+  mùa vụ & seasonality & repeating periodic pattern \\
+  ngoại lai & outlier & unusual, sparse value \\
+  chế độ & regime & period with relatively stable structure \\
+  bình phương tối thiểu xen kẽ & alternating least squares (ALS) & optimize one block at a time \\
+  mô tả ngắn nhất & minimum description length (MDL) & select by total bits \\
+  không âm & non-negative & $\ge 0$ \\
+  dự báo theo luồng & stream forecasting & forecast as data arrive \\
+  độ phức tạp & computational complexity & how cost scales with size \\
+  \bottomrule
+\end{longtable}
+
+\subsection*{Tiered self-check}
+
+\paragraph{Tier 1 --- Recall and understanding.}
+\begin{enumerate}
+  \item What are D-Tracker's three components, and which pattern does each handle?
+  \item Why must $\mathbf{W}^{(\mathrm{key})}$ and $\mathbf{W}^{(\mathrm{loc})}$ be non-negative?
+  \item Which two costs make up MDL?
+  \item Why does using only the latest window help in a stream?
+\end{enumerate}
+
+\paragraph{Tier 2 --- Apply and calculate.}
+\begin{enumerate}
+  \item With $d_k=3,d_l=2,L_c=104$, how many core entries are there? How many factor entries for
+        $k=8,l=50$?
+  \item If $w_{j'}=3,w_j=1,d_{jj'}=0.4,a_j=0$, what is the reaction--diffusion derivative?
+  \item A model raises $d_s$ from 2 to 3: which way does model cost move, and why might fit improve?
+\end{enumerate}
+
+\paragraph{Tier 3 --- Critique.}
+\begin{enumerate}
+  \item Name a mechanism other than diffusion that could create a delayed pattern between countries.
+  \item What may happen to the seasonal component if the window is shorter than the seasonal cycle?
+  \item Why does ``best MAE'' not prove the model is best for every decision?
+  \item What experiment would test whether location groups are stable?
+\end{enumerate}
+
+\subsection*{Suggested answers}
+
+\paragraph{Tier 1.}
+(1) Trend handles structured change and diffusion; seasonal handles repeating patterns; outlier handles
+sparse unusual values. (2) So the projection cannot flip the sign of a dynamics and the reading
+``this group rises/falls'' remains valid. (3) Model description cost plus data encoding cost.
+(4) Per-step cost does not depend on total history, and the model can switch when patterns change.
+
+\paragraph{Tier 2.}
+(1) Core $3\cdot2\cdot104=624$; factors $3\cdot8+2\cdot50=124$. (2) $0+0.4(3-1)=0.8$.
+(3) Model cost rises because there are more parameters; fit may improve because more seasonal patterns
+can be represented, but the change survives only if total MDL falls.
+
+\paragraph{Tier 3.}
+(1) A global campaign, fast news, or a shared seasonal/event shock. (2) Seasonality may be absorbed
+incorrectly into trend/outlier because the model does not see a full cycle. (3) MAE ignores uncertainty,
+cost, interpretability, drift, and error distribution; risky decisions need intervals and tests.
+(4) Run multiple initializations/seeds, compare groups across regimes, test coefficient stability, and
+hold out entire locations.
+
+\subsection*{Checklist before saying ``I understand the paper''}
+
+\begin{itemize}
+  \item I can redraw the pipeline from tensor to forecast without notes.
+  \item I can explain Eq.~(1)--(4) in words, including tensor shapes.
+  \item I can distinguish $\theta$, $\theta_d$, $\Theta$, and $\mathcal{F}$.
+  \item I can state the roles of LM, multiplicative updates, ALS, and MDL.
+  \item I can read paper Table~3 without confusing units and do not turn ``57\%'' into a firm conclusion.
+  \item I can separate three things: paper results, model assumptions, and limits of the conclusions.
+\end{itemize}

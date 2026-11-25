@@ -1,0 +1,202 @@
+\section{MDL, structure selection, and streaming}
+\label{sec:mdl-streaming}
+
+\subsection{MDL through an everyday picture}
+
+Imagine sending a data file to a colleague over a very slow channel. You can send the raw file, or a
+``formula describing the file'' plus the part that does not match the formula. If the formula is too
+simple, the leftover corrections are huge. If it is too complex, the formula itself is long.
+\textbf{Minimum Description Length} (MDL) chooses the description with the smallest \emph{total
+number of bits}:
+\begin{equation}
+  \bigl\langle \mathcal{X};\mathcal{F}\bigr\rangle
+  =\bigl\langle \mathcal{F}\bigr\rangle
+   +\bigl\langle \mathcal{X}\mid\mathcal{F}\bigr\rangle.
+  \label{eq:mdl-total}
+\end{equation}
+This is Eq.~(10) in the paper. The first term is the model description cost; the second is the cost of
+encoding the data given the model. A good model is not a perfect fit, but one that explains much data
+with few bits.
+
+\begin{keypoint}
+MDL balances \textbf{fit} and \textbf{complexity}. It is used to choose latent dimensions, decide
+which outliers to keep, and decide whether to add a new regime. This is why the paper calls the method
+``automatic''.
+\end{keypoint}
+
+\subsection{Model description cost}
+
+For each model $\Theta$, the paper charges for non-zero parameters. Let $|\cdot|$ denote the number of
+non-zero entries, $c_F=32$ the bits per float, and $\log^*$ the universal code length for an integer.
+The formulas follow one pattern:
+\begin{align}
+  \bigl\langle\mathcal{F}\bigr\rangle
+  &=\sum_{\Theta\in\mathcal{F}}\bigl\langle\Theta\bigr\rangle,
+  &
+  \bigl\langle\Theta\bigr\rangle
+  &=\bigl\langle\theta_d\bigr\rangle
+   +\bigl\langle\theta_s\bigr\rangle
+   +\bigl\langle\widehat{\mathcal{X}}_o\bigr\rangle,
+  \label{eq:model-cost}\\
+  \bigl\langle\mathbf{W}^{(\mathrm{key})}\bigr\rangle
+  &=|\mathbf{W}^{(\mathrm{key})}|
+    \bigl(\log d_k+\log k+c_F\bigr)
+    +\log^*|\mathbf{W}^{(\mathrm{key})}|,
+  \label{eq:cost-wkey}\\
+  \bigl\langle\mathbf{W}^{(\mathrm{loc})}\bigr\rangle
+  &=|\mathbf{W}^{(\mathrm{loc})}|
+    \bigl(\log d_l+\log l+c_F\bigr)
+    +\log^*|\mathbf{W}^{(\mathrm{loc})}|,\\
+  \bigl\langle\theta\bigr\rangle
+  &=\bigl\langle\mathbf{A}\bigr\rangle
+   +\bigl\langle\mathcal{D}\bigr\rangle,\\
+  \bigl\langle\mathbf{A}\bigr\rangle
+  &=|\mathbf{A}|\bigl(\log d_k+\log d_l+c_F\bigr)
+    +\log^*|\mathbf{A}|,\\
+  \bigl\langle\mathcal{D}\bigr\rangle
+  &=|\mathcal{D}|\bigl(\log d_k+2\log d_l+c_F\bigr)
+    +\log^*|\mathcal{D}|.
+  \label{eq:cost-theta}
+\end{align}
+Seasonal factors and outliers have analogous costs:
+\begin{align}
+  \bigl\langle\mathbf{S}^{(\mathrm{time})}\bigr\rangle
+  &=|\mathbf{S}^{(\mathrm{time})}|
+    \bigl(\log d_s+\log L_c+c_F\bigr)
+    +\log^*|\mathbf{S}^{(\mathrm{time})}|,\\
+  \bigl\langle\mathbf{S}^{(\mathrm{key})}\bigr\rangle
+  &=|\mathbf{S}^{(\mathrm{key})}|
+    \bigl(\log d_s+\log k+c_F\bigr)
+    +\log^*|\mathbf{S}^{(\mathrm{key})}|,\\
+  \bigl\langle\mathbf{S}^{(\mathrm{loc})}\bigr\rangle
+  &=|\mathbf{S}^{(\mathrm{loc})}|
+    \bigl(\log d_s+\log l+c_F\bigr)
+    +\log^*|\mathbf{S}^{(\mathrm{loc})}|,\\
+  \bigl\langle\widehat{\mathcal{X}}_o\bigr\rangle
+  &=|\widehat{\mathcal{X}}_o|
+    \bigl(\log n+\log k+\log l+c_F\bigr)
+    +\log^*|\widehat{\mathcal{X}}_o|.
+  \label{eq:cost-outlier}
+\end{align}
+You need not memorize each line. What matters: cost grows with the number of non-zero entries and axis
+sizes, so increasing $d_k,d_l,d_s$ makes the model more expensive, and adding outliers also costs bits.
+The symbol $n$ in the outlier cost is not redefined at the formula; the paper uses it as the stream
+length/total size. This is an ambiguity, so this guide preserves the formula and flags it instead of
+assigning a confident meaning.
+
+\subsection{Data encoding cost}
+
+The remaining term describes the data under the model. The paper uses Huffman coding and a Gaussian
+noise model with mean $\mu$ and variance $\sigma^2$:
+\begin{equation}
+  \bigl\langle\mathcal{X}\mid\mathcal{F}\bigr\rangle
+  =\sum_{x\in\mathcal{X}}
+   -\log_2 p_{\mu,\sigma}
+   \bigl(x-\widehat{x}_d-\widehat{x}_s-\widehat{x}_o\bigr).
+  \label{eq:data-cost}
+\end{equation}
+This is the unnumbered equation immediately after Eq.~(10). Intuitively, if the residual
+$x-\widehat{x}_d-\widehat{x}_s-\widehat{x}_o$ is small and consistent with expected noise, it costs few
+bits; an unusually large residual costs many bits. The model must therefore fit without turning every
+small fluctuation into a parameter.
+
+\begin{plainwords}
+MDL does not ask ``which model fits best?''. It asks ``which model gives the shortest description of
+both the model and the data?''. An over-large model can fit perfectly but describe itself at length; an
+over-small model is compact but leaves a long residual. The optimal structure is the balance point.
+\end{plainwords}
+
+\subsection{How are outliers and dimensions selected?}
+
+For outliers, the paper tries setting each residual entry to zero and keeps the change if total cost
+falls. This is principled sparsification, not a hand-picked threshold.
+
+For dimensions, Algorithm~4 (\textsc{RankUpdate}) tries configurations that change one rank by one:
+$(d_k-1,d_l,d_s)$, $(d_k+1,d_l,d_s)$, $(d_k,d_l-1,d_s)$, $(d_k,d_l+1,d_s)$,
+$(d_k,d_l,d_s-1)$, $(d_k,d_l,d_s+1)$. Each candidate is re-estimated and the lowest-cost structure is
+kept. In the paper's HTML/PDF listing, the candidate list repeats $(d_k,d_l+1,d_s)$ and omits
+$(d_k+1,d_l,d_s)$; this is very likely a presentation error. This guide uses the complete
+``change one rank'' idea and states the discrepancy.
+
+\subsection{ModelUpdate: add, keep, or switch regime?}
+
+Algorithm~3 compares the total cost of adding a candidate $\Theta'$ to the model set $\mathcal{F}$ with
+the cost without it. If adding lowers cost, the candidate is accepted; otherwise the old model remains.
+After acceptance, RankUpdate may adjust $d_k,d_l,d_s$.
+
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  >=Latex,
+  node distance=6mm and 6mm,
+  stage/.style={draw=DTNavy, rounded corners=1.5pt, fill=DTMist,
+    text width=3.2cm, minimum height=11mm, align=center, font=\sffamily\small},
+  decision/.style={diamond, draw=DTClaret, fill=DTWarm, aspect=2.0,
+    text width=2.2cm, align=center, font=\sffamily\small},
+  arrow/.style={->, thick, DTTeal}
+]
+  \node[stage] (x) {new window\\$\mathcal{X}^{c}$};
+  \node[stage, right=of x] (est) {ModelEstimation\\candidate $\Theta'$};
+  \node[decision, right=of est] (cost) {cost\\decreases?};
+  \node[stage, right=of cost] (add) {add $\Theta'$\\and RankUpdate};
+  \node[stage, below=7mm of cost] (keep) {keep current model};
+  \node[stage, below=7mm of add] (fc) {Forecast\\$L_f$ steps};
+  \draw[arrow] (x) -- (est);
+  \draw[arrow] (est) -- (cost);
+  \draw[arrow] (cost) -- node[above,font=\small]{yes} (add);
+  \draw[arrow] (cost) -- node[right,font=\small]{no} (keep);
+  \draw[arrow] (add) -- (fc);
+  \draw[arrow, dashed, DTNavy] (fc.south) -- ++(0,-0.5) -| (x.south);
+\end{tikzpicture}%
+}
+\end{center}
+
+\subsection{The full streaming algorithm}
+
+Algorithm~1 initializes on the first window, sets $\mathcal{F}=\{\Theta\}$, and then for each time
+$t_c$:
+\begin{enumerate}
+  \item take the current window $\mathcal{X}^{c}$;
+  \item run ModelEstimation to obtain candidate $\Theta'$;
+  \item run ModelUpdate to add/keep and update ranks;
+  \item forecast $L_f$ steps using $\mathcal{F}$;
+  \item advance to the next time point.
+\end{enumerate}
+
+\begin{keypoint}
+Per-step cost does not depend on total stream length because step 1 always takes exactly $L_c$ slices.
+The set $\mathcal{F}$ may grow when a new regime appears, and RankUpdate creates runtime spikes, but no
+loop touches the entire history. This is the precise meaning of scalability in the paper.
+\end{keypoint}
+
+\subsection{Forecast and what the paper does not state}
+
+Algorithm~1 calls
+$\widehat{\mathcal{X}}_{t_c+L_f}=\mathrm{Forecast}(\mathcal{F})$, but the main text does not spell out
+the Forecast formula. This guide therefore states only what is certain: forecasting uses the active
+model in $\mathcal{F}$, and the trend can be extrapolated from the reaction--diffusion system. It does
+\emph{not} invent a detailed recurrence for seasonal/outlier terms. For exact reproduction, read the
+authors' code or implementation appendix.
+
+\subsection{What does ``parameter-free'' mean?}
+
+The paper says D-Tracker requires no parameter tuning. Read this in context: the user does not manually
+choose $d_k,d_l,d_s$ or regime switch times; MDL selects them. Technical choices still exist, such as
+the ODE solver, ALS iteration count, convergence tolerance, and the initialization search over
+$d_k,d_l\in[2,4]$, $d_s\in[0,4]$ used in the experiments. ``No hyperparameters'' does not mean ``no
+numerical settings whatsoever''.
+
+\begin{commonmistake}
+Do not say ``MDL always finds the true model''. MDL optimizes a coding criterion; if the noise
+assumption is wrong, or reality is more complex than the model family, the MDL-optimal model can still
+forecast poorly. It also does not replace causal validation of diffusion arrows.
+\end{commonmistake}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item If $d_k$ increases, which part of MDL rises, and which part may fall?
+  \item Why are outliers not selected by a fixed threshold?
+  \item What does ModelUpdate do when a candidate does not reduce total cost?
+  \item Explain in one sentence why per-step runtime does not grow with stream length.
+\end{enumerate}
+\end{selfcheck}

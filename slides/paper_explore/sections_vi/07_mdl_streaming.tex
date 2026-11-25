@@ -1,0 +1,201 @@
+\section{MDL, chọn cấu trúc và streaming}
+\label{sec:mdl-streaming}
+
+\subsection{MDL bằng một hình ảnh rất đời thường}
+
+Giả sử bạn phải gửi một file dữ liệu cho đồng nghiệp qua một kênh rất chậm. Bạn có hai cách:
+gửi nguyên file, hoặc gửi một ``công thức mô tả file'' cộng với phần dữ liệu không khớp công thức.
+Nếu công thức quá đơn giản, phần sai lệch còn lại rất lớn. Nếu công thức quá phức tạp, bản thân
+công thức đã dài. \textbf{Minimum Description Length} (MDL) chọn cách mô tả có \emph{tổng số bit}
+nhỏ nhất:
+\begin{equation}
+  \bigl\langle \mathcal{X};\mathcal{F}\bigr\rangle
+  =\bigl\langle \mathcal{F}\bigr\rangle
+   +\bigl\langle \mathcal{X}\mid\mathcal{F}\bigr\rangle.
+  \label{eq:mdl-total}
+\end{equation}
+Đây là Eq.~(10) trong paper. Số hạng thứ nhất là chi phí mô tả mô hình; số hạng thứ hai là chi phí
+mã hóa dữ liệu khi đã biết mô hình. Mô hình tốt không phải mô hình khớp tuyệt đối, mà là mô hình
+giải thích được nhiều dữ liệu với ít bit.
+
+\begin{keypoint}
+MDL là một nguyên tắc cân bằng giữa \textbf{độ khớp} và \textbf{độ phức tạp}. Nó đồng thời dùng
+để chọn số chiều ẩn, quyết định giữ outlier nào, và quyết định có thêm một regime mới hay không.
+Vì vậy paper mới có thể nói mô hình ``tự động''.
+\end{keypoint}
+
+\subsection{Chi phí mô tả mô hình}
+
+Với mỗi mô hình $\Theta$, paper tính chi phí từ các tham số khác 0. Gọi $|\cdot|$ là số phần tử
+khác 0, $c_F=32$ là số bit cho một số thực, và $\log^*$ là độ dài mã phổ dụng cho một số nguyên.
+Các công thức có cùng một khuôn:
+\begin{align}
+  \bigl\langle\mathcal{F}\bigr\rangle
+  &=\sum_{\Theta\in\mathcal{F}}\bigl\langle\Theta\bigr\rangle,
+  &
+  \bigl\langle\Theta\bigr\rangle
+  &=\bigl\langle\theta_d\bigr\rangle
+   +\bigl\langle\theta_s\bigr\rangle
+   +\bigl\langle\widehat{\mathcal{X}}_o\bigr\rangle,
+  \label{eq:model-cost}\\
+  \bigl\langle\mathbf{W}^{(\mathrm{key})}\bigr\rangle
+  &=|\mathbf{W}^{(\mathrm{key})}|
+    \bigl(\log d_k+\log k+c_F\bigr)
+    +\log^*|\mathbf{W}^{(\mathrm{key})}|,
+  \label{eq:cost-wkey}\\
+  \bigl\langle\mathbf{W}^{(\mathrm{loc})}\bigr\rangle
+  &=|\mathbf{W}^{(\mathrm{loc})}|
+    \bigl(\log d_l+\log l+c_F\bigr)
+    +\log^*|\mathbf{W}^{(\mathrm{loc})}|,\\
+  \bigl\langle\theta\bigr\rangle
+  &=\bigl\langle\mathbf{A}\bigr\rangle
+   +\bigl\langle\mathcal{D}\bigr\rangle,\\
+  \bigl\langle\mathbf{A}\bigr\rangle
+  &=|\mathbf{A}|\bigl(\log d_k+\log d_l+c_F\bigr)
+    +\log^*|\mathbf{A}|,\\
+  \bigl\langle\mathcal{D}\bigr\rangle
+  &=|\mathcal{D}|\bigl(\log d_k+2\log d_l+c_F\bigr)
+    +\log^*|\mathcal{D}|.
+  \label{eq:cost-theta}
+\end{align}
+Các hệ số mùa vụ và outlier có chi phí tương tự:
+\begin{align}
+  \bigl\langle\mathbf{S}^{(\mathrm{time})}\bigr\rangle
+  &=|\mathbf{S}^{(\mathrm{time})}|
+    \bigl(\log d_s+\log L_c+c_F\bigr)
+    +\log^*|\mathbf{S}^{(\mathrm{time})}|,\\
+  \bigl\langle\mathbf{S}^{(\mathrm{key})}\bigr\rangle
+  &=|\mathbf{S}^{(\mathrm{key})}|
+    \bigl(\log d_s+\log k+c_F\bigr)
+    +\log^*|\mathbf{S}^{(\mathrm{key})}|,\\
+  \bigl\langle\mathbf{S}^{(\mathrm{loc})}\bigr\rangle
+  &=|\mathbf{S}^{(\mathrm{loc})}|
+    \bigl(\log d_s+\log l+c_F\bigr)
+    +\log^*|\mathbf{S}^{(\mathrm{loc})}|,\\
+  \bigl\langle\widehat{\mathcal{X}}_o\bigr\rangle
+  &=|\widehat{\mathcal{X}}_o|
+    \bigl(\log n+\log k+\log l+c_F\bigr)
+    +\log^*|\widehat{\mathcal{X}}_o|.
+  \label{eq:cost-outlier}
+\end{align}
+Không cần thuộc từng dòng. Điều cần hiểu là: chi phí tăng theo số phần tử khác 0 và theo kích
+thước các trục; do đó tăng $d_k,d_l,d_s$ làm mô hình đắt hơn, còn thêm outlier cũng làm mô hình
+đắt hơn. Ký hiệu $n$ trong chi phí outlier không được định nghĩa lại ngay tại công thức; paper dùng
+nó như độ dài stream/tổng số phần tử. Đây là một điểm chưa rõ của bài, nên tài liệu giữ nguyên
+công thức và ghi chú thay vì tự gán nghĩa chắc chắn.
+
+\subsection{Chi phí mã hóa dữ liệu}
+
+Phần còn lại là chi phí mô tả dữ liệu dưới mô hình. Paper dùng mã Huffman và mô hình nhiễu Gauss
+với trung bình $\mu$, phương sai $\sigma^2$:
+\begin{equation}
+  \bigl\langle\mathcal{X}\mid\mathcal{F}\bigr\rangle
+  =\sum_{x\in\mathcal{X}}
+   -\log_2 p_{\mu,\sigma}
+   \bigl(x-\widehat{x}_d-\widehat{x}_s-\widehat{x}_o\bigr).
+  \label{eq:data-cost}
+\end{equation}
+Đây là Eq. không số ngay sau Eq.~(10) trong paper. Trực giác: nếu residual
+$x-\widehat{x}_d-\widehat{x}_s-\widehat{x}_o$ nhỏ và phù hợp với nhiễu dự kiến, nó tốn ít bit;
+nếu residual lớn bất thường, nó tốn nhiều bit. Vì vậy mô hình vừa phải khớp, vừa không được biến
+mọi dao động nhỏ thành tham số.
+
+\begin{plainwords}
+MDL không hỏi ``mô hình nào khớp nhất?''. Nó hỏi ``mô hình nào cho bản mô tả ngắn nhất của cả mô
+hình lẫn dữ liệu?''. Một mô hình quá to có thể khớp hoàn hảo nhưng bản mô tả dài; một mô hình quá
+nhỏ có bản mô tả ngắn nhưng phần residual dài. Điểm cân bằng chính là cấu trúc tối ưu.
+\end{plainwords}
+
+\subsection{Outlier và số chiều được chọn thế nào?}
+
+Với outlier, paper thử đặt từng phần tử residual về 0 và giữ lại nếu tổng chi phí giảm. Đây là
+``sparsification'' có tiêu chuẩn, không phải ngưỡng cảm tính.
+
+Với số chiều, Algorithm~4 (\textsc{RankUpdate}) thử các cấu hình chỉ thay đổi một rank một đơn vị:
+$(d_k-1,d_l,d_s)$, $(d_k+1,d_l,d_s)$, $(d_k,d_l-1,d_s)$, $(d_k,d_l+1,d_s)$,
+$(d_k,d_l,d_s-1)$, $(d_k,d_l,d_s+1)$. Mỗi cấu hình được ước lượng lại, rồi giữ cấu hình có tổng
+chi phí nhỏ nhất. Trong bản HTML/PDF của paper, danh sách candidate in ra lặp
+$(d_k,d_l+1,d_s)$ và thiếu $(d_k+1,d_l,d_s)$; đây là lỗi trình bày có khả năng cao. Tài liệu dùng
+danh sách đầy đủ theo ý tưởng ``mỗi lần đổi một rank'' và ghi chú rõ.
+
+\subsection{ModelUpdate: thêm, giữ hay chuyển regime?}
+
+Algorithm~3 so sánh tổng chi phí khi thêm candidate $\Theta'$ vào bộ mô hình $\mathcal{F}$ với
+tổng chi phí khi không thêm. Nếu thêm làm chi phí giảm, candidate được chấp nhận; nếu không, mô
+hình cũ được giữ. Sau khi chấp nhận, RankUpdate có thể điều chỉnh $d_k,d_l,d_s$.
+
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  >=Latex,
+  node distance=6mm and 6mm,
+  stage/.style={draw=DTNavy, rounded corners=1.5pt, fill=DTMist,
+    text width=3.2cm, minimum height=11mm, align=center, font=\sffamily\small},
+  decision/.style={diamond, draw=DTClaret, fill=DTWarm, aspect=2.0,
+    text width=2.2cm, align=center, font=\sffamily\small},
+  arrow/.style={->, thick, DTTeal}
+]
+  \node[stage] (x) {cửa sổ mới\\$\mathcal{X}^{c}$};
+  \node[stage, right=of x] (est) {ModelEstimation\\ứng viên $\Theta'$};
+  \node[decision, right=of est] (cost) {chi phí\\giảm?};
+  \node[stage, right=of cost] (add) {thêm $\Theta'$\\và RankUpdate};
+  \node[stage, below=7mm of cost] (keep) {giữ mô hình cũ};
+  \node[stage, below=7mm of add] (fc) {Forecast\\$L_f$ bước};
+  \draw[arrow] (x) -- (est);
+  \draw[arrow] (est) -- (cost);
+  \draw[arrow] (cost) -- node[above,font=\small]{có} (add);
+  \draw[arrow] (cost) -- node[right,font=\small]{không} (keep);
+  \draw[arrow] (add) -- (fc);
+  \draw[arrow, dashed, DTNavy] (fc.south) -- ++(0,-0.5) -| (x.south);
+\end{tikzpicture}%
+}
+\end{center}
+
+\subsection{Toàn bộ thuật toán streaming}
+
+Algorithm~1 khởi tạo trên cửa sổ đầu tiên, đặt $\mathcal{F}=\{\Theta\}$, rồi với mỗi thời điểm
+$t_c$:
+\begin{enumerate}
+  \item lấy cửa sổ $\mathcal{X}^{c}$;
+  \item chạy ModelEstimation để có candidate $\Theta'$;
+  \item chạy ModelUpdate để quyết định thêm/giữ và cập nhật rank;
+  \item dự báo $L_f$ bước bằng $\mathcal{F}$;
+  \item chuyển sang thời điểm kế tiếp.
+\end{enumerate}
+
+\begin{keypoint}
+Chi phí mỗi bước không phụ thuộc vào tổng chiều dài stream vì bước 1 luôn lấy đúng $L_c$ lát cắt.
+Tập $\mathcal{F}$ có thể tăng khi có regime mới, và RankUpdate tạo các ``spike'' thời gian, nhưng
+không có vòng lặp trên toàn bộ lịch sử. Đây là ý nghĩa chính xác của scalability trong paper.
+\end{keypoint}
+
+\subsection{Forecast và những gì paper không nói}
+
+Algorithm~1 gọi $\widehat{\mathcal{X}}_{t_c+L_f}=\mathrm{Forecast}(\mathcal{F})$ nhưng không trình
+bày chi tiết công thức Forecast trong các mục chính. Vì vậy, tài liệu này chỉ nói điều chắc chắn:
+dự báo dùng mô hình đang hoạt động trong $\mathcal{F}$, và trend có thể được ngoại suy từ hệ
+reaction--diffusion. Ta \emph{không} tự bịa một công thức chi tiết cho seasonal/outlier. Nếu cần
+tái hiện chính xác, phải đọc code gốc hoặc appendix/implementation của tác giả.
+
+\subsection{``Parameter-free'' nghĩa là gì?}
+
+Paper nói D-Tracker không cần chỉnh tham số. Cần đọc đúng ngữ cảnh: người dùng không phải chọn
+tay số nhóm $d_k,d_l,d_s$ hay thời điểm đổi regime; các đại lượng đó được chọn bằng MDL. Tuy nhiên
+vẫn có các lựa chọn kỹ thuật như bộ giải ODE, số vòng lặp ALS, dung sai hội tụ, và trong thí nghiệm
+paper tìm kiếm khởi tạo $d_k,d_l\in[2,4]$, $d_s\in[0,4]$. ``Không hyperparameter'' không có nghĩa
+``không có bất kỳ tham số số học nào''.
+
+\begin{commonmistake}
+Đừng nói ``MDL luôn tìm mô hình đúng''. MDL tối ưu một tiêu chuẩn mã hóa; nếu giả định nhiễu sai,
+hoặc dữ liệu thật sự phức tạp hơn họ mô hình, mô hình tối ưu theo MDL vẫn có thể dự báo kém. Nó
+cũng không thay thế kiểm định nhân quả cho các mũi tên diffusion.
+\end{commonmistake}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item Một mô hình tăng $d_k$ sẽ làm thành phần nào của MDL tăng, và có thể làm thành phần nào giảm?
+  \item Vì sao outlier không được chọn bằng ngưỡng cố định?
+  \item Nếu candidate model không làm giảm tổng chi phí, ModelUpdate làm gì?
+  \item Giải thích trong một câu vì sao thời gian mỗi bước không tăng theo chiều dài stream.
+\end{enumerate}
+\end{selfcheck}

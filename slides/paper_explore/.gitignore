@@ -1,0 +1,14 @@
+.tools/
+build/
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.xdv
+__pycache__/
+.venv/

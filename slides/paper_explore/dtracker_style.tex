@@ -1,0 +1,175 @@
+% Shared visual and semantic style for the D-Tracker explainers.
+\NeedsTeXFormat{LaTeX2e}
+\RequirePackage{etoolbox}
+\providecommand{\DTExplainerLanguage}{en}
+
+\ifdefstring{\DTExplainerLanguage}{vi}{%
+  \RequirePackage[main=vietnamese,english]{babel}%
+}{%
+  \RequirePackage[main=english]{babel}%
+}
+
+\RequirePackage{fontspec}
+\setmainfont{TeXGyrePagellaX-Regular.otf}[
+  BoldFont=TeXGyrePagellaX-Bold.otf,
+  ItalicFont=TeXGyrePagellaX-Italic.otf,
+  BoldItalicFont=TeXGyrePagellaX-BoldItalic.otf
+]
+\setsansfont{texgyreheros-regular.otf}[
+  BoldFont=texgyreheros-bold.otf,
+  ItalicFont=texgyreheros-italic.otf,
+  BoldItalicFont=texgyreheros-bolditalic.otf
+]
+\setmonofont{texgyrecursor-regular.otf}[
+  BoldFont=texgyrecursor-bold.otf,
+  ItalicFont=texgyrecursor-italic.otf,
+  BoldItalicFont=texgyrecursor-bolditalic.otf,
+  Scale=0.85
+]
+\RequirePackage{unicode-math}
+\setmathfont{texgyrepagella-math.otf}
+\setmathfont[version=bold,FakeBold=1.15]{texgyrepagella-math.otf}
+
+\RequirePackage[a4paper,top=24mm,bottom=24mm,left=23mm,right=23mm,headheight=22pt]{geometry}
+\RequirePackage{microtype}
+\RequirePackage{amsmath,bm}
+\RequirePackage{graphicx}
+\RequirePackage{xcolor}
+\RequirePackage[breakable,skins]{tcolorbox}
+\RequirePackage{booktabs,longtable,array,tabularx,multirow}
+\RequirePackage{enumitem}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+\RequirePackage{titlesec}
+\RequirePackage{fancyhdr}
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,shapes.geometric,calc,backgrounds,decorations.pathreplacing}
+\definecolor{DTNavy}{HTML}{16324F}
+\definecolor{DTTeal}{HTML}{0F7C7B}
+\definecolor{DTGold}{HTML}{C58B1B}
+\definecolor{DTClaret}{HTML}{8C2F39}
+\definecolor{DTInk}{HTML}{23313D}
+\definecolor{DTMist}{HTML}{EEF4F4}
+\definecolor{DTWarm}{HTML}{FBF4E4}
+\definecolor{DTPaper}{HTML}{FCFCFA}
+\RequirePackage[colorlinks=true,linkcolor=DTTeal,citecolor=DTTeal,urlcolor=DTNavy]{hyperref}
+\RequirePackage{bookmark}
+\RequirePackage[nameinlink,noabbrev]{cleveref}
+
+\color{DTInk}
+\pagecolor{DTPaper}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em plus 0.15em minus 0.1em}
+\linespread{1.06}
+\setlist[itemize]{leftmargin=1.35em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.55em,itemsep=0.3em,topsep=0.35em}
+\captionsetup{font=small,labelfont={bf,color=DTNavy},justification=raggedright,singlelinecheck=false}
+\setlength{\emergencystretch}{2.5em}
+
+\titleformat{\section}
+  {\sffamily\LARGE\bfseries\color{DTNavy}}{\thesection}{0.65em}{}
+  [\vspace{2pt}{\color{DTTeal}\titlerule[1.1pt]}]
+\titleformat{\subsection}
+  {\sffamily\Large\bfseries\color{DTTeal}}{\thesubsection}{0.55em}{}
+\titleformat{\subsubsection}
+  {\sffamily\large\bfseries\color{DTNavy}}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{2.3ex plus 0.4ex}{1.2ex}
+\titlespacing*{\subsection}{0pt}{1.8ex plus 0.3ex}{0.8ex}
+\titlespacing*{\subsubsection}{0pt}{1.3ex plus 0.2ex}{0.6ex}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sffamily\footnotesize\color{DTNavy}\DTShortTitle}
+\fancyhead[R]{\sffamily\footnotesize\color{DTNavy}\DTLanguageName}
+\fancyfoot[C]{\sffamily\footnotesize\color{DTNavy}\thepage}
+\renewcommand{\headrulewidth}{0.35pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{DTTeal}\leaders\hrule height \headrulewidth\hfill}}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\sffamily\footnotesize\color{DTNavy}\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
+
+\newtcolorbox{keypoint}{
+  enhanced, breakable, colback=DTMist, colframe=DTTeal,
+  boxrule=0.65pt, arc=2mm, left=3mm, right=3mm, top=2mm, bottom=2mm,
+  title={\sffamily\bfseries\DTKeyPointName}, fonttitle=\small,
+  coltitle=white, colbacktitle=DTTeal, attach boxed title to top left={xshift=4mm,yshift=-2mm},
+  boxed title style={arc=1mm,boxrule=0pt},
+  before skip=1.0em, after skip=1.0em
+}
+\newtcolorbox{plainwords}{
+  enhanced, breakable, colback=white, colframe=DTGold,
+  boxrule=0.65pt, arc=2mm, left=3mm, right=3mm, top=2mm, bottom=2mm,
+  title={\sffamily\bfseries\DTPlainWordsName}, fonttitle=\small,
+  coltitle=white, colbacktitle=DTGold, attach boxed title to top left={xshift=4mm,yshift=-2mm},
+  boxed title style={arc=1mm,boxrule=0pt},
+  before skip=1.0em, after skip=1.0em
+}
+\newtcolorbox{commonmistake}{
+  enhanced, breakable, colback=DTWarm, colframe=DTClaret,
+  boxrule=0.65pt, arc=2mm, left=3mm, right=3mm, top=2mm, bottom=2mm,
+  title={\sffamily\bfseries\DTMistakeName}, fonttitle=\small,
+  coltitle=white, colbacktitle=DTClaret, attach boxed title to top left={xshift=4mm,yshift=-2mm},
+  boxed title style={arc=1mm,boxrule=0pt},
+  before skip=1.0em, after skip=1.0em
+}
+\newtcolorbox{selfcheck}{
+  enhanced, breakable, colback=white, colframe=DTNavy,
+  boxrule=0.75pt, arc=2mm, left=3mm, right=3mm, top=2mm, bottom=2mm,
+  title={\sffamily\bfseries\DTSelfCheckName}, fonttitle=\small,
+  coltitle=white, colbacktitle=DTNavy, attach boxed title to top left={xshift=4mm,yshift=-2mm},
+  boxed title style={arc=1mm,boxrule=0pt},
+  before skip=1.0em, after skip=1.0em
+}
+
+\newcommand{\sourcefig}[4][width=\linewidth]{%
+  \begin{figure}[htbp]
+    \centering
+    \includegraphics[#1]{figures/#2}%
+    \caption{#3\\[3pt]\footnotesize\textit{\DTFigureSource}}%
+    \label{#4}%
+  \end{figure}%
+}
+
+\newcommand{\term}[2]{\textbf{#1} (#2)}
+\newcommand{\paper}[1]{\textsf{\small[#1]}}
+\newcommand{\bigidea}[1]{%
+  \begin{keypoint}#1\end{keypoint}%
+}
+\newcommand{\DTTitlePage}{%
+  \begin{titlepage}
+    \thispagestyle{empty}
+    \vspace*{0.06\textheight}
+    {\color{DTTeal}\rule{\textwidth}{2.4pt}}\\[5mm]
+    {\sffamily\bfseries\color{DTNavy}\fontsize{33}{38}\selectfont \DTTitle\par}
+    \vspace{5mm}
+    {\sffamily\Large\color{DTTeal}\DTSubtitle\par}
+    \vfill
+    \begin{tcolorbox}[enhanced,colback=DTMist,colframe=DTMist,arc=2mm,boxrule=0pt,left=5mm,right=5mm,top=4mm,bottom=4mm]
+      {\sffamily\bfseries\color{DTNavy}\DTPaperTitle\par}
+      \vspace{2mm}
+      {\small Shingo Higashiguchi, Yasuko Matsubara, Koki Kawabata,\\
+      Taichi Murayama, Yasushi Sakurai\par}
+      \vspace{2mm}
+      {\footnotesize KDD '25 \textperiodcentered\ arXiv:2505.00242v1 \textperiodcentered\ DOI 10.1145/3690624.3709192\par}
+    \end{tcolorbox}
+    \vspace{8mm}
+    {\small\raggedright\color{DTClaret}\DTDisclaimer\par}
+    \vfill
+    {\sffamily\small\color{DTNavy}\DTAuthorLine\par}
+    \vspace{4mm}
+    {\sffamily\small\color{DTNavy}\DTDate\par}
+    \vspace*{0.04\textheight}
+    {\color{DTTeal}\rule{\textwidth}{0.8pt}}
+  \end{titlepage}%
+}
+
+\AtBeginDocument{%
+  \hypersetup{
+    pdftitle={\DTTitle},
+    pdfauthor={D-Tracker explainer},
+    pdfsubject={Explanation of D-Tracker for first-time readers},
+    pdfkeywords={D-Tracker, tensor stream, reaction-diffusion, forecasting}
+  }%
+}

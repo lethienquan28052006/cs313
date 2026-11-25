@@ -1,0 +1,139 @@
+\section{Tensor-stream data and the forecasting problem}
+\label{sec:problem}
+
+\subsection{From a table to a tensor}
+
+An ordinary time series is $x_1,x_2,\ldots,x_T$: one value per time point. D-Tracker's data have
+two more axes. With $k$ keywords, $l$ locations, and $t$ time points, each time slice is a
+\emph{matrix} $X_t\in\mathbb{R}^{k\times l}$, where $x_{ij}(t)$ is the interest in keyword $i$ at
+location $j$ at time $t$. Stacking the matrices gives a third-order tensor
+\begin{equation}
+  \mathcal{X}=\{X_1,\ldots,X_{t_c}\}\in\mathbb{N}^{k\times l\times t_c},
+  \label{eq:stream}
+\end{equation}
+where $t_c$ is the current time. Experiments display tensors in time, keyword, location order; the
+equations use dimensions $k,l,L_c$. These describe the same object and differ only in axis order.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  Symbol & Meaning & Example \\
+  \midrule
+  $k$ & number of keywords & iPhone, Galaxy, iPad \\
+  $l$ & number of locations & United States, Vietnam, Japan \\
+  $t_c$ & current time & week 676 \\
+  $L_c$ & current window length & 104 weeks (two years) \\
+  $L_f$ & forecast horizon & 13, 26, or 39 weeks \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{A stream has no final time point}
+
+In a real application, a new matrix $X_{t_c+1}$ arrives every week. Keeping the entire history
+forever is impractical, and an old model may no longer be valid. The paper defines the
+\emph{current window} as the latest $L_c$ slices. It prints the formula with endpoints
+$\{X_t\}_{t=t_c-L_c}^{t_c}$; if both endpoints are included, that is $L_c+1$ slices, so this guide
+uses the form consistent with the stated length:
+\begin{equation}
+  \mathcal{X}^{c}=\{X_{t_c-L_c+1},\ldots,X_{t_c}\},
+  \label{eq:window}
+\end{equation}
+containing exactly $L_c$ slices. This is crucial: D-Tracker does not relearn the full stream
+at every step. It re-estimates on the current window, then updates a collection of models and
+decides whether a new one is needed.
+
+\begin{center}
+\begin{tikzpicture}[
+  >=Latex,
+  box/.style={draw=DTNavy, fill=DTMist, rounded corners=1.5pt,
+              minimum height=8mm, align=center, font=\sffamily\small},
+  obs/.style={draw=DTTeal, fill=white, minimum width=9mm, minimum height=8mm,
+              align=center, font=\small},
+  future/.style={draw=DTClaret, dashed, fill=DTWarm, minimum width=12mm,
+                 minimum height=8mm, align=center, font=\small}
+]
+  \node[font=\sffamily\bfseries\color{DTNavy}] at (0,1.15) {Past};
+  \node[font=\sffamily\bfseries\color{DTTeal}] at (5.1,1.15) {Current window $L_c$};
+  \node[font=\sffamily\bfseries\color{DTClaret}] at (10.3,1.15) {Future $L_f$};
+  \draw[->, thick, DTNavy] (-0.5,0) -- (12,0);
+  \foreach \x in {0,...,4} {
+    \node[obs] (h\x) at (\x*1.05,0) {};
+  }
+  \foreach \x in {0,...,2} {
+    \node[obs, draw=DTTeal, fill=DTTeal!12] (c\x) at (5.1+\x*1.05,0) {};
+  }
+  \node[future] (f1) at (10.05,0) {$\cdots$};
+  \node[future] (f2) at (11.35,0) {$X_{t_c+1}$};
+  \draw[decorate,decoration={brace,amplitude=4pt},DTTeal]
+    (4.6,0.55) -- (7.65,0.55) node[midway,above=3pt,font=\small] {$L_c$};
+  \draw[decorate,decoration={brace,amplitude=4pt},DTClaret]
+    (9.45,0.55) -- (11.85,0.55) node[midway,above=3pt,font=\small] {$L_f$};
+  \node[box, below=8mm of c1, xshift=6mm] {used to estimate the current model};
+  \node[box, below=8mm of f2] {to be forecast};
+\end{tikzpicture}
+\end{center}
+
+\subsection{The formal problem}
+
+The paper calls this \emph{stream forecasting}: given an $L_c$-long window $\mathcal{X}^{c}$, find
+time-varying dynamics consisting of trend, seasonality, and diffusion, then forecast at horizon
+$L_f$. The output is the matrix at the target time,
+$\widehat{X}_{t_c+L_f}\in\mathbb{R}_{+}^{k\times l}$; when evaluating several horizons, the paper
+runs each horizon separately and does not claim to emit every intermediate matrix.
+
+\begin{keypoint}
+\textbf{Input:} the latest $L_c$ observed matrices, each of size $k\times l$.\\
+\textbf{Output:} a forecast at time $t_c+L_f$, plus an interpretable model containing trend,
+seasonal, outlier, and diffusion components.\\
+\textbf{Constraint:} do not keep the entire stream; each step must cost time independent of the
+total number of observed steps.
+\end{keypoint}
+
+In the example in Section~\ref{sec:orientation}, $k=2$ (iPhone, Galaxy), $l=2$ (United States,
+Vietnam), $L_c=3$ (three observed weeks), and $L_f=1$ for next week. A good model does more than
+fit those three weeks; it separates the trend of each pair and represents how interest may spread
+between the two places.
+
+\subsection{Why not forecast each series separately?}
+
+We could run a time-series model for every pair $(i,j)$. That ignores two facts:
+\begin{itemize}
+  \item locations and keywords share latent groups of dynamics; and
+  \item the data have multilinear structure, so a small set of factors can describe many pairs at once.
+\end{itemize}
+D-Tracker finds a small core $\mathcal{W}^{(\mathrm{core})}$ plus location and keyword factors that
+reconstruct the whole tensor. This reduces the number of parameters and yields interpretable groups.
+The price is a harder optimization problem and the need to test whether those groups are useful.
+
+\begin{plainwords}
+Do not picture a tensor as a mysterious block. Picture a stack of tables: one keyword-by-location
+table per week. D-Tracker finds a few common table patterns, then mixes them with different weights
+for each keyword and location.
+\end{plainwords}
+
+\begin{commonmistake}
+Two misunderstandings are common. First, a third-order tensor is not ``three physical dimensions'';
+its axes are data attributes. Second, the model does not forecast the entire infinite stream at
+once: it forecasts $L_f$ steps from the current window, then repeats as new data arrive.
+\end{commonmistake}
+
+\subsection{Three questions the model must answer}
+
+The paper evaluates the model with three questions, which also form a reading frame:
+\begin{enumerate}
+  \item \textbf{Accuracy:} how well does it forecast future values? (MAE, RMSE)
+  \item \textbf{Scalability:} how does runtime change as the stream grows?
+  \item \textbf{Effectiveness:} does it extract trend, seasonality, and diffusion in an interpretable way?
+\end{enumerate}
+These are independent: a model can fit well but be unexplainable, or explain beautifully but forecast
+poorly. D-Tracker's design is an attempt to balance all three.
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item For a tensor with $k=8$, $l=50$, and $L_c=104$, how many entries are in one time slice?
+  \item Distinguish $t_c$, $L_c$, and $L_f$ in one sentence.
+  \item Why does using only the latest window help the model adapt to changing patterns?
+\end{enumerate}
+\end{selfcheck}

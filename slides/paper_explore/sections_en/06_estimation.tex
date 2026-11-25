@@ -1,0 +1,182 @@
+\section{Parameter estimation: the ALS loop}
+\label{sec:estimation}
+
+\subsection{Optimization, intuitively}
+
+We have data $\mathcal{X}^{c}$ and a model with several blocks: a trend core, a reaction--diffusion
+system, keyword/location factors, seasonal factors, and outliers. Optimizing everything at once is
+both nonlinear and high-dimensional. The paper uses \textbf{ALS} (alternating least squares): hold
+most parameters fixed, update one block, and repeat until convergence.
+
+\begin{keypoint}
+ALS means ``fix everything else, then solve one part as well as possible''. It does not guarantee a
+global optimum for a non-convex problem; the paper uses it as a practical procedure and reports
+empirical results.
+\end{keypoint}
+
+For readability, call the squared reconstruction error of a model
+\begin{equation}
+  \mathcal{L}(\Theta)
+  =\left\|\mathcal{X}^{c}
+    -\widehat{\mathcal{X}}_d-\widehat{\mathcal{X}}_s-\widehat{\mathcal{X}}_o
+   \right\|_F^2.
+  \label{eq:als-loss}
+\end{equation}
+The paper does not name this symbol in Section 4.1, but every update below reduces this error (or the
+MDL cost at the outlier step). The Frobenius norm $\|\cdot\|_F$ is the square root of the sum of
+squared entries, a measure of how far the model is from the data.
+
+\subsection{Initialization: STL, PARAFAC, and NTD}
+
+ModelEstimation needs a starting point. The paper describes three initialization steps:
+\begin{enumerate}
+  \item Apply \textbf{STL} (seasonal-trend decomposition using LOESS) to the current window, splitting
+        it into trend, seasonal, and residual. STL is a classical statistical method suited to
+        seasonal series; it provides initial approximations of $\widehat{\mathcal{X}}_d$ and
+        $\widehat{\mathcal{X}}_s$.
+  \item Factorize $\widehat{\mathcal{X}}_s$ with \textbf{PARAFAC} to initialize
+        $\mathbf{S}^{(\mathrm{time})},\mathbf{S}^{(\mathrm{key})},\mathbf{S}^{(\mathrm{loc})}$.
+  \item Apply \textbf{Nonnegative Tucker Decomposition (NTD)} to $\widehat{\mathcal{X}}_d$ to
+        initialize $\mathbf{W}^{(\mathrm{key})},\mathbf{W}^{(\mathrm{loc})}$.
+\end{enumerate}
+The outlier tensor starts at zero: initially, no outlier is assumed. Initialization is not a minor
+detail; it affects whether ALS lands in a poor local solution, and the paper documents it in
+Appendix A.1.
+
+\subsection{Updating the reaction--diffusion system}
+
+Holding $\mathbf{W}^{(\mathrm{key})},\mathbf{W}^{(\mathrm{loc})}$ and the other components fixed, the
+paper solves the nonlinear least-squares problem
+\begin{equation}
+  \{\theta,w_0\}
+  =\arg\min_{\theta',w_0'}
+   \left\|
+     \mathcal{X}^{c}-\widehat{\mathcal{X}}_s-\widehat{\mathcal{X}}_o
+     -f_\theta(\theta',w_0',L_c)
+       \times_{\mathrm{key}}\mathbf{W}^{(\mathrm{key})}
+       \times_{\mathrm{loc}}\mathbf{W}^{(\mathrm{loc})}
+   \right\|_F^2,
+  \label{eq:lm-estimation}
+\end{equation}
+which is Eq.~(5) in the paper. The symbol $\arg\min$ means ``choose parameters that make the expression
+smallest''. Because $f_\theta$ contains the ODE solution, its derivative with respect to $\theta$ has no
+simple closed form. The paper uses \textbf{Levenberg--Marquardt (LM)}, a numerical nonlinear
+least-squares method, to update $\mathbf{A},\mathcal{D}$ and the initial state $w_0$ jointly.
+
+We need not implement LM to understand the paper, but should remember three things: (i) this is the
+expensive step; (ii) it needs an ODE solver; (iii) its result depends on initialization and may be a
+local optimum.
+
+\subsection{Updating trend factors by multiplicative updates}
+
+Once the core $\mathcal{W}^{(\mathrm{core})}$ is available, the paper updates each trend factor. With
+``mode'' being key or loc, define
+\begin{align}
+  \mathbf{P}^{(\mathrm{mode})}
+  &=\max\!\left(\epsilon,\;
+    \mathbf{X}_d^{(\mathrm{mode})}\cdot\mathbf{G}^{(\mathrm{mode})}
+   \right), \label{eq:w-p}\\
+  \mathbf{Q}^{(\mathrm{mode})}
+  &=\max\!\left(\epsilon,\;
+    \mathbf{W}^{(\mathrm{mode})}\cdot\mathbf{G}^{(\mathrm{mode})}
+    \cdot(\mathbf{G}^{(\mathrm{mode})})^{\mathsf T}
+   \right), \label{eq:w-q}\\
+  \mathbf{W}^{(\mathrm{mode})}
+  &\leftarrow
+    \mathbf{W}^{(\mathrm{mode})}
+    \otimes\mathbf{P}^{(\mathrm{mode})}
+    \oslash\mathbf{Q}^{(\mathrm{mode})}.
+  \label{eq:multiplicative}
+\end{align}
+This is Eq.~(6) in the paper. Here:
+\begin{itemize}
+  \item $\mathbf{X}_d^{(\mathrm{mode})}$ is the residual tensor
+        $\mathcal{X}^{c}-\widehat{\mathcal{X}}_s-\widehat{\mathcal{X}}_o$, \emph{unfolded} along
+        the mode (Eq.~7);
+  \item $\mathbf{G}^{(\mathrm{mode})}$ is the remaining projection, also unfolded;
+  \item $\otimes$ is elementwise (Hadamard) product and $\oslash$ elementwise division;
+  \item $\epsilon$ is a tiny positive constant that prevents division by zero.
+\end{itemize}
+Since $\mathbf{W}$ starts non-negative and the update only multiplies/divides positive quantities, it
+stays non-negative. This is why ``multiplicative'' matters: it optimizes while preserving the
+constraint.
+
+\begin{plainwords}
+Equation~(6) looks heavy, but the idea is: compare the missing data with what the model predicts, then
+nudge each weight up or down by a ratio. No unrestricted subtraction can push a weight below zero.
+\end{plainwords}
+
+\subsection{Updating seasonal factors}
+
+For seasonality, the paper holds the other components fixed and uses a closed-form ALS step. For each
+mode in $\{\mathrm{time},\mathrm{key},\mathrm{loc}\}$, define
+\begin{align}
+  \mathbf{U}^{(\mathrm{mode})}
+  &=\odot_{i\neq\mathrm{mode}}\mathbf{S}^{(i)},&
+  \mathbf{V}^{(\mathrm{mode})}
+  &=\otimes_{i\neq\mathrm{mode}}
+    (\mathbf{S}^{(i)})^{\mathsf T}\mathbf{S}^{(i)},\\
+  \mathbf{S}^{(\mathrm{mode})}
+  &\leftarrow
+    \mathbf{X}_s^{(\mathrm{mode})}
+    \mathbf{U}^{(\mathrm{mode})}
+    (\mathbf{V}^{(\mathrm{mode})})^{\dagger}.
+  \label{eq:seasonal-update}
+\end{align}
+This is Eq.~(8); $\odot$ and $\otimes$ denote Khatri--Rao and elementwise products, $\dagger$ is the
+Moore--Penrose pseudoinverse, and $\mathbf{X}_s^{(\mathrm{mode})}$ is the residual
+$\mathcal{X}^{c}-\widehat{\mathcal{X}}_d-\widehat{\mathcal{X}}_o$ unfolded along the mode (Eq.~9).
+Intuitively, it is the linear least-squares solution while the other two modes are fixed; the proof is
+not repeated here.
+
+\subsection{Updating outliers by sparsification}
+
+After updating trend and seasonality, the remaining residual is
+$\mathcal{R}=\mathcal{X}^{c}-\widehat{\mathcal{X}}_d-\widehat{\mathcal{X}}_s$. The paper does not use
+a manual rule such as ``larger than 3 is an outlier''. It considers each residual entry and decides
+whether to keep it or set it to zero so that total MDL cost is smallest. The cost is detailed in
+Section~\ref{sec:mdl-streaming}; here, the result is a sparse tensor.
+
+\subsection{The full loop and complexity}
+
+\begin{tcolorbox}[enhanced,breakable,colback=white,colframe=DTNavy,arc=1.5mm,
+  title={\sffamily\bfseries Algorithm 2 --- ModelEstimation (summary)},fonttitle=\small,
+  coltitle=white,colbacktitle=DTNavy,left=3mm,right=3mm,top=2mm,bottom=2mm]
+\textbf{Input:} $\mathcal{X}^{c},d_k,d_l,d_s$.\quad
+\textbf{Output:} $\Theta=\{\theta_d,\theta_s,\widehat{\mathcal{X}}_o\}$.
+\begin{enumerate}[leftmargin=1.5em]
+  \item Initialize $\theta_d,\theta_s$ with STL + PARAFAC + NTD; set $\widehat{\mathcal{X}}_o=0$.
+  \item \textbf{repeat}
+  \item \quad Update $\theta=\{\mathbf{A},\mathcal{D}\}$ and $w_0$ with LM (Eq.~5).
+  \item \quad Generate $\mathcal{W}^{(\mathrm{core})}=f_\theta(\theta,w_0,L_c)$.
+  \item \quad Update $\mathbf{W}^{(\mathrm{key})},\mathbf{W}^{(\mathrm{loc})}$ (Eq.~6).
+  \item \quad Update $\mathbf{S}^{(\mathrm{time})},\mathbf{S}^{(\mathrm{key})},
+        \mathbf{S}^{(\mathrm{loc})}$ (Eq.~8).
+  \item \quad Sparsify the residual to update $\widehat{\mathcal{X}}_o$.
+  \item \textbf{until} convergence.
+\end{enumerate}
+\end{tcolorbox}
+
+Lemma~1 (in §4.1; the HTML labels it Lemma~4.1) states that ModelEstimation takes time
+\[
+  O(d_k d_l^2+kd_k+ld_l).
+\]
+The term $d_k d_l^2$ comes from the reaction--diffusion parameters and the rest from updating the two
+factor matrices. The expression omits ALS iterations, ODE solving, seasonal updates, and outlier
+updates. Read it as the complexity of \emph{one main update pass} as presented by the paper, not a
+guarantee for the whole pipeline.
+
+\begin{commonmistake}
+``Convergence'' does not mean a global optimum. ALS on a non-convex problem can stop at a local
+solution; the paper does not prove global optimality. Also, $\epsilon$ is not a model parameter to
+learn; it only guards a division.
+\end{commonmistake}
+
+\begin{selfcheck}
+\begin{enumerate}
+  \item Why does the $\theta$ update need LM instead of a closed-form solution?
+  \item Why does $\mathbf{W}\otimes\mathbf{P}\oslash\mathbf{Q}$ preserve non-negativity?
+  \item Name the three initialization methods and what each initializes.
+  \item Which costs are omitted from $O(d_kd_l^2+kd_k+ld_l)$?
+\end{enumerate}
+\end{selfcheck}
