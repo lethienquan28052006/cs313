@@ -1,0 +1,10 @@
+# local-only: author code, baseline repos, venv, raw outputs (see README "Setup")
+/D-Tracker/
+/D-Tracker-*/
+/baselines/
+/bench_out/
+/result_backup_*/
+/logs/
+/pids/
+/.venv/
+__pycache__/
