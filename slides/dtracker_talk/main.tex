@@ -1,0 +1,890 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\input{theme}
+
+\title{D-Tracker}
+\subtitle{Hiểu dữ liệu quan tâm đang lan đi đâu}
+\author{CS313}
+\date{2026}
+
+\AtBeginSection[]{}
+
+\begin{document}
+
+% ============================================================
+% SLIDE 1
+% ============================================================
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[DTNavy] (current page.north west) rectangle (current page.south east);
+  \fill[DTTeal!18] (current page.north east) circle (5.4cm);
+  \fill[DTGold!14] (current page.south west) circle (4cm);
+  \begin{scope}[shift={($(current page.north east)+(-4.1,-2.0)$)}]
+    \foreach \a in {0,30,...,330} {
+      \fill[DTTeal!35] (\a:0.7) circle (1.2pt);
+      \fill[DTTeal!22] (\a:1.45) circle (1.6pt);
+    }
+    \draw[DTTeal!35,line width=.6pt] (0,0) circle (2.15);
+    \draw[DTTeal!22,line width=.4pt] (0,0) ellipse (2.15 and .7);
+    \draw[DTTeal!22,line width=.4pt] (0,0) ellipse (.8 and 2.15);
+    \fill[DTGold] (25:1.45) circle (2.8pt);
+    \fill[DTTeal!80] (150:2.15) circle (2.3pt);
+    \fill[DTTeal!70] (250:0.7) circle (2pt);
+  \end{scope}
+  \node[anchor=west,text=white] at ($(current page.west)+(0.95,0.45)$) {%
+    \begin{minipage}{11.2cm}
+      {\sffamily\bfseries\fontsize{46}{50}\selectfont D-Tracker\par}
+      \vspace{3mm}
+      {\sffamily\fontsize{22}{27}\selectfont Hiểu dữ liệu quan tâm\\ đang lan đi đâu\par}
+      \vspace{7mm}
+      {\color{DTTeal!25}\rule{8.5cm}{1pt}\par}
+      \vspace{4mm}
+      {\small\color{white!72} Modeling Interest Diffusion in Social Activity Tensor Data Streams\par}
+      \vspace{1mm}
+      {\scriptsize\color{white!55} KDD 2025 \textperiodcentered\ arXiv:2505.00242\par}
+    \end{minipage}};
+  \node[anchor=west] at ($(current page.south west)+(0.95,0.65)$) {%
+    {\sffamily\small\color{white!65} Bài giảng trực quan \textperiodcentered\ 35 phút \textperiodcentered\ CS313}};
+\end{tikzpicture}
+\end{frame}
+
+% ============================================================
+% SLIDE 2
+% ============================================================
+\begin{frame}[shrink=15]{Một sản phẩm, 50 quốc gia}{Câu hỏi mở đầu}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+  \vspace{2mm}
+  {\sffamily\Large\bfseries\color{DTNavy}Bạn sẽ hỏi gì?}
+  \vspace{5mm}
+  \begin{enumerate}
+    \setlength{\itemsep}{3.2mm}
+    \item \textbf{Ở đâu?}\\[1mm]
+          {\small Quốc gia nào đang thực sự quan tâm?}
+    \item \textbf{Lan thế nào?}\\[1mm]
+          {\small Quan tâm đi từ nhóm nào sang nhóm nào?}
+    \item \textbf{Tiếp theo là gì?}\\[1mm]
+          {\small Ba tháng tới nên kỳ vọng ra sao?}
+  \end{enumerate}
+  \vspace{5mm}
+  \begin{takeaway}[Điểm mấu chốt]
+    \small Một bảng Excel không cho thấy \textbf{dòng chảy} giữa các địa điểm.
+  \end{takeaway}
+\end{column}
+\begin{column}{0.50\textwidth}
+  \centering
+  \begin{tikzpicture}[remember picture,overlay,scale=.86,transform shape]
+    \fill[DTMist,rounded corners=4mm] (0,0) rectangle (7.1,6.4);
+    \draw[DTTeal!20,line width=.5pt] (0.4,1.2) .. controls (2.2,2.8) and (4.6,2.2) .. (6.7,4.1);
+    \draw[DTTeal!12,line width=7pt,line cap=round] (0.4,1.2) .. controls (2.2,2.8) and (4.6,2.2) .. (6.7,4.1);
+    \foreach \x/\y/\name/\w in {
+      1.2/4.6/US/.95,
+      2.7/3.0/EU/.8,
+      5.4/4.25/CN/.9,
+      4.8/1.65/SEA/.72,
+      3.75/4.9/VN/.55} {
+      \fill[DTTeal!\w,opacity=.9] (\x,\y) circle (\w*0.46);
+      \fill[DTTeal!\w,opacity=.18] (\x,\y) circle (\w*0.88);
+      \node[tinylabel] at (\x,\y-0.55) {\name};
+    }
+    \draw[dtarrow] (1.25,4.45) to[bend left=10] (2.55,3.18);
+    \draw[dtarrow] (2.85,3.08) to[bend right=12] (4.55,1.85);
+    \draw[dtarrow] (5.1,4.05) to[bend right=12] (4.95,2.1);
+    \draw[dtarrow,DTGold!85] (3.95,4.55) to[bend left=10] (4.9,4.15);
+    \node[draw=DTClaret!60,fill=DTWarm,rounded corners=1.5mm,font=\sffamily\scriptsize,
+          text=DTClaret,inner sep=2.5mm] at (3.55,0.4) {lan truyền?};
+    \node[tinylabel,text=DTNavy!55] at (5.9,5.95) {bản đồ tín hiệu};
+  \end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+\section{Dữ liệu và bài toán}
+
+% ============================================================
+% SLIDE 3
+% ============================================================
+\begin{frame}[shrink=20]{Dữ liệu là một chồng bản đồ tuần}{Nền tảng \textperiodcentered\ tensor}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.50\textwidth}
+  \centering
+  \begin{tikzpicture}[x=0.79cm,y=0.69cm]
+    \foreach \s/\lab in {0/{tuần $t_1$},1/{tuần $t_2$},2/{tuần $t_c$}} {
+      \begin{scope}[xshift=\s*0.72cm,yshift=-\s*0.52cm]
+        \fill[white,draw=DTLine,rounded corners=1mm] (-0.05,-0.05) rectangle (4.35,3.2);
+        \foreach \v [count=\n from 0] in {10,22,40,65, 20,55,18,30, 55,75,25,12} {
+          \pgfmathsetmacro{\xx}{mod(\n,4)}
+          \pgfmathsetmacro{\yy}{2-int(\n/4)}
+          \fill[DTTeal!\v,draw=white,line width=.5pt] (\xx,\yy) rectangle ++(1,1);
+        }
+        \node[tinylabel,anchor=west] at (4.55,1.5) {\lab};
+      \end{scope}
+    }
+    \node[tinylabel,anchor=east,rotate=90] at (-0.8,1.5) {từ khóa};
+    \node[tinylabel,anchor=north] at (2.0,-1.35) {địa điểm};
+    \draw[dtarrow,DTGold!80] (4.55,-1.0) -- (5.2,-1.0);
+    \node[tinylabel,anchor=west,text=DTGold!90] at (5.25,-1.0) {thời gian};
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{mathcard}[Ba đối tượng cần phân biệt]
+    \centering
+    \begin{tabular}{@{}ll@{}}
+      \textbf{Một lát cắt} & $X_t\in\mathbb{R}^{k\times l}$\\[1.5mm]
+      \textbf{Cửa sổ hiện tại} & $\mathcal X^c\in\mathbb{R}^{k\times l\times L_c}$\\[1.5mm]
+      \textbf{Đầu ra dự báo} & $\widehat X_{t_c+L_f}\in\mathbb{R}^{k\times l}$
+    \end{tabular}
+  \end{mathcard}
+  \vspace{4mm}
+  \begin{itemize}
+    \item $k$: số từ khóa; $l$: số địa điểm.
+    \item $L_c$: số tuần đang giữ; $L_f$: tầm dự báo.
+    \item Mỗi tuần là một bản đồ nhiệt từ khóa $\times$ địa điểm.
+  \end{itemize}
+  \vspace{3mm}
+  \begin{intuition}[Kiểm tra nhanh]
+    $8$ từ khóa $\times$ $50$ quốc gia $\times$ $104$ tuần
+    $=41{,}600$ ô dữ liệu trong một cửa sổ.
+  \end{intuition}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 4
+% ============================================================
+\begin{frame}{Vì sao khó, và D-Tracker làm gì}{Từ vấn đề đến pipeline}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.31\textwidth}
+  \begin{tcolorbox}[enhanced,colback=white,colframe=DTLine,boxrule=.6pt,arc=2mm,height=3.55cm,halign=left]
+    \numcircle{1}\hspace{1mm}{\sffamily\bfseries Rất nhiều chuỗi}\par\vspace{2mm}
+    {\small 400 chuỗi đan xen; nhìn riêng từng chuỗi sẽ mất cấu trúc chung.}
+  \end{tcolorbox}
+\end{column}
+\begin{column}{0.31\textwidth}
+  \begin{tcolorbox}[enhanced,colback=white,colframe=DTLine,boxrule=.6pt,arc=2mm,height=3.55cm,halign=left]
+    \numcircle[DTGold]{2}\hspace{1mm}{\sffamily\bfseries Tín hiệu bị trộn}\par\vspace{2mm}
+    {\small Trend, mùa vụ, cú sốc và lan truyền chồng lên nhau.}
+  \end{tcolorbox}
+\end{column}
+\begin{column}{0.31\textwidth}
+  \begin{tcolorbox}[enhanced,colback=white,colframe=DTLine,boxrule=.6pt,arc=2mm,height=3.55cm,halign=left]
+    \numcircle[DTClaret]{3}\hspace{1mm}{\sffamily\bfseries Luật chơi thay đổi}\par\vspace{2mm}
+    {\small Pattern đổi theo thời gian; dữ liệu mới đến mãi không dừng.}
+  \end{tcolorbox}
+\end{column}
+\end{columns}
+\vspace{4mm}
+\begin{tikzpicture}[node distance=3mm]
+  \node[dtbox,text width=2.5cm,align=center,minimum height=1.15cm] (a) {\sffamily\bfseries Dữ liệu\\[-.5mm]\scriptsize các bản đồ tuần};
+  \node[dtaccent,text width=2.55cm,align=center,minimum height=1.15cm,right=of a] (b) {\sffamily\bfseries Tách 3 lớp\\[-.5mm]\scriptsize trend · mùa vụ · sốc};
+  \node[dtaccent,text width=3.0cm,align=center,minimum height=1.15cm,right=of b] (c) {\sffamily\bfseries Nén + lan truyền\\[-.5mm]\scriptsize vài kênh ẩn, vài nhóm};
+  \node[dtgold,text width=2.45cm,align=center,minimum height=1.15cm,right=of c] (d) {\sffamily\bfseries Dự báo\\[-.5mm]\scriptsize kèm lời giải thích};
+  \draw[dtarrow] (a) -- (b);
+  \draw[dtarrow] (b) -- (c);
+  \draw[dtarrow] (c) -- (d);
+\end{tikzpicture}
+\vfill
+{\small\color{DTNavy!70}\textbf{Ý tưởng:} không mô hình hóa từng ô riêng lẻ; tìm cấu trúc nhỏ hơn đang tạo ra chúng.}
+\end{frame}
+
+\section{Cơ chế hoạt động}
+
+% ============================================================
+% SLIDE 5
+% ============================================================
+\begin{frame}[shrink=10]{Tách ba lớp tín hiệu}{Math 01 \textperiodcentered\ phân rã}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+  \centering
+  \begin{tikzpicture}[x=0.53cm,y=0.48cm]
+    \foreach \yy/\col/\lab in {0/DTNavy/{Quan sát},-2.1/DTTeal/{Trend},-4.2/DTGold/{Seasonal},-6.3/DTClaret/{Outlier}} {
+      \draw[DTLine,line width=.4pt] (0,\yy) -- (7.2,\yy);
+      \node[tinylabel,anchor=east] at (-0.15,\yy+0.3) {\lab};
+    }
+    \draw[DTNavy,line width=1.5pt] plot[smooth] coordinates {(0,0.2) (1,0.9) (2,0.3) (3,1.4) (4,2.4) (5,0.8) (6,1.8) (7,1.2)};
+    \draw[DTTeal,line width=1.5pt] plot[smooth] coordinates {(0,0.1) (1,0.35) (2,0.55) (3,0.8) (4,1.0) (5,1.2) (6,1.5) (7,1.8)};
+    \draw[DTGold,line width=1.5pt] plot[smooth] coordinates {(0,0.1) (1,0.35) (2,-0.1) (3,0.35) (4,-0.2) (5,0.1) (6,0.35) (7,-0.15)};
+    \draw[DTClaret,line width=1.7pt] (4,-6.3) -- (4,-5.55);
+    \draw[DTClaret,line width=1.7pt] (6,-6.3) -- (6,-5.85);
+    \fill[DTClaret] (4,-5.55) circle (2pt);
+    \fill[DTClaret] (6,-5.85) circle (2pt);
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.51\textwidth}
+  \begin{mathcard}[Ba thành phần]
+    \centering\Large
+    \(\mathcal X^c\approx\widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o\)
+  \end{mathcard}
+  \vspace{3mm}
+  \begin{itemize}
+    \item \textcolor{DTTeal}{\textbf{Trend}}: tăng/giảm có cấu trúc và lan truyền.
+    \item \textcolor{DTGold}{\textbf{Seasonal}}: nhịp lặp theo mùa, khuyến mãi, ra mắt.
+    \item \textcolor{DTClaret}{\textbf{Outlier}}: bất thường thưa, không nên học thành quy luật.
+  \end{itemize}
+  \vspace{2mm}
+  \begin{intuition}[Vì sao phải tách?]
+    Nếu không tách, mô hình dễ nhầm mùa vụ với xu hướng và một cú sốc với tương lai.
+  \end{intuition}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 6
+% ============================================================
+\begin{frame}{Nén thành vài “kênh” ẩn}{Trực giác trước công thức}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+  \centering
+  \begin{tikzpicture}[x=0.55cm,y=0.52cm]
+    \foreach \yy/\name/\col in {2.7/{kênh 1 · tăng đều}/DTTeal,0/{kênh 2 · bùng nổ}/DTGold,-2.7/{kênh 3 · giảm dần}/DTClaret} {
+      \fill[white,draw=DTLine,rounded corners=1.5mm] (-0.2,\yy-0.75) rectangle (6.4,\yy+0.75);
+      \node[tinylabel,anchor=west,text=\col] at (0.0,\yy+0.42) {\name};
+      \draw[\col,line width=1.4pt] plot[smooth] coordinates {(-0.05,\yy-0.25) (1,\yy-0.15) (2,\yy+0.0) (3,\yy+0.12) (4,\yy+0.2) (5,\yy+0.3) (6.2,\yy+0.38)};
+    }
+    \node[font=\sffamily\scriptsize,text=DTNavy!65] at (3.1,-3.55) {các kiểu diễn biến chung};
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.10\textwidth}
+  \centering
+  \begin{tikzpicture}
+    \draw[dtarrow,line width=1.2pt] (0,0) -- (1.4,0);
+    \node[tinylabel,align=center] at (0.7,-0.5) {trộn};
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.39\textwidth}
+  \centering
+  \begin{tikzpicture}[x=0.62cm,y=0.62cm]
+    \foreach \i/\word in {0/VN,1/US,2/CN,3/EU} {
+      \node[tinylabel,anchor=east] at (-0.25,3-\i) {\word};
+    }
+    \foreach \j/\word in {0/iPhone,1/Galaxy,2/iPad,3/Pixel} {
+      \node[tinylabel,anchor=south,rotate=35] at (\j+0.45,3.72) {\word};
+    }
+    \foreach \i in {0,...,3} {
+      \foreach \j in {0,...,3} {
+        \pgfmathtruncatemacro{\sz}{8+mod(\i*5+\j*7,12)}
+        \fill[DTTeal!\sz] (\j,3-\i) circle (0.16+0.012*\sz);
+      }
+    }
+    \node[font=\sffamily\scriptsize,text=DTNavy!65,align=center] at (1.5,-0.55) {mỗi đối tượng có “núm volume”\\ với từng kênh};
+  \end{tikzpicture}
+\end{column}
+\end{columns}
+\vfill
+\begin{takeaway}[Điều đang diễn ra]
+  Thay vì 400 chuỗi độc lập, mô hình tìm vài kiểu diễn biến chung rồi trộn chúng bằng trọng số riêng cho từng từ khóa và địa điểm.
+\end{takeaway}
+\end{frame}
+
+% ============================================================
+% SLIDE 7
+% ============================================================
+\begin{frame}[shrink=16]{Tucker: trộn kênh để tái tạo dữ liệu}{Math 02 \textperiodcentered\ nén tensor}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+  \centering
+  \begin{tikzpicture}[x=0.68cm,y=0.62cm]
+    \node[dtaccent,minimum width=2.1cm,minimum height=2.1cm,align=center] (core) at (0,0)
+      {\sffamily\bfseries Lõi\\[0.5mm]$\mathcal W^{core}$\\[0.5mm]\scriptsize $d_k\times d_l\times L_c$};
+    \node[dtgold,minimum width=1.45cm,minimum height=2.0cm,align=center] (key) at (3.25,1.15)
+      {\sffamily\bfseries Từ khóa\\[0.5mm]$W^{key}$\\[0.5mm]\scriptsize $d_k\times k$};
+    \node[dtgold,minimum width=1.45cm,minimum height=2.0cm,align=center] (loc) at (3.25,-1.15)
+      {\sffamily\bfseries Địa điểm\\[0.5mm]$W^{loc}$\\[0.5mm]\scriptsize $d_l\times l$};
+    \node[dtbox,minimum width=2.1cm,minimum height=1.35cm,align=center] (out) at (6.35,0)
+      {\sffamily\bfseries Tensor\\[0.5mm]$\widehat{\mathcal X}_d$};
+    \draw[dtarrow] (core.east) -- (key.west);
+    \draw[dtarrow] (core.east) -- (loc.west);
+    \draw[dtarrow] (key.east) -- (out.north west);
+    \draw[dtarrow] (loc.east) -- (out.south west);
+    \node[tinylabel,above] at (1.65,1.55) {trải theo từ khóa};
+    \node[tinylabel,below] at (1.65,-1.55) {trải theo địa điểm};
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.51\textwidth}
+  \begin{mathcard}[Công thức Tucker]
+    \centering
+    \(\widehat{\mathcal X}_d
+      =\mathcal W^{core}\times_{key}W^{key}\times_{loc}W^{loc}\)
+  \end{mathcard}
+  \vspace{2.5mm}
+  {\small
+  \[
+    \widehat x_{d,uv}(t)
+    =\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}
+      w^{core}_{ij}(t)\,W^{key}_{iu}W^{loc}_{jv}
+  \]}
+  \vspace{1mm}
+  \begin{itemize}
+    \item \(W^{key}_{iu}\) lớn: từ khóa \(u\) thuộc nhóm \(i\).
+    \item \(W^{loc}_{jv}\) lớn: địa điểm \(v\) thuộc nhóm \(j\).
+    \item \(w^{core}_{ij}(t)\): “kênh” hoạt động của cặp nhóm.
+  \end{itemize}
+  \begin{takeaway}[Con số đáng nhớ]
+    Ví dụ \(d_k=3,d_l=2\): khoảng 748 tham số thay cho 41.600 ô trong cửa sổ.
+  \end{takeaway}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 8
+% ============================================================
+\begin{frame}[shrink=2]{Quan tâm lan như nước}{Trực giác trước công thức}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.54\textwidth}
+  \centering
+  \begin{tikzpicture}[x=0.9cm,y=0.8cm]
+    \fill[DTMist] (0,0) rectangle (3.1,2.7);
+    \fill[DTTeal!25] (0,0) rectangle (3.1,0.9);
+    \draw[DTNavy,line width=1pt,rounded corners=1mm] (0,0) rectangle (3.1,2.7);
+    \node[biglabel] at (1.55,2.35) {nhóm $j'$};
+    \node[font=\sffamily\Large\bfseries,text=DTTeal!85] at (1.55,0.45) {4};
+    \fill[DTMist] (5.7,0) rectangle (8.8,1.9);
+    \fill[DTTeal!10] (5.7,0) rectangle (8.8,0.25);
+    \draw[DTNavy,line width=1pt,rounded corners=1mm] (5.7,0) rectangle (8.8,1.9);
+    \node[biglabel] at (7.25,1.55) {nhóm $j$};
+    \node[font=\sffamily\Large\bfseries,text=DTTeal!62] at (7.25,0.08) {1};
+    \draw[fill=DTNavy!65] (3.1,0.8) -- (5.7,0.2) -- (5.7,0.5) -- (3.1,1.1) -- cycle;
+    \node[tinylabel,align=center] at (4.4,1.15) {dòng chảy\\vì $4>1$};
+    \draw[<->,DTGold!85,line width=1pt] (3.1,2.9) -- node[above,tinylabel]{chênh lệch tạo lực} (8.8,2.9);
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.44\textwidth}
+  \begin{itemize}
+    \setlength{\itemsep}{4mm}
+    \item \textbf{Nơi cao đẩy sang nơi thấp.} Không có chênh lệch, không có dòng chảy.
+    \item \textbf{Độ mạnh “ống nối” là tham số \(d\).} Mô hình tự học từ dữ liệu.
+    \item \textbf{Tự tăng/giảm là tham số \(a\).} Một kênh có thể tự đi lên hoặc đi xuống.
+  \end{itemize}
+  \vspace{3mm}
+  \begin{caution}[Lan truyền không đồng nghĩa nhân quả]
+    Một chiến dịch toàn cầu cũng có thể tạo ra pattern trễ. Mô hình cho \emph{giả thuyết có cấu trúc}.
+  \end{caution}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 9
+% ============================================================
+\begin{frame}[shrink=8]{Viết điều đó bằng một phương trình}{Math 03 \textperiodcentered\ reaction--diffusion}
+\begin{mathcard}[Hệ phương trình cho từng kênh ẩn]
+  \centering
+  \[
+    \frac{dw_{ij}}{dt}
+    =\underbrace{a_{ij}w_{ij}}_{\text{tự tăng/giảm}}
+    +\underbrace{\sum_{j'=1}^{d_l}d_{ijj'}\bigl(w_{ij'}-w_{ij}\bigr)}_{\text{lực kéo từ các nhóm khác}}
+  \]
+\end{mathcard}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.50\textwidth}
+  {\small
+  \begin{itemize}
+    \item \(a_{ij}>0\): kênh có xu hướng tăng; \(a_{ij}<0\): giảm.
+    \item \(d_{ijj'}\): độ mạnh lan từ nhóm \(j'\) sang \(j\).
+    \item Dấu của \((w_{ij'}-w_{ij})\) quyết định chiều chảy.
+  \end{itemize}}
+\end{column}
+\begin{column}{0.46\textwidth}
+  \begin{intuition}[Một bước bằng số]
+    \(w=1,\ w'=4,\ a=0.1,\ d=0.5\)\\[1mm]
+    Tốc độ thay đổi \(=0.1(1)+0.5(4-1)=1.6\)\\[1mm]
+    Bước Euler: \(w_{\text{next}}\approx1+1.6=2.6\)
+  \end{intuition}
+\end{column}
+\end{columns}
+\vfill
+{\small\color{DTNavy!65}Đổi \(w'=0\), lực kéo đổi dấu: \(0.5(0-1)=-0.5\). Cùng một “ống nối”, hướng chảy khác.}
+\end{frame}
+
+% ============================================================
+% SLIDE 10
+% ============================================================
+\begin{frame}[shrink=24]{Từ kênh ẩn đến chuỗi thật}{Math 04 \textperiodcentered\ phép chiếu}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+  \centering
+  \begin{tikzpicture}[x=0.8cm,y=0.72cm]
+    \node[dtaccent,minimum width=2.0cm,minimum height=1.7cm,align=center] (core) at (0,0)
+      {\sffamily\bfseries kênh ẩn\\$w_{ij}(t)$};
+    \node[dtgold,minimum width=1.5cm,minimum height=1.1cm,align=center] (kw) at (3.1,0.8)
+      {\sffamily\bfseries từ khóa\\$W^{key}_{iu}$};
+    \node[dtgold,minimum width=1.5cm,minimum height=1.1cm,align=center] (loc) at (3.1,-0.8)
+      {\sffamily\bfseries địa điểm\\$W^{loc}_{jv}$};
+    \node[dtbox,minimum width=2.25cm,minimum height=1.3cm,align=center] (obs) at (6.2,0)
+      {\sffamily\bfseries chuỗi quan sát\\$\widehat x_{uv}(t)$};
+    \draw[dtarrow] (core.east) -- (kw.west);
+    \draw[dtarrow] (core.east) -- (loc.west);
+    \draw[dtarrow] (kw.east) -- (obs.west);
+    \draw[dtarrow] (loc.east) -- (obs.west);
+    \node[tinylabel,text=DTNavy!55] at (3.1,-1.85) {trọng số không âm};
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.50\textwidth}
+  \begin{mathcard}[Chiếu lõi về dữ liệu]
+    \centering
+    \(\displaystyle
+      \widehat x_{uv}(t)
+      =\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}
+        w^{core}_{ij}(t)\,W^{key}_{iu}W^{loc}_{jv}\)
+  \end{mathcard}
+  \vspace{3mm}
+  \begin{itemize}
+    \item Một kênh đóng góp vào nhiều cặp từ khóa--địa điểm.
+    \item Trọng số càng lớn, mức liên hệ càng mạnh.
+    \item Trọng số không âm giữ nguyên chiều tăng/giảm.
+  \end{itemize}
+  \vspace{2mm}
+  \begin{intuition}[Cách đọc kết quả]
+    Một động học mạnh + hệ số từ khóa lớn + hệ số địa điểm lớn
+    \(\Rightarrow\) câu chuyện “từ khóa này đang tăng ở nhóm khu vực này”.
+  \end{intuition}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 11
+% ============================================================
+\begin{frame}{Ghép mọi thứ thành một mô hình}{Math 05 \textperiodcentered\ mô hình đầy đủ}
+\begin{mathcard}[Ba thành phần, một mô hình]
+  \centering
+  \(\mathcal X^c\approx\widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o\)
+  \hspace{8mm}
+  \(\widehat{\mathcal X}_s
+    =S^{time}\times_{key}S^{key}\times_{loc}S^{loc}\)
+\end{mathcard}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+  \begin{itemize}
+    \item \textbf{Trend} \(\widehat{\mathcal X}_d\): lõi reaction--diffusion + hệ số.
+    \item \textbf{Seasonal} \(\widehat{\mathcal X}_s\): vài pattern lặp + hệ số.
+    \item \textbf{Outlier} \(\widehat{\mathcal X}_o\): tensor thưa, chỉ giữ bất thường.
+  \end{itemize}
+  \vspace{2mm}
+  \begin{intuition}[Vì sao cần nhiều mô hình?]
+    Một bộ quy tắc không đúng cho cả 10 năm. \(\mathcal F=\{\Theta_1,\ldots,\Theta_N\}\) lưu các “chương” khác nhau.
+  \end{intuition}
+\end{column}
+\begin{column}{0.50\textwidth}
+  \begin{tikzpicture}[x=0.8cm,y=0.65cm]
+    \node[dtbox,minimum width=2.0cm,minimum height=1.05cm,align=center] (th) at (0,0)
+      {$\Theta$\\[-.5mm]\scriptsize một mô hình};
+    \node[dtaccent,minimum width=2.4cm,minimum height=.95cm,align=center] (td) at (3.1,1.45)
+      {$\theta_d$\\[-.5mm]\scriptsize trend};
+    \node[dtaccent,minimum width=2.4cm,minimum height=.95cm,align=center] (ts) at (3.1,0)
+      {$\theta_s$\\[-.5mm]\scriptsize seasonal};
+    \node[dtgold,minimum width=2.4cm,minimum height=.95cm,align=center] (xo) at (3.1,-1.45)
+      {$\widehat{\mathcal X}_o$\\[-.5mm]\scriptsize outlier};
+    \draw[dtarrow] (td.west) -- (th.east);
+    \draw[dtarrow] (ts.west) -- (th.east);
+    \draw[dtarrow] (xo.west) -- (th.east);
+    \node[tinylabel,anchor=west] at (5.1,0) {\(\mathcal F=\{\Theta_1,\ldots,\Theta_N\}\)};
+  \end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 12
+% ============================================================
+\begin{frame}[shrink=22]{Học tham số: sửa từng mảnh ghép}{Thuật toán \textperiodcentered\ ALS}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.45\textwidth}
+  \centering
+  \begin{tikzpicture}[x=0.9cm,y=0.8cm,scale=0.84,transform shape]
+    \node[circle,fill=DTNavy,text=white,font=\sffamily\bfseries\small,minimum size=1.35cm,align=center] (c) at (0,0) {lặp\\đến\\hội tụ};
+    \node[dtaccent,minimum width=2.2cm,minimum height=.9cm,align=center] (a) at (0,2.25) {hệ diffusion};
+    \node[dtaccent,minimum width=2.2cm,minimum height=.9cm,align=center] (b) at (3.25,0) {hệ số trend};
+    \node[dtaccent,minimum width=2.2cm,minimum height=.9cm,align=center] (d) at (0,-2.25) {mùa vụ};
+    \node[dtaccent,minimum width=2.2cm,minimum height=.9cm,align=center] (e) at (-3.25,0) {outlier};
+    \draw[dtarrow] (c) -- (a);
+    \draw[dtarrow] (c) -- (b);
+    \draw[dtarrow] (c) -- (d);
+    \draw[dtarrow] (c) -- (e);
+    \draw[dtarrow,DTGold!80] (a) .. controls (-2.4,2.1) and (-3.7,.8) .. (e);
+    \draw[dtarrow,DTGold!80] (b) .. controls (2.3,-2.0) and (.8,-3.2) .. (d);
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.53\textwidth}
+  \begin{mathcard}[Mục tiêu tối ưu]
+    \centering
+    \(\displaystyle
+      \min_{\Theta}\ \bigl\|\mathcal X^c-\widehat{\mathcal X}_d
+      -\widehat{\mathcal X}_s-\widehat{\mathcal X}_o\bigr\|_F^2\)
+  \end{mathcard}
+  \vspace{2mm}
+  {\small
+  \begin{enumerate}
+    \item Cố định ba phần, cập nhật hệ reaction--diffusion.
+    \item Cập nhật hệ số trend bằng cập nhật nhân, giữ không âm.
+    \item Cập nhật hệ số mùa vụ bằng bình phương tối thiểu.
+    \item Lọc outlier thưa theo chi phí MDL; lặp lại.
+  \end{enumerate}}
+  \vspace{1mm}
+  \begin{caution}[Không phải phép màu]
+    Bài toán không lồi; ALS có thể dừng ở cực trị địa phương. Paper không chứng minh tối ưu toàn cục.
+  \end{caution}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 13
+% ============================================================
+\begin{frame}{Bao nhiêu kênh là đủ? Khi nào đổi mô hình?}{Tự động hóa \textperiodcentered\ MDL + regime}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.50\textwidth}
+  \begin{mathcard}[Chi phí mô tả]
+    \centering
+    \(\displaystyle
+      \bigl\langle\mathcal X;\mathcal F\bigr\rangle
+      =\underbrace{\bigl\langle\mathcal F\bigr\rangle}_{\text{mô hình}}
+      +\underbrace{\bigl\langle\mathcal X\mid\mathcal F\bigr\rangle}_{\text{phần chưa khớp}}\)
+  \end{mathcard}
+  \vspace{3mm}
+  \begin{tikzpicture}[x=0.85cm,y=0.7cm]
+    \fill[DTNavy!75,rounded corners=1mm] (0,2.2) rectangle (5.1,3.0);
+    \fill[DTTeal!55] (5.1,2.2) rectangle (7.1,3.0);
+    \node[font=\sffamily\small,text=white] at (2.55,2.6) {chi phí mô hình};
+    \node[font=\sffamily\small,text=white] at (6.1,2.6) {dữ liệu};
+    \draw[dtarrow] (0,1.55) -- (0,1.15);
+    \node[anchor=west,font=\sffamily\small,align=left] at (0.15,1.25) {tăng số kênh \(\rightarrow\) mô hình đắt hơn};
+    \draw[dtarrow] (7.2,1.55) -- (7.2,1.15);
+    \node[anchor=east,font=\sffamily\small,align=right] at (7.05,1.25) {nhưng sai ít hơn};
+    \node[font=\sffamily\bfseries\small,text=DTGold!90] at (3.55,0.45) {MDL chọn điểm cân bằng};
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{intuition}[Mỗi giai đoạn một mô hình]
+    \centering
+    \begin{tikzpicture}[x=0.7cm,y=0.7cm]
+      \fill[DTTeal!22,rounded corners=1mm] (0,0.2) rectangle (2.0,1.0);
+      \fill[DTGold!24,rounded corners=1mm] (2.15,0.2) rectangle (4.1,1.0);
+      \fill[DTClaret!18,rounded corners=1mm] (4.25,0.2) rectangle (6.35,1.0);
+      \node[font=\sffamily\scriptsize] at (1.0,0.6) {$\Theta_1$};
+      \node[font=\sffamily\scriptsize] at (3.1,0.6) {$\Theta_2$};
+      \node[font=\sffamily\scriptsize] at (5.3,0.6) {$\Theta_3$};
+      \draw[dtarrow,DTClaret] (2.0,1.3) -- (2.2,1.3);
+      \draw[dtarrow,DTClaret] (4.1,1.3) -- (4.3,1.3);
+      \node[tinylabel,align=center] at (3.2,1.7) {đổi cấu trúc \(\rightarrow\) đổi mô hình};
+      \node[tinylabel] at (3.2,-0.25) {thời gian};
+    \end{tikzpicture}
+  \end{intuition}
+  \vspace{2mm}
+  \begin{itemize}
+    \item Số kênh \(d_k,d_l,d_s\) do MDL chọn.
+    \item Outlier nào đáng giữ cũng do chi phí quyết định.
+    \item “Parameter-free” nghĩa là không phải dò tay cấu trúc, không phải không có tham số kỹ thuật.
+  \end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 14
+% ============================================================
+\begin{frame}[shrink=18]{Dữ liệu mới đến mỗi tuần}{Streaming \textperiodcentered\ chi phí không theo lịch sử}
+\begin{tikzpicture}[node distance=3.5mm]
+  \node[dtbox,text width=2.4cm,align=center,minimum height=1.0cm] (w) {\sffamily\bfseries cửa sổ \(L_c\)};
+  \node[dtaccent,text width=2.6cm,align=center,minimum height=1.0cm,right=of w] (e) {\sffamily\bfseries ước lượng\\[-.5mm]\scriptsize mô hình ứng viên};
+  \node[dtgold,text width=2.55cm,align=center,minimum height=1.0cm,right=of e] (c) {\sffamily\bfseries so chi phí\\[-.5mm]\scriptsize giữ hay thêm?};
+  \node[dtbox,text width=2.4cm,align=center,minimum height=1.0cm,right=of c] (f) {\sffamily\bfseries dự báo \(L_f\)\\[-.5mm]\scriptsize dùng mô hình mới nhất};
+  \draw[dtarrow] (w) -- (e);
+  \draw[dtarrow] (e) -- (c);
+  \draw[dtarrow] (c) -- (f);
+  \draw[dtarrow,dashed,DTNavy!45] (f.south) -- ++(0,-0.5) -| (w.south);
+\end{tikzpicture}
+\vspace{3mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+  \centering
+  \begin{tikzpicture}[x=0.76cm,y=0.54cm]
+    \draw[->,DTNavy!45] (0,0) -- (7.2,0) node[below,tinylabel]{độ dài stream};
+    \draw[->,DTNavy!45] (0,0) -- (0,3.0) node[left,tinylabel,rotate=90]{thời gian};
+    \draw[DTTeal,line width=1.5pt] plot[smooth] coordinates {(0.2,0.8) (1.2,0.85) (2.3,0.9) (3.5,0.9) (4.7,0.95) (6.8,0.98)};
+    \draw[DTGold,line width=1.2pt] plot[smooth] coordinates {(0.2,0.6) (1.2,0.9) (2.3,1.3) (3.5,1.8) (4.7,2.15) (6.8,2.6)};
+    \node[font=\sffamily\scriptsize,text=DTTeal] at (5.1,0.55) {D-Tracker};
+    \node[font=\sffamily\scriptsize,text=DTGold!90] at (5.7,2.75) {baseline};
+    \node[font=\sffamily\scriptsize,text=DTNavy!45] at (3.4,-0.45) {sơ đồ minh họa};
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{itemize}
+    \item Mỗi bước chỉ giữ \(\mathcal X^c=\{X_{t_c-L_c+1},\dots,X_{t_c}\}\).
+    \item Không quét lại toàn bộ lịch sử.
+    \item Tập mô hình có thể tăng khi có regime mới; rank update tạo các “spike” thời gian.
+  \end{itemize}
+  \begin{caution}[Đọc đúng scalability]
+    Không phải mọi phép tính là \(O(1)\). Chi phí vẫn phụ thuộc số từ khóa, địa điểm, rank và số lần cập nhật cấu trúc.
+  \end{caution}
+\end{column}
+\end{columns}
+\end{frame}
+
+\section{Ứng dụng và kết luận}
+
+% ============================================================
+% SLIDE 15
+% ============================================================
+\begin{frame}[shrink=10]{Dùng nó để quyết định gì?}{Ba ứng dụng}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.32\textwidth}
+  \begin{tcolorbox}[enhanced,colback=white,colframe=DTTeal!55,boxrule=.7pt,arc=3mm,height=4.9cm,halign=left]
+    \begin{tikzpicture}
+      \fill[DTTeal!18] (0,0) circle (.45);
+      \draw[DTTeal,line width=1.2pt] (.2,.1) -- (.05,.35) -- (.3,.55);
+      \fill[DTTeal] (.12,.15) circle (2pt);
+    \end{tikzpicture}\hspace{1mm}{\sffamily\bfseries\large Marketing}\par\vspace{3mm}
+    {\small
+    \textbf{Hỏi:} nước nào dẫn đầu, ngân sách nên dồn đâu?\\[2mm]
+    \textbf{Nhận:} nhóm thị trường, hướng lan, dự báo 3/6/9 tháng.\\[2mm]
+    \textbf{Quyết:} thứ tự ra mắt và phân bổ ngân sách.}
+  \end{tcolorbox}
+\end{column}
+\begin{column}{0.32\textwidth}
+  \begin{tcolorbox}[enhanced,colback=white,colframe=DTGold!80,boxrule=.7pt,arc=3mm,height=4.9cm,halign=left]
+    \begin{tikzpicture}
+      \fill[DTGold!22] (0,0) circle (.45);
+      \draw[DTGold!95,line width=1.2pt] (-.15,.15) -- (0,.35) -- (.2,.18);
+      \fill[DTGold!95] (.18,.38) circle (2pt);
+    \end{tikzpicture}\hspace{1mm}{\sffamily\bfseries\large Y tế công cộng}\par\vspace{3mm}
+    {\small
+    \textbf{Hỏi:} vùng nào có nguy cơ tăng tiếp?\\[2mm]
+    \textbf{Nhận:} tín hiệu lan theo nhóm địa điểm, dự báo ngắn hạn.\\[2mm]
+    \textbf{Quyết:} chuẩn bị nguồn lực, giám sát sớm.}
+  \end{tcolorbox}
+\end{column}
+\begin{column}{0.32\textwidth}
+  \begin{tcolorbox}[enhanced,colback=white,colframe=DTClaret!65,boxrule=.7pt,arc=3mm,height=4.9cm,halign=left]
+    \begin{tikzpicture}
+      \fill[DTClaret!15] (0,0) circle (.45);
+      \draw[DTClaret!85,line width=1.2pt] (-.2,.2) -- (.1,.1) -- (.25,.35);
+      \fill[DTClaret!85] (-.16,.3) circle (2pt);
+      \fill[DTClaret!85] (.2,.05) circle (2pt);
+    \end{tikzpicture}\hspace{1mm}{\sffamily\bfseries\large Sản phẩm / công nghệ}\par\vspace{3mm}
+    {\small
+    \textbf{Hỏi:} công nghệ nào đang lên hoặc bị thay thế?\\[2mm]
+    \textbf{Nhận:} nhóm từ khóa, động học tăng/giảm, hướng dịch chuyển.\\[2mm]
+    \textbf{Quyết:} ưu tiên tính năng, địa phương hóa.}
+  \end{tcolorbox}
+\end{column}
+\end{columns}
+\vspace{2mm}
+\begin{takeaway}[Công thức ứng dụng]
+  Dữ liệu $\rightarrow$ tín hiệu có cấu trúc $\rightarrow$ ưu tiên hành động.
+  \hfill{\small\color{DTClaret!80}Luôn ghép với chuyên gia miền và kiểm chứng nhân quả khi cần.}
+\end{takeaway}
+\end{frame}
+
+% ============================================================
+% SLIDE 16
+% ============================================================
+\begin{frame}[shrink=2]{Đáng tin đến đâu?}{Bằng chứng và giới hạn}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.55\textwidth}
+  \begin{columns}[T,onlytextwidth]
+  \begin{column}{0.32\textwidth}
+    \begin{tcolorbox}[enhanced,colback=DTMist,colframe=DTTeal!45,boxrule=.5pt,arc=2mm,height=2.5cm,halign=center]
+      {\sffamily\bfseries\LARGE\color{DTTeal}6}\par{\scriptsize bộ dữ liệu thật}
+    \end{tcolorbox}
+  \end{column}
+  \begin{column}{0.32\textwidth}
+    \begin{tcolorbox}[enhanced,colback=DTWarm,colframe=DTGold!60,boxrule=.5pt,arc=2mm,height=2.5cm,halign=center]
+      {\sffamily\bfseries\LARGE\color{DTGold!90}MAE}\par{\scriptsize tốt nhất theo paper}
+    \end{tcolorbox}
+  \end{column}
+  \begin{column}{0.32\textwidth}
+    \begin{tcolorbox}[enhanced,colback=white,colframe=DTLine,boxrule=.5pt,arc=2mm,height=2.5cm,halign=center]
+      {\sffamily\bfseries\Large\color{DTNavy}gần phẳng}\par{\scriptsize thời gian theo stream}
+    \end{tcolorbox}
+  \end{column}
+  \end{columns}
+  \vspace{4mm}
+  \begin{itemize}
+    \item Paper báo cáo nhanh hơn tới \(8.0\times\); “cải thiện tới 57\%” không nêu rõ mẫu số tại câu đó.
+    \item Các module seasonal, diffusion, outlier và rank update có đóng góp khác nhau tùy dataset.
+    \item Kết quả mạnh nhất là sự kết hợp: diễn giải được + cập nhật theo stream.
+  \end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+  \begin{caution}[Ba điều không được suy ra]
+    \begin{enumerate}
+      \item \textbf{Nhân quả:} mũi tên diffusion không chứng minh A gây ra B.
+      \item \textbf{Bất định:} mô hình trả về dự báo điểm, không có khoảng tin cậy.
+      \item \textbf{Vạn năng:} hiệu quả phụ thuộc dữ liệu, định nghĩa vùng và cửa sổ.
+    \end{enumerate}
+  \end{caution}
+  \vspace{2mm}
+  {\scriptsize\color{DTNavy!55}Nguồn số liệu: Higashiguchi et al., KDD 2025, arXiv:2505.00242v1. Đây là claim của paper, không phải kết quả tái hiện.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 17
+% ============================================================
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[DTNavy] (current page.north west) rectangle (current page.south east);
+  \fill[DTTeal!18] (current page.south east) circle (5cm);
+  \fill[DTGold!10] (current page.north west) circle (4cm);
+  \node[anchor=west,text=white] at ($(current page.west)+(0.95,2.6)$) {%
+    \begin{minipage}{10cm}
+      {\sffamily\Large\bfseries Ba điều mang về\par}
+      \vspace{7mm}
+      {\large
+      \textcolor{DTGold}{\textbf{01}} \quad Tách tín hiệu trước khi tìm quy luật.\\[3mm]
+      \textcolor{DTGold}{\textbf{02}} \quad Nén thành vài kênh để con người hiểu được.\\[3mm]
+      \textcolor{DTGold}{\textbf{03}} \quad Dự báo và thích nghi khi dữ liệu mới đến.}
+      \vspace{10mm}
+      \par{\color{DTTeal!25}\rule{8.5cm}{1pt}}
+      \vspace{7mm}
+      \par{\sffamily\Large\color{white}Hỏi \& đáp}
+    \end{minipage}};
+  \node[anchor=west] at ($(current page.south west)+(0.95,0.75)$) {%
+    {\sffamily\small\color{white!62}D-Tracker \textperiodcentered\ KDD 2025 \textperiodcentered\ arXiv:2505.00242}};
+\end{tikzpicture}
+\end{frame}
+
+\appendix
+
+% ============================================================
+% SLIDE A1
+% ============================================================
+\begin{frame}{Backup 01: tensor và Tucker}{Dùng cho câu hỏi kỹ thuật}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+  \begin{mathcard}[Kích thước]
+    \begin{tabular}{@{}ll@{}}
+      $\mathcal X^c$ & $k\times l\times L_c$\\
+      $\mathcal W^{core}$ & $d_k\times d_l\times L_c$\\
+      $W^{key}$ & $d_k\times k$, không âm\\
+      $W^{loc}$ & $d_l\times l$, không âm
+    \end{tabular}
+  \end{mathcard}
+  \vspace{3mm}
+  {\small
+  \[
+    \widehat x_{d,uv}(t)
+    =\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}
+    w^{core}_{ij}(t)W^{key}_{iu}W^{loc}_{jv}
+  \]}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{itemize}
+    \item \(d_k\ll k,\ d_l\ll l\): số nhóm ẩn nhỏ hơn số từ khóa/địa điểm.
+    \item Mode product chỉ là trải lõi theo từng chiều rồi cộng có trọng số.
+    \item Hệ số không âm giữ chiều của động học, phục vụ diễn giải.
+    \item Paper dùng Tucker cho trend; seasonal dùng PARAFAC.
+  \end{itemize}
+  \begin{caution}[Typo]
+    Paper viết \(d_l\ll k\) ở một chỗ; theo kích thước và ngữ cảnh phải là \(d_l\ll l\).
+  \end{caution}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE A2
+% ============================================================
+\begin{frame}{Backup 02: bốn phương trình mô hình}{Eq. (1)--(4)}
+\begin{mathcard}[Mô hình và các thành phần]
+\small
+\begin{align*}
+\mathcal X^c&\approx\widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o
+&&\text{(1)}\\
+\widehat{\mathcal X}_d&=\mathcal W^{core}\times_{key}W^{key}\times_{loc}W^{loc}
+&&\text{(2)}\\
+\frac{dw_{ij}}{dt}&=a_{ij}w_{ij}
++\sum_{j'}d_{ijj'}(w_{ij'}-w_{ij})
+&&\text{(3)}\\
+\widehat{\mathcal X}_s&=S^{time}\times_{key}S^{key}\times_{loc}S^{loc}
+&&\text{(4)}
+\end{align*}
+\end{mathcard}
+\vspace{3mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+  {\small
+  \(\theta=\{\mathbf A,\mathcal D\}\);\\
+  \(\theta_d=\{W^{key},W^{loc},\theta\}\);\\
+  \(\theta_s=\{S^{time},S^{key},S^{loc}\}\).}
+\end{column}
+\begin{column}{0.48\textwidth}
+  {\small
+  \(\Theta=\{\theta_d,\theta_s,\widehat{\mathcal X}_o\}\);\\
+  \(\mathcal F=\{\Theta_1,\dots,\Theta_N\}\).\\[1.5mm]
+  \(N\): số regime; \(d_k,d_l,d_s\): số chiều ẩn.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE A3
+% ============================================================
+\begin{frame}{Backup 03: ALS, MDL và streaming}{Chi tiết cho Q\&A}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.49\textwidth}
+  \begin{mathcard}[ModelEstimation]
+    \small
+    \[
+      \min\ \bigl\|\mathcal X^c-\widehat{\mathcal X}_d
+      -\widehat{\mathcal X}_s-\widehat{\mathcal X}_o\bigr\|_F^2
+    \]
+    \begin{enumerate}
+      \item LM cho hệ reaction--diffusion.
+      \item Cập nhật nhân cho \(W^{key},W^{loc}\).
+      \item ALS + giả nghịch đảo cho seasonal.
+      \item Sparsify residual cho outlier.
+      \item Lặp đến hội tụ.
+    \end{enumerate}
+  \end{mathcard}
+\end{column}
+\begin{column}{0.47\textwidth}
+  \begin{mathcard}[MDL]
+    \small
+    \[
+      \langle\mathcal X;\mathcal F\rangle
+      =\langle\mathcal F\rangle
+      +\langle\mathcal X\mid\mathcal F\rangle
+    \]
+    {\footnotesize
+    Mô tả mô hình + mô tả phần dư. Tăng rank làm mô hình đắt hơn nhưng có thể giảm phần dư.
+    Algorithm 4 thử đổi một rank \(\pm1\).}
+  \end{mathcard}
+  \vspace{2mm}
+  {\small
+  \(\mathcal X^c=\{X_{t_c-L_c+1},\dots,X_{t_c}\}\).\\
+  Chi phí mỗi bước không tăng theo tổng chiều dài stream; vẫn có spike khi rank update.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE A4
+% ============================================================
+\begin{frame}{Backup 04: đọc kết quả paper}{Số liệu, hình và giới hạn}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.44\textwidth}
+  \centering
+  \includegraphics[height=4.35cm]{figures/Figure1_b.png}
+  \vspace{1mm}
+  {\scriptsize\color{DTNavy!60}Hình 1(b): động học ẩn, hệ số và diffusion. Nguồn: Higashiguchi et al. (2025), CC BY 4.0.}
+\end{column}
+\begin{column}{0.52\textwidth}
+  {\small
+  \begin{itemize}
+    \item Paper Table 3: D-Tracker có MAE tốt nhất trên 6 dataset; một số RMSE tương đương vì nhạy lỗi lớn.
+    \item “57\%” và “8.0$\times$” là claim ở bullet cuối §1, không phải kết quả tái hiện.
+    \item Đọc kèm giả định: ba thành phần cộng, hệ số không âm, cửa sổ cố định, outlier thưa.
+    \item Các nhóm địa điểm là ẩn và không duy nhất; không nên đọc nhãn nhóm như chân lý.
+  \end{itemize}}
+\end{column}
+\end{columns}
+\end{frame}
+
+\end{document}

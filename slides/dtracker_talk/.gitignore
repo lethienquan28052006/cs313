@@ -1,0 +1,12 @@
+.tools/
+build/
+*.aux
+*.log
+*.out
+*.nav
+*.snm
+*.toc
+*.vrb
+*.synctex.gz
+__pycache__/
+.venv/
