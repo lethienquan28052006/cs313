@@ -3,8 +3,8 @@
 \input{theme}
 
 \title{D-Tracker}
-\subtitle{Hiểu dữ liệu quan tâm đang lan đi đâu}
-\author{CS313}
+\subtitle{Theo dõi sự lan tỏa của mối quan tâm}
+\author{CS313 --- Đồ án Data Mining}
 \date{2026}
 
 \AtBeginSection[]{}
@@ -20,981 +20,1238 @@
   \fill[DTGold!6] (current page.south east) circle (5.1cm);
   \fill[DTGold] ($(current page.north west)+(0.72,-0.55)$) rectangle ++(0.065,-7.9);
   \node[anchor=north west,align=left] at ($(current page.north west)+(1.18,-0.38)$) {%
-    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}CS313 \textperiodcentered\ KHOA CÔNG NGHỆ THÔNG TIN\par}
-    {\sffamily\fontsize{7}{8}\selectfont\color{DTMuted}BÀI GIẢNG TRỰC QUAN\par}};
+    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}CS313 \textperiodcentered\ ĐỒ ÁN DATA MINING\par}
+    {\sffamily\fontsize{7}{8}\selectfont\color{DTMuted}PAPER PRESENTATION \textperiodcentered\ 30--35 PHÚT\par}};
   \node[anchor=north east] at ($(current page.north east)+(-0.75,-0.38)$) {%
     \tikz{\fill[DTNavy,rounded corners=.6pt] (0,0) rectangle (.7,.7);\fill[DTGold] (.54,.54) circle (.085);\node[white,font=\fontsize{8}{8}\selectfont\bfseries] at (.33,.31){D};}};
-  \node[anchor=west,align=left] at ($(current page.north west)+(1.2,-2.55)$) {%
-    \begin{minipage}{13.2cm}
+  \node[anchor=west,align=left] at ($(current page.north west)+(1.2,-2.3)$) {%
+    \begin{minipage}{13.5cm}
       {\sffamily\bfseries\fontsize{38}{42}\selectfont\color{DTNavy}D-Tracker\par}
-      \vspace{2.5mm}
-      {\sffamily\fontsize{19}{23}\selectfont\color{DTInk}Hiểu dữ liệu quan tâm\\ đang lan đi đâu\par}
-      \vspace{5mm}
+      \vspace{2mm}
+      {\sffamily\fontsize{21}{25}\selectfont\color{DTInk}Theo dõi sự lan tỏa của mối quan tâm\par}
+      \vspace{4mm}
       {\color{DTGold}\rule{8.2cm}{1.1pt}\par}
       \vspace{3mm}
       {\small\color{DTMuted}Modeling Interest Diffusion in Social Activity Tensor Data Streams\par}
       \vspace{1mm}
-      {\scriptsize\color{DTMuted}KDD 2025 \textperiodcentered\ arXiv:2505.00242\par}
+      {\scriptsize\color{DTMuted}Higashiguchi et al. \textperiodcentered\ KDD 2025 \textperiodcentered\ arXiv:2505.00242v1\par}
     \end{minipage}};
   \node[anchor=south west] at ($(current page.south west)+(1.2,0.55)$) {%
-    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}Bài giảng trực quan \textperiodcentered\ 35 phút \textperiodcentered\ Người mới bắt đầu}};
+    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}Problem \textperiodcentered\ Method \textperiodcentered\ Experiments \textperiodcentered\ Reproduction \textperiodcentered\ Demo}};
 \end{tikzpicture}
 \end{frame}
 
-\section{Tổng quan}
+\section{Problem}
 
 % ============================================================
 % SLIDE 2
 % ============================================================
-\begin{frame}[shrink=8]{Nội dung}{Bản đồ 35 phút}
-{\renewcommand{\arraystretch}{1.45}\small
-\begin{tabular}{@{}p{1.1cm}p{4.2cm}p{8.4cm}@{}}
-  \toprule
-  & \textbf{Phần} & \textbf{Nội dung} \\
-  \midrule
-  {\sffamily\bfseries\Large\color{DTGold}01} & Dữ liệu và bài toán & Tensor tuần, ba thách thức, pipeline \\
-  {\sffamily\bfseries\Large\color{DTGold}02} & Cơ chế hoạt động & Tách tín hiệu, Tucker, diffusion, ALS, MDL, streaming \\
-  {\sffamily\bfseries\Large\color{DTGold}03} & Ứng dụng & Marketing, y tế công cộng, sản phẩm/công nghệ \\
-  {\sffamily\bfseries\Large\color{DTGold}04} & Kết luận & Bằng chứng, giới hạn, ba điều mang về \\
-  \bottomrule
-\end{tabular}}
-\vfill
-\begin{takeaway}[Cách đọc bài này]
-  Mỗi ý toán đi theo bốn bước: \textbf{hình dung → nói bằng lời → công thức → kiểm tra}.
-\end{takeaway}
+\begin{frame}[shrink=11]{Một bảng dữ liệu, ba câu hỏi}{Problem \textperiodcentered\ motivation}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.43\textwidth}
+  {\large\bfseries\color{DTNavy}Ví dụ minh họa: lượt tìm kiếm điện thoại theo tuần}
+  \vspace{3mm}
+  \begin{itemize}
+    \item Hai từ khóa: \textbf{iPhone}, \textbf{Galaxy}.
+    \item Ba khu vực: Bắc Mỹ, châu Âu, Đông Nam Á.
+    \item Quan sát mới đến sau mỗi tuần.
+  \end{itemize}
+  \vspace{2mm}
+  \begin{intuition}[Không chỉ là đếm]
+    Ta muốn hiểu \textbf{quy luật đang thay đổi}, không chỉ nhìn một tổng cuối kỳ.
+  \end{intuition}
+\end{column}
+\begin{column}{0.55\textwidth}
+  \begin{questioncard}
+    \softlabel{01 \quad TĂNG HAY GIẢM?}\par
+    {\large Mức quan tâm đang đi theo hướng nào?}\par
+    {\small\color{DTMuted}Trend khác nhau theo từ khóa và khu vực.}
+  \end{questioncard}
+  \vspace{2mm}
+  \begin{questioncard}
+    \softlabel{02 \quad CÓ LAN GIỮA CÁC VÙNG?}\par
+    {\large Nơi nào đi trước, nơi nào thay đổi sau?}\par
+    {\small\color{DTMuted}Ta cần diễn giải liên hệ, không chỉ fit từng chuỗi.}
+  \end{questioncard}
+  \vspace{2mm}
+  \begin{questioncard}
+    \softlabel{03 \quad TUẦN TỚI RA SAO?}\par
+    {\large Có thể dự báo khi dữ liệu vẫn đang đến?}\par
+    {\small\color{DTMuted}Mô hình cũ có thể lỗi thời ngay khi quy luật đổi.}
+  \end{questioncard}
+\end{column}
+\end{columns}
+\vspace{2mm}
+\papersource{ý tưởng marketing trong §1, p. 1; chi tiết iPhone/Galaxy và ba vùng là ví dụ giảng dạy.}
 \end{frame}
-
-\section{Dữ liệu và bài toán}
 
 % ============================================================
 % SLIDE 3
 % ============================================================
-\begin{frame}{Dữ liệu và bài toán}{Phần 01 \textperiodcentered\ Nền tảng}
+\begin{frame}[shrink=17]{Dữ liệu thực chất là một chồng bảng theo tuần}{Problem \textperiodcentered\ tensor bằng ví dụ}
 \begin{columns}[c,onlytextwidth]
-\begin{column}{0.25\textwidth}
-  {\sffamily\bfseries\fontsize{58}{58}\selectfont\color{DTGold}01\par}
-  \vspace{2mm}
-  {\color{DTGold}\rule{2.2cm}{1pt}}
+\begin{column}{0.50\textwidth}
+\centering
+\begin{tikzpicture}[x=.78cm,y=.68cm]
+  \foreach \shift/\week/\shade in {0/t/35,1.0/{t+1}/60} {
+    \begin{scope}[shift={(\shift,-\shift)}]
+      \fill[white,draw=DTLine] (-.12,-.12) rectangle (3.45,2.55);
+      \foreach \x/\v in {0/25,1/50,2/75} {
+        \fill[DTTeal!\v,draw=white] (\x,1.15) rectangle ++(1,1);
+        \fill[DTTeal!\shade,draw=white] (\x,0) rectangle ++(1,1);
+      }
+      \node[tinylabel,anchor=west] at (3.55,1.05) {tuần $\week$};
+    \end{scope}}
+  \node[tinylabel,anchor=east] at (-.48,1.68) {iPhone};
+  \node[tinylabel,anchor=east] at (-.48,.52) {Galaxy};
+  \node[tinylabel] at (.52,-.52) {Bắc Mỹ};
+  \node[tinylabel] at (1.52,-.52) {châu Âu};
+  \node[tinylabel] at (2.52,-.52) {ĐNÁ};
+  \draw[dtarrow] (4.7,-.45) -- (5.55,-.45);
+  \node[tinylabel,anchor=west,text=DTGold] at (5.65,-.45) {thời gian};
+\end{tikzpicture}
+\vspace{3mm}
+
+{\small\color{DTMuted}Hai lát 2 × 3; màu đậm hơn biểu thị giá trị lớn hơn (minh họa).}
 \end{column}
-\begin{column}{0.68\textwidth}
-  {\large\bfseries\color{DTNavy}Trước khi mô hình hóa, ta cần nhìn đúng dữ liệu.}\par
-  \vspace{6mm}
-  {\small
+\begin{column}{0.47\textwidth}
+  \begin{intuition}[Nói đơn giản]
+    Mỗi tuần là một \textbf{bảng từ khóa × địa điểm}. Xếp các bảng theo thứ tự thời gian, ta có \textbf{tensor bậc ba}.
+  \end{intuition}
+  \vspace{3mm}
+  \begin{mathcard}[Ký hiệu]
+    \centering
+    $X_t\in\mathbb N^{k\times l}$ \quad(một tuần)\\[2mm]
+    $\mathcal X\in\mathbb N^{k\times l\times t_c}$ \quad(đến hiện tại)
+  \end{mathcard}
+  \vspace{3mm}
   \begin{itemize}
-    \item Mỗi tuần là một bản đồ từ khóa $\times$ địa điểm.
-    \item Dữ liệu có trend, mùa vụ, cú sốc và lan truyền chồng lên nhau.
-    \item Mô hình chỉ giữ cửa sổ gần nhất nhưng phải dự báo dài hơn.
-  \end{itemize}}
+    \item Ví dụ: $k=2$ từ khóa, $l=3$ vùng.
+    \item Một tuần có $2\times3=6$ ô.
+    \item 104 tuần có $2\times3\times104=624$ ô minh họa.
+  \end{itemize}
 \end{column}
 \end{columns}
+\vspace{1mm}
+\papersource{Problem definition, §3.1, p. 4; kích thước 2 × 3 × 104 là minh họa.}
 \end{frame}
 
 % ============================================================
 % SLIDE 4
 % ============================================================
-\begin{frame}[shrink=15]{Một sản phẩm, 50 quốc gia}{Câu hỏi mở đầu}
+\begin{frame}[shrink=24]{Problem 1 --- stream forecasting}{Problem \textperiodcentered\ input và output}
+\centering
+\begin{tikzpicture}[x=.83cm,y=.75cm]
+  \draw[DTLine,line width=2pt] (0,0) -- (13,0);
+  \foreach \x/\lab in {0/$t_1$,1.4/$t_2$,2.8/$\cdots$,8.6/$t_{c-1}$,10/$t_c$,12.6/$t_c+L_f$} {
+    \fill[DTTeal] (\x,0) circle (.08);
+    \node[tinylabel,anchor=north] at (\x,-.28) {\lab};}
+  \draw[DTGold,line width=4pt] (4.3,.4) -- (10,.4);
+  \draw[DTGold] (4.3,.1) -- (4.3,.72); \draw[DTGold] (10,.1) -- (10,.72);
+  \node[biglabel,anchor=south] at (7.15,.72) {cửa sổ hiện tại $\mathcal X^c$: $L_c$ bước};
+  \draw[dtarrow] (10.25,0) -- (12.25,0);
+  \node[font=\sffamily\small,text=DTGold,anchor=south] at (11.2,.1) {dự báo};
+\end{tikzpicture}
+\vspace{3mm}
+
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
-  \vspace{2mm}
-  {\sffamily\Large\bfseries\color{DTNavy}Bạn sẽ hỏi gì?}
-  \vspace{5mm}
-  \begin{enumerate}
-    \setlength{\itemsep}{3.2mm}
-    \item \textbf{Ở đâu?}\\[1mm]
-          {\small Quốc gia nào đang thực sự quan tâm?}
-    \item \textbf{Lan thế nào?}\\[1mm]
-          {\small Quan tâm đi từ nhóm nào sang nhóm nào?}
-    \item \textbf{Tiếp theo là gì?}\\[1mm]
-          {\small Ba tháng tới nên kỳ vọng ra sao?}
-  \end{enumerate}
-  \vspace{5mm}
-  \begin{takeaway}[Điểm mấu chốt]
-    \small Một bảng Excel không cho thấy \textbf{dòng chảy} giữa các địa điểm.
-  \end{takeaway}
-\end{column}
-\begin{column}{0.50\textwidth}
+\begin{mathcard}[Input tại mỗi thờingian]
   \centering
-  \begin{tikzpicture}[remember picture,overlay,scale=.86,transform shape]
-    \fill[DTMist,rounded corners=4mm] (0,0) rectangle (7.1,6.4);
-    \draw[DTTeal!20,line width=.5pt] (0.4,1.2) .. controls (2.2,2.8) and (4.6,2.2) .. (6.7,4.1);
-    \draw[DTTeal!12,line width=7pt,line cap=round] (0.4,1.2) .. controls (2.2,2.8) and (4.6,2.2) .. (6.7,4.1);
-    \foreach \x/\y/\name/\w in {
-      1.2/4.6/US/.95,
-      2.7/3.0/EU/.8,
-      5.4/4.25/CN/.9,
-      4.8/1.65/SEA/.72,
-      3.75/4.9/VN/.55} {
-      \fill[DTTeal!\w,opacity=.9] (\x,\y) circle (\w*0.46);
-      \fill[DTTeal!\w,opacity=.18] (\x,\y) circle (\w*0.88);
-      \node[tinylabel] at (\x,\y-0.55) {\name};
-    }
-    \draw[dtarrow] (1.25,4.45) to[bend left=10] (2.55,3.18);
-    \draw[dtarrow] (2.85,3.08) to[bend right=12] (4.55,1.85);
-    \draw[dtarrow] (5.1,4.05) to[bend right=12] (4.95,2.1);
-    \draw[dtarrow,DTGold!85] (3.95,4.55) to[bend left=10] (4.9,4.15);
-    \node[draw=DTClaret!60,fill=DTWarm,rounded corners=1.5mm,font=\sffamily\scriptsize,
-          text=DTClaret,inner sep=2.5mm] at (3.55,0.4) {lan truyền?};
-    \node[tinylabel,text=DTNavy!55] at (5.9,5.95) {bản đồ tín hiệu};
-  \end{tikzpicture}
+  $\mathcal X^c=\{X_t\}_{t=t_c-L_c}^{t_c}$\\[2mm]
+  {\small Cửa sổ gần nhất thay vì toàn bộ lịch sử.}
+\end{mathcard}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{mathcard}[Output]
+  \centering
+  time-varying dynamics $+\widehat X_{t_c+L_f}$\\[2mm]
+  {\small Trend, seasonality, diffusion và dự báo $L_f$ bước.}
+\end{mathcard}
 \end{column}
 \end{columns}
+\vspace{3mm}
+\begin{takeaway}[Ví dụ cấu hình paper]
+  GoogleTrends dùng $L_c=104$ tuần và các tầm dự báo 13/26/39 tuần; Covid-19 dùng $L_c=56$ ngày và 7/14/21 ngày.
+\end{takeaway}
+\vspace{2mm}
+\papersource{Problem 1, §3.1, p. 4; experimental protocol, §5 Q1, p. 7.}
 \end{frame}
 
 % ============================================================
 % SLIDE 5
 % ============================================================
-\begin{frame}[shrink=20]{Dữ liệu là một chồng bản đồ tuần}{Nền tảng \textperiodcentered\ tensor}
+\begin{frame}[shrink=25]{Vì sao khó? Ba phức tạp chồng lên nhau}{Problem \textperiodcentered\ ba thách thức}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.50\textwidth}
-  \centering
-  \begin{tikzpicture}[x=0.79cm,y=0.69cm]
-    \foreach \s/\lab in {0/{tuần $t_1$},1/{tuần $t_2$},2/{tuần $t_c$}} {
-      \begin{scope}[xshift=\s*0.72cm,yshift=-\s*0.52cm]
-        \fill[white,draw=DTLine,rounded corners=1mm] (-0.05,-0.05) rectangle (4.35,3.2);
-        \foreach \v [count=\n from 0] in {10,22,40,65, 20,55,18,30, 55,75,25,12} {
-          \pgfmathsetmacro{\xx}{mod(\n,4)}
-          \pgfmathsetmacro{\yy}{2-int(\n/4)}
-          \fill[DTTeal!\v,draw=white,line width=.5pt] (\xx,\yy) rectangle ++(1,1);
-        }
-        \node[tinylabel,anchor=west] at (4.55,1.5) {\lab};
-      \end{scope}
-    }
-    \node[tinylabel,anchor=east,rotate=90] at (-0.8,1.5) {từ khóa};
-    \node[tinylabel,anchor=north] at (2.0,-1.35) {địa điểm};
-    \draw[dtarrow,DTGold!80] (4.55,-1.0) -- (5.2,-1.0);
-    \node[tinylabel,anchor=west,text=DTGold!90] at (5.25,-1.0) {thời gian};
-  \end{tikzpicture}
+\begin{column}{0.32\textwidth}
+\begin{intuition}[01 \quad Complex patterns]
+  \textbf{Trend} tăng/giảm, \textbf{seasonality} lặp, \textbf{diffusion} lan và \textbf{outlier} bất ngờ cùng tồn tại.\\[2mm]
+  {\small Cường độ và thờingian khác theo keyword/location.}
+\end{intuition}
 \end{column}
-\begin{column}{0.48\textwidth}
-  \begin{mathcard}[Ba đối tượng cần phân biệt]
-    \centering
-    \begin{tabular}{@{}ll@{}}
-      \textbf{Một lát cắt} & $X_t\in\mathbb{R}^{k\times l}$\\[1.5mm]
-      \textbf{Cửa sổ hiện tại} & $\mathcal X^c\in\mathbb{R}^{k\times l\times L_c}$\\[1.5mm]
-      \textbf{Đầu ra dự báo} & $\widehat X_{t_c+L_f}\in\mathbb{R}^{k\times l}$
-    \end{tabular}
-  \end{mathcard}
-  \vspace{4mm}
-  \begin{itemize}
-    \item $k$: số từ khóa; $l$: số địa điểm.
-    \item $L_c$: số tuần đang giữ; $L_f$: tầm dự báo.
-    \item Mỗi tuần là một bản đồ nhiệt từ khóa $\times$ địa điểm.
-  \end{itemize}
-  \vspace{3mm}
-  \begin{intuition}[Kiểm tra nhanh]
-    $8$ từ khóa $\times$ $50$ quốc gia $\times$ $104$ tuần
-    $=41{,}600$ ô dữ liệu trong một cửa sổ.
-  \end{intuition}
+\begin{column}{0.32\textwidth}
+\begin{mathcard}[02 \quad Dynamic changes]
+  Quy luật \textbf{thay đổi theo thời gian}.\\[2mm]
+  Một diffusion pattern có thể chỉ xuất hiện trong giai đoạn ngắn; model học từ quá khứ có thể lỗi thời ngay.
+\end{mathcard}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{caution}[03 \quad High-dimensional stream]
+  Nhiều từ khóa × nhiều quốc gia × thời gian không giới hạn.\\[2mm]
+  Tăng chi phí tính toán và làm kết quả khó diễn giải.
+\end{caution}
 \end{column}
 \end{columns}
+\vspace{5mm}
+\centering
+\begin{tikzpicture}[x=.85cm,y=.75cm]
+  \node[dtbox,minimum width=2.8cm,minimum height=.9cm] (a) at (0,0){nhiều chuỗi};
+  \node[dtbox,minimum width=2.8cm,minimum height=.9cm] (b) at (4,0){nhiều quy luật};
+  \node[dtbox,minimum width=2.8cm,minimum height=.9cm] (c) at (8,0){nhiều giai đoạn};
+  \draw[dtarrow] (a)--(b); \draw[dtarrow] (b)--(c);
+  \node[dtgold,minimum width=4.2cm,minimum height=1.0cm,align=center] (d) at (4,-2)
+    {cần \textbf{nén + tách + thích nghi}};
+  \draw[dtdash] (a.south)--(d.west); \draw[dtdash] (c.south)--(d.east);
+\end{tikzpicture}
+\vspace{2mm}
+\papersource{§1, pp. 1--2.}
 \end{frame}
 
 % ============================================================
 % SLIDE 6
 % ============================================================
-\begin{frame}[shrink=4]{Vì sao khó, và D-Tracker làm gì}{Từ vấn đề đến pipeline}
+\begin{frame}[shrink=5]{Lộ trình buổi trình bày}{Problem \textperiodcentered\ roadmap}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.31\textwidth}
-  \begin{tcolorbox}[enhanced,colback=white,colframe=DTLine,boxrule=.6pt,arc=2mm,height=3.55cm,halign=left]
-    \numcircle{1}\hspace{1mm}{\sffamily\bfseries Rất nhiều chuỗi}\par\vspace{2mm}
-    {\small 400 chuỗi đan xen; nhìn riêng từng chuỗi sẽ mất cấu trúc chung.}
-  \end{tcolorbox}
+\begin{column}{0.235\textwidth}
+\begin{intuition}[01 \quad Method]
+  Tách và nén dữ liệu; mô hình hóa reaction--diffusion; học và cập nhật.
+\end{intuition}
 \end{column}
-\begin{column}{0.31\textwidth}
-  \begin{tcolorbox}[enhanced,colback=white,colframe=DTLine,boxrule=.6pt,arc=2mm,height=3.55cm,halign=left]
-    \numcircle[DTGold]{2}\hspace{1mm}{\sffamily\bfseries Tín hiệu bị trộn}\par\vspace{2mm}
-    {\small Trend, mùa vụ, cú sốc và lan truyền chồng lên nhau.}
-  \end{tcolorbox}
+\begin{column}{0.235\textwidth}
+\begin{mathcard}[02 \quad Paper experiments]
+  Accuracy, scalability, effectiveness trên sáu tensor streams.
+\end{mathcard}
 \end{column}
-\begin{column}{0.31\textwidth}
-  \begin{tcolorbox}[enhanced,colback=white,colframe=DTLine,boxrule=.6pt,arc=2mm,height=3.55cm,halign=left]
-    \numcircle[DTClaret]{3}\hspace{1mm}{\sffamily\bfseries Luật chơi thay đổi}\par\vspace{2mm}
-    {\small Pattern đổi theo thời gian; dữ liệu mới đến mãi không dừng.}
-  \end{tcolorbox}
+\begin{column}{0.235\textwidth}
+\begin{questioncard}
+  \softlabel{03 \quad REPRODUCTION}\par
+  Protocol, bảng Paper vs. nhóm, runtime và lessons.\\[2mm]
+  {\small Phần kết quả chờ thực nghiệm của nhóm.}
+\end{questioncard}
+\end{column}
+\begin{column}{0.235\textwidth}
+\begin{takeaway}[04 \quad Demo]
+  Một slide trống để nhóm thêm sản phẩm minh họa.
+\end{takeaway}
 \end{column}
 \end{columns}
-\vspace{4mm}
-\begin{tikzpicture}[node distance=3mm]
-  \node[dtbox,text width=2.5cm,align=center,minimum height=1.15cm] (a) {\sffamily\bfseries Dữ liệu\\[-.5mm]\scriptsize các bản đồ tuần};
-  \node[dtaccent,text width=2.55cm,align=center,minimum height=1.15cm,right=of a] (b) {\sffamily\bfseries Tách 3 lớp\\[-.5mm]\scriptsize trend · mùa vụ · sốc};
-  \node[dtaccent,text width=3.0cm,align=center,minimum height=1.15cm,right=of b] (c) {\sffamily\bfseries Nén + lan truyền\\[-.5mm]\scriptsize vài kênh ẩn, vài nhóm};
-  \node[dtgold,text width=2.45cm,align=center,minimum height=1.15cm,right=of c] (d) {\sffamily\bfseries Dự báo\\[-.5mm]\scriptsize kèm lời giải thích};
-  \draw[dtarrow] (a) -- (b);
-  \draw[dtarrow] (b) -- (c);
-  \draw[dtarrow] (c) -- (d);
-\end{tikzpicture}
-\vfill
-{\small\color{DTNavy!70}\textbf{Ý tưởng:} không mô hình hóa từng ô riêng lẻ; tìm cấu trúc nhỏ hơn đang tạo ra chúng.}
+\vspace{7mm}
+\centering
+{\large\color{DTNavy}Xuyên suốt method: quay lại ba câu hỏi \textbf{tăng/giảm --- lan --- dự báo}.}
 \end{frame}
 
-\section{Cơ chế hoạt động}
+\section{Methodology}
 
 % ============================================================
 % SLIDE 7
 % ============================================================
-\begin{frame}{Cơ chế hoạt động}{Phần 02 \textperiodcentered\ Mô hình}
-\begin{columns}[c,onlytextwidth]
-\begin{column}{0.25\textwidth}
-  {\sffamily\bfseries\fontsize{58}{58}\selectfont\color{DTGold}02\par}
-  \vspace{2mm}
-  {\color{DTGold}\rule{2.2cm}{1pt}}
+\begin{frame}[shrink=29]{Ý tưởng D-Tracker --- nén, tách, thích nghi}{Methodology \textperiodcentered\ big picture}
+\centering
+\begin{tikzpicture}[x=.79cm,y=.68cm]
+  \node[dtbox,minimum width=2.5cm,minimum height=1.45cm,align=center] (x) at (0,0)
+    {current tensor\\$\mathcal X^c$};
+  \node[dtaccent,minimum width=3.0cm,minimum height=1.45cm,align=center] (split) at (3.6,0)
+    {\textbf{TÁCH}\\trend + seasonal\\+ outlier};
+  \node[dtgold,minimum width=3.6cm,minimum height=1.45cm,align=center] (core) at (7.5,0)
+    {\textbf{NÉN + ĐỘNG HỌC}\\latent reaction--diffusion\\+ keyword/location factors};
+  \node[dtbox,minimum width=2.7cm,minimum height=1.45cm,align=center] (update) at (11.4,0)
+    {\textbf{THÍCH NGHI}\\MDL model update\\+ RankUpdate};
+  \node[dtaccent,minimum width=2.4cm,minimum height=1.45cm,align=center] (f) at (15,0)
+    {forecast\\$\widehat X_{t_c+L_f}$};
+  \draw[dtarrow] (x)--(split); \draw[dtarrow] (split)--(core);
+  \draw[dtarrow] (core)--(update); \draw[dtarrow] (update)--(f);
+\end{tikzpicture}
+\vspace{5mm}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.32\textwidth}
+\begin{intuition}[Tensor decomposition]
+  Nén nhiều chuỗi thành vài latent dynamics và factors để con ngườicó thể đọc.
+\end{intuition}
 \end{column}
-\begin{column}{0.68\textwidth}
-  {\large\bfseries\color{DTNavy}Từ dữ liệu thô đến một mô hình có thể đọc được.}\par
-  \vspace{5mm}
-  {\small
-  \begin{itemize}
-    \item Tách trend, mùa vụ và bất thường.
-    \item Nén trend thành vài kênh ẩn; mô hình hóa lan truyền.
-    \item Ước lượng, chọn cấu trúc và cập nhật theo stream.
-  \end{itemize}}
+\begin{column}{0.32\textwidth}
+\begin{mathcard}[Reaction--diffusion]
+  Reaction cho tăng/giảm tại chỗ; diffusion cho ảnh hưởng giữa latent dynamics.
+\end{mathcard}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{takeaway}[MDL + streaming]
+  So chi phí để chọn cấu trúc/regime và dự báo liên tục trên cửa sổ gần nhất.
+\end{takeaway}
 \end{column}
 \end{columns}
+\vspace{3mm}
+\papersource{§1, p. 2; Figure 2, p. 4; Algorithm 1, p. 5.}
 \end{frame}
 
 % ============================================================
 % SLIDE 8
 % ============================================================
-\begin{frame}[shrink=10]{Tách ba lớp tín hiệu}{Math 01 \textperiodcentered\ phân rã}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.47\textwidth}
-  \centering
-  \begin{tikzpicture}[x=0.53cm,y=0.48cm]
-    \foreach \yy/\col/\lab in {0/DTNavy/{Quan sát},-2.1/DTTeal/{Trend},-4.2/DTGold/{Seasonal},-6.3/DTClaret/{Outlier}} {
-      \draw[DTLine,line width=.4pt] (0,\yy) -- (7.2,\yy);
-      \node[tinylabel,anchor=east] at (-0.15,\yy+0.3) {\lab};
-    }
-    \draw[DTNavy,line width=1.5pt] plot[smooth] coordinates {(0,0.2) (1,0.9) (2,0.3) (3,1.4) (4,2.4) (5,0.8) (6,1.8) (7,1.2)};
-    \draw[DTTeal,line width=1.5pt] plot[smooth] coordinates {(0,0.1) (1,0.35) (2,0.55) (3,0.8) (4,1.0) (5,1.2) (6,1.5) (7,1.8)};
-    \draw[DTGold,line width=1.5pt] plot[smooth] coordinates {(0,0.1) (1,0.35) (2,-0.1) (3,0.35) (4,-0.2) (5,0.1) (6,0.35) (7,-0.15)};
-    \draw[DTClaret,line width=1.7pt] (4,-6.3) -- (4,-5.55);
-    \draw[DTClaret,line width=1.7pt] (6,-6.3) -- (6,-5.85);
-    \fill[DTClaret] (4,-5.55) circle (2pt);
-    \fill[DTClaret] (6,-5.85) circle (2pt);
-  \end{tikzpicture}
+\begin{frame}[shrink=29]{Bóc một chuỗi quan sát thành ba lớp}{Method 01 \textperiodcentered\ decomposition}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.55\textwidth}
+\centering
+\begin{tikzpicture}[x=.78cm,y=.56cm]
+  \node[tinylabel,anchor=west] at (0,6.6) {\textbf{iPhone tại một vùng --- chuỗi quan sát (minh họa)}};
+  \draw[DTMuted!50] (0,5.5)--(5.2,5.5);
+  \draw[DTNavy,line width=1.1pt] plot coordinates {(0,5.7)(.6,5.9)(1.2,5.75)(1.8,6.15)(2.4,6.05)(3,6.3)(3.6,6.15)(4.2,6.6)(4.7,7)};
+  \fill[DTClaret] (3.6,6.65) circle (.13);
+  \node[tinylabel,text=DTClaret,anchor=west] at (3.72,6.75) {cú sốc};
+
+  \node[tinylabel,text=DTTeal] at (0,4.65) {\textbf{Trend / diffusion}};
+  \draw[DTTeal,line width=1pt] (0,3.8)--(5.2,4.5);
+  \node[tinylabel,text=DTGold] at (0,3.05) {\textbf{Seasonality}};
+  \draw[DTGold,line width=1pt] plot[domain=0:5.2,samples=60] (\x,{2.2+.38*sin(320*\x)});
+  \node[tinylabel,text=DTClaret] at (0,1.25) {\textbf{Outlier thưa}};
+  \draw[DTClaret] (0,.55)--(5.2,.55);
+  \draw[DTClaret,line width=1.3pt] (3.6,.55)--(3.6,1.15);
+  \fill[DTClaret] (3.6,1.15) circle (.09);
+\end{tikzpicture}
 \end{column}
-\begin{column}{0.51\textwidth}
-  \begin{mathcard}[Ba thành phần]
-    \centering\Large
-    \(\mathcal X^c\approx\widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o\)
-  \end{mathcard}
+\begin{column}{0.42\textwidth}
+  \begin{intuition}[Vì sao phải tách?]
+    Không để mùa vụ và sự kiện bất thường \textbf{che mất quy luật chính} mà ta muốn diễn giải.
+  \end{intuition}
   \vspace{3mm}
   \begin{itemize}
-    \item \textcolor{DTTeal}{\textbf{Trend}}: tăng/giảm có cấu trúc và lan truyền.
-    \item \textcolor{DTGold}{\textbf{Seasonal}}: nhịp lặp theo mùa, khuyến mãi, ra mắt.
-    \item \textcolor{DTClaret}{\textbf{Outlier}}: bất thường thưa, không nên học thành quy luật.
+    \item \textbf{Trend / diffusion:} hướng và liên hệ động học.
+    \item \textbf{Seasonal:} kiểu lặp như đợt ra máy hằng năm.
+    \item \textbf{Outlier:} giá trị bất thường, giả định thưa.
   \end{itemize}
   \vspace{2mm}
-  \begin{intuition}[Vì sao phải tách?]
-    Nếu không tách, mô hình dễ nhầm mùa vụ với xu hướng và một cú sốc với tương lai.
-  \end{intuition}
+  \begin{takeaway}[Kiểm tra nhanh]
+    Đợt ra máy lặp mỗi năm $\rightarrow$ seasonal; một sự kiện bất thường một lần $\rightarrow$ outlier.
+  \end{takeaway}
 \end{column}
 \end{columns}
+\vspace{2mm}
+\papersource{§1, p. 1; §3.3, pp. 4--5; hình và ví dụ là minh họa.}
 \end{frame}
 
 % ============================================================
 % SLIDE 9
 % ============================================================
-\begin{frame}{Nén thành vài “kênh” ẩn}{Trực giác trước công thức}
+\begin{frame}[shrink=30]{Eq. (1) --- cộng ba lớp để khôi phục dữ liệu}{Method 01 \textperiodcentered\ decomposition}
+\formula{\mathcal X^c\approx\widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o}
+\vspace{4mm}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.47\textwidth}
-  \centering
-  \begin{tikzpicture}[x=0.55cm,y=0.52cm]
-    \foreach \yy/\name/\col in {2.7/{kênh 1 · tăng đều}/DTTeal,0/{kênh 2 · bùng nổ}/DTGold,-2.7/{kênh 3 · giảm dần}/DTClaret} {
-      \fill[white,draw=DTLine,rounded corners=1.5mm] (-0.2,\yy-0.75) rectangle (6.4,\yy+0.75);
-      \node[tinylabel,anchor=west,text=\col] at (0.0,\yy+0.42) {\name};
-      \draw[\col,line width=1.4pt] plot[smooth] coordinates {(-0.05,\yy-0.25) (1,\yy-0.15) (2,\yy+0.0) (3,\yy+0.12) (4,\yy+0.2) (5,\yy+0.3) (6.2,\yy+0.38)};
-    }
-    \node[font=\sffamily\scriptsize,text=DTNavy!65] at (3.1,-3.55) {các kiểu diễn biến chung};
-  \end{tikzpicture}
+\begin{column}{0.24\textwidth}
+\begin{intuition}[Observed]
+  \centering{\Huge\color{DTNavy}17}\\một ô quan sát
+\end{intuition}
 \end{column}
-\begin{column}{0.10\textwidth}
-  \centering
-  \begin{tikzpicture}
-    \draw[dtarrow,line width=1.2pt] (0,0) -- (1.4,0);
-    \node[tinylabel,align=center] at (0.7,-0.5) {trộn};
-  \end{tikzpicture}
+\begin{column}{0.24\textwidth}
+\begin{mathcard}[$\widehat{\mathcal X}_d$]
+  \centering{\Huge\color{DTTeal}10}\\trend / diffusion
+\end{mathcard}
 \end{column}
-\begin{column}{0.39\textwidth}
-  \centering
-  \begin{tikzpicture}[x=0.62cm,y=0.62cm]
-    \foreach \i/\word in {0/VN,1/US,2/CN,3/EU} {
-      \node[tinylabel,anchor=east] at (-0.25,3-\i) {\word};
-    }
-    \foreach \j/\word in {0/iPhone,1/Galaxy,2/iPad,3/Pixel} {
-      \node[tinylabel,anchor=south,rotate=35] at (\j+0.45,3.72) {\word};
-    }
-    \foreach \i in {0,...,3} {
-      \foreach \j in {0,...,3} {
-        \pgfmathtruncatemacro{\sz}{8+mod(\i*5+\j*7,12)}
-        \fill[DTTeal!\sz] (\j,3-\i) circle (0.16+0.012*\sz);
-      }
-    }
-    \node[font=\sffamily\scriptsize,text=DTNavy!65,align=center] at (1.5,-0.55) {mỗi đối tượng có “núm volume”\\ với từng kênh};
-  \end{tikzpicture}
+\begin{column}{0.24\textwidth}
+\begin{mathcard}[$\widehat{\mathcal X}_s$]
+  \centering{\Huge\color{DTGold}5}\\seasonality
+\end{mathcard}
+\end{column}
+\begin{column}{0.24\textwidth}
+\begin{caution}[$\widehat{\mathcal X}_o$]
+  \centering{\Huge\color{DTClaret}2}\\outlier
+\end{caution}
 \end{column}
 \end{columns}
-\vfill
-\begin{takeaway}[Điều đang diễn ra]
-  Thay vì 400 chuỗi độc lập, mô hình tìm vài kiểu diễn biến chung rồi trộn chúng bằng trọng số riêng cho từng từ khóa và địa điểm.
+\vspace{4mm}
+\centering
+{\Large $17=10+5+2$ \qquad {\small\color{DTMuted}(một ô giả định để kiểm tra phép cộng, không phải dữ liệu paper)}}
+\vspace{3mm}
+\begin{takeaway}[Đọc công thức]
+  Cùng một kích thước $k\times l\times L_c$, cộng từng ô. Ký hiệu $\approx$ nhắc rằng đây là \textbf{xấp xỉ}, không phải luôn bằng chính xác.
 \end{takeaway}
+\vspace{2mm}
+\papersource{Eq. (1), §3.3, p. 4; sparse outliers, p. 5.}
 \end{frame}
 
 % ============================================================
 % SLIDE 10
 % ============================================================
-\begin{frame}[shrink=16]{Tucker: trộn kênh để tái tạo dữ liệu}{Math 02 \textperiodcentered\ nén tensor}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.47\textwidth}
-  \centering
-  \begin{tikzpicture}[x=0.68cm,y=0.62cm]
-    \node[dtaccent,minimum width=2.1cm,minimum height=2.1cm,align=center] (core) at (0,0)
-      {\sffamily\bfseries Lõi\\[0.5mm]$\mathcal W^{core}$\\[0.5mm]\scriptsize $d_k\times d_l\times L_c$};
-    \node[dtgold,minimum width=1.45cm,minimum height=2.0cm,align=center] (key) at (3.25,1.15)
-      {\sffamily\bfseries Từ khóa\\[0.5mm]$W^{key}$\\[0.5mm]\scriptsize $d_k\times k$};
-    \node[dtgold,minimum width=1.45cm,minimum height=2.0cm,align=center] (loc) at (3.25,-1.15)
-      {\sffamily\bfseries Địa điểm\\[0.5mm]$W^{loc}$\\[0.5mm]\scriptsize $d_l\times l$};
-    \node[dtbox,minimum width=2.1cm,minimum height=1.35cm,align=center] (out) at (6.35,0)
-      {\sffamily\bfseries Tensor\\[0.5mm]$\widehat{\mathcal X}_d$};
-    \draw[dtarrow] (core.east) -- (key.west);
-    \draw[dtarrow] (core.east) -- (loc.west);
-    \draw[dtarrow] (key.east) -- (out.north west);
-    \draw[dtarrow] (loc.east) -- (out.south west);
-    \node[tinylabel,above] at (1.65,1.55) {trải theo từ khóa};
-    \node[tinylabel,below] at (1.65,-1.55) {trải theo địa điểm};
-  \end{tikzpicture}
+\begin{frame}[shrink=3]{Nén --- vài “giai điệu” chung thay hàng trăm chuỗi}{Method 02 \textperiodcentered\ latent patterns}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.42\textwidth}
+\centering
+\begin{tikzpicture}[x=.64cm,y=.68cm]
+  \node[biglabel] at (2.5,4.5) {Hai latent patterns};
+  \draw[DTMuted!40] (0,3.3)--(4.8,3.3);
+  \draw[DTTeal,line width=1.1pt] (0,2.8)--(4.8,4.0);
+  \node[tinylabel,text=DTTeal,anchor=west] at (.1,4.05) {kênh tăng};
+  \draw[DTMuted!40] (0,1.3)--(4.8,1.3);
+  \draw[DTGold,line width=1.1pt] (4.8,2.0)--(1.0,.6);
+  \node[tinylabel,text=DTGold,anchor=west] at (.1,2.05) {kênh giảm};
+  \draw[dtarrow] (5.3,2.45)--(6.2,2.45);
+  \node[dtaccent,minimum width=2.2cm,minimum height=2.2cm,align=center] at (7.5,2.45)
+    {trộn bằng\\trọng số\\không âm};
+\end{tikzpicture}
 \end{column}
-\begin{column}{0.51\textwidth}
-  \begin{mathcard}[Công thức Tucker]
-    \centering
-    \(\widehat{\mathcal X}_d
-      =\mathcal W^{core}\times_{key}W^{key}\times_{loc}W^{loc}\)
-  \end{mathcard}
-  \vspace{2.5mm}
-  {\small
-  \[
-    \widehat x_{d,uv}(t)
-    =\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}
-      w^{core}_{ij}(t)\,W^{key}_{iu}W^{loc}_{jv}
-  \]}
+\begin{column}{0.55\textwidth}
+  \begin{intuition}[Giống phối nhạc]
+    Các chuỗi có thể chia sẻ vài \textbf{kiểu biến động}; khác nhau ở \textbf{mức liên hệ} với từng kiểu.
+  \end{intuition}
+  \vspace{3mm}
+  \centering
+  {\small\textbf{Ví dụ trọng số liên hệ}\par}
   \vspace{1mm}
-  \begin{itemize}
-    \item \(W^{key}_{iu}\) lớn: từ khóa \(u\) thuộc nhóm \(i\).
-    \item \(W^{loc}_{jv}\) lớn: địa điểm \(v\) thuộc nhóm \(j\).
-    \item \(w^{core}_{ij}(t)\): “kênh” hoạt động của cặp nhóm.
-  \end{itemize}
-  \begin{takeaway}[Con số đáng nhớ]
-    Ví dụ \(d_k=3,d_l=2\): khoảng 748 tham số thay cho 41.600 ô trong cửa sổ.
-  \end{takeaway}
+  \begin{tabular}{lcc}
+    \toprule
+    Chuỗi & Kênh tăng & Kênh giảm \\
+    \midrule
+    iPhone / Bắc Mỹ & 0.8 & 0.1 \\
+    Galaxy / ĐNÁ & 0.5 & 0.4 \\
+    Language / châu Âu & 0.1 & 0.9 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{1mm}
+  {\scriptsize\color{DTMuted}Đọc weights: lớn = liên hệ mạnh hơn. Các giá trị trên chỉ là minh họa.}
 \end{column}
 \end{columns}
+\vspace{1mm}
+\papersource{§3.3, pp. 4--5; bảng trọng số là ví dụ minh họa.}
 \end{frame}
 
 % ============================================================
 % SLIDE 11
 % ============================================================
-\begin{frame}[shrink=2]{Quan tâm lan như nước}{Trực giác trước công thức}
+\begin{frame}[shrink=34]{Tucker --- trộn latent patterns để dựng lại tensor}{Method 02 \textperiodcentered\ Eq. (2)}
+\formula{\widehat{\mathcal X}_d=\mathcal W^{core}\times_{key}W^{key}\times_{loc}W^{loc}}
+\vspace{3mm}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.54\textwidth}
-  \centering
-  \begin{tikzpicture}[x=0.9cm,y=0.8cm]
-    \fill[DTMist] (0,0) rectangle (3.1,2.7);
-    \fill[DTTeal!25] (0,0) rectangle (3.1,0.9);
-    \draw[DTNavy,line width=1pt,rounded corners=1mm] (0,0) rectangle (3.1,2.7);
-    \node[biglabel] at (1.55,2.35) {nhóm $j'$};
-    \node[font=\sffamily\Large\bfseries,text=DTTeal!85] at (1.55,0.45) {4};
-    \fill[DTMist] (5.7,0) rectangle (8.8,1.9);
-    \fill[DTTeal!10] (5.7,0) rectangle (8.8,0.25);
-    \draw[DTNavy,line width=1pt,rounded corners=1mm] (5.7,0) rectangle (8.8,1.9);
-    \node[biglabel] at (7.25,1.55) {nhóm $j$};
-    \node[font=\sffamily\Large\bfseries,text=DTTeal!62] at (7.25,0.08) {1};
-    \draw[fill=DTNavy!65] (3.1,0.8) -- (5.7,0.2) -- (5.7,0.5) -- (3.1,1.1) -- cycle;
-    \node[tinylabel,align=center] at (4.4,1.15) {dòng chảy\\vì $4>1$};
-    \draw[<->,DTGold!85,line width=1pt] (3.1,2.9) -- node[above,tinylabel]{chênh lệch tạo lực} (8.8,2.9);
-  \end{tikzpicture}
+\begin{column}{0.52\textwidth}
+\begin{mathcard}[Ba đối tượng, ba vai trò]
+  \begin{itemize}
+    \item $\mathcal W^{core}\in\mathbb R^{d_k\times d_l\times L_c}$: latent dynamics.
+    \item $W^{key}\in\mathbb R_+^{d_k\times k}$: từ khóa liên hệ từng kênh bao nhiêu.
+    \item $W^{loc}\in\mathbb R_+^{d_l\times l}$: địa điểm liên hệ từng nhóm bao nhiêu.
+  \end{itemize}
+\end{mathcard}
+\vspace{3mm}
+\begin{takeaway}[Mode-product nói bằng lờigì?]
+  Trải latent core theo từ khóa và địa điểm: \textbf{nhân trọng số rồi cộng các kênh}.
+\end{takeaway}
 \end{column}
 \begin{column}{0.44\textwidth}
-  \begin{itemize}
-    \setlength{\itemsep}{4mm}
-    \item \textbf{Nơi cao đẩy sang nơi thấp.} Không có chênh lệch, không có dòng chảy.
-    \item \textbf{Độ mạnh “ống nối” là tham số \(d\).} Mô hình tự học từ dữ liệu.
-    \item \textbf{Tự tăng/giảm là tham số \(a\).} Một kênh có thể tự đi lên hoặc đi xuống.
-  \end{itemize}
-  \vspace{3mm}
-  \begin{caution}[Lan truyền không đồng nghĩa nhân quả]
-    Một chiến dịch toàn cầu cũng có thể tạo ra pattern trễ. Mô hình cho \emph{giả thuyết có cấu trúc}.
-  \end{caution}
+\begin{intuition}[Một term minh họa]
+  Nếu một latent dynamics có mức $8$, keyword weight $0.5$, location weight $0.25$:
+  \[8\times0.5\times0.25=1.\]
+  Đóng góp của term này vào chuỗi thật là $1$.
+\end{intuition}
+\vspace{3mm}
+\begin{questioncard}
+  \softlabel{TẠI SAO GỌI LÀ NÉN?}\par
+  Ta lưu vài latent dynamics và factors thay vì mô tả mọi chuỗi bằng một động học riêng.
+\end{questioncard}
 \end{column}
 \end{columns}
+\vspace{2mm}
+\papersource{Eq. (2) và dimensions, §3.3, p. 4; interpretability, p. 5. Ví dụ số là minh họa.}
 \end{frame}
 
 % ============================================================
 % SLIDE 12
 % ============================================================
-\begin{frame}[shrink=11]{Viết điều đó bằng một phương trình}{Math 03 \textperiodcentered\ reaction--diffusion}
-\begin{mathcard}[Hệ phương trình cho từng kênh ẩn]
-  \centering
-  \[
-    \frac{dw_{ij}}{dt}
-    =\underbrace{a_{ij}w_{ij}}_{\text{tự tăng/giảm}}
-    +\underbrace{\sum_{j'=1}^{d_l}d_{ijj'}\bigl(w_{ij'}-w_{ij}\bigr)}_{\text{lực kéo từ các nhóm khác}}
-  \]
-\end{mathcard}
-\vspace{2mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.50\textwidth}
-  {\small
-  \begin{itemize}
-    \item \(a_{ij}>0\): kênh có xu hướng tăng; \(a_{ij}<0\): giảm.
-    \item \(d_{ijj'}\): độ mạnh lan từ nhóm \(j'\) sang \(j\).
-    \item Dấu của \((w_{ij'}-w_{ij})\) quyết định chiều chảy.
-  \end{itemize}}
+\begin{frame}[shrink=22]{Reaction + diffusion --- tự đổi và ảnh hưởng lẫn nhau}{Method 03 \textperiodcentered\ trực giác}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.53\textwidth}
+\centering
+\begin{tikzpicture}[x=.85cm,y=.72cm]
+  \draw[DTNavy,line width=1pt] (0,0)--(0,3.2)--(2.5,3.2)--(2.5,0);
+  \draw[DTNavy,line width=1pt] (5,0)--(5,3.2)--(7.5,3.2)--(7.5,0);
+  \fill[DTTeal!35] (.1,.1) rectangle (2.4,2.55);
+  \fill[DTGold!28] (5.1,.1) rectangle (7.4,.85);
+  \node[biglabel] at (1.25,3.65) {A: cao ($8$)};
+  \node[biglabel] at (6.25,3.65) {B: thấp ($2$)};
+  \draw[DTGold,line width=2pt] (2.5,1.6)--(5,1.6);
+  \draw[dtarrow] (2.7,1.6)--(4.8,1.6);
+  \node[tinylabel,text=DTGold] at (3.75,2.0) {diffusion};
+  \draw[dtarrow,DTTeal] (1.25,2.75)--(1.25,3.5);
+  \node[tinylabel,text=DTTeal,anchor=west] at (1.45,3.1) {reaction tăng};
+\end{tikzpicture}
 \end{column}
-\begin{column}{0.46\textwidth}
-  \begin{intuition}[Một bước bằng số]
-    \(w=1,\ w'=4,\ a=0.1,\ d=0.5\)\\[1mm]
-    Tốc độ thay đổi \(=0.1(1)+0.5(4-1)=1.6\)\\[1mm]
-    Bước Euler: \(w_{\text{next}}\approx1+1.6=2.6\)
+\begin{column}{0.44\textwidth}
+  \begin{intuition}[Reaction --- lực tại chỗ]
+    $a_{ij}>0$: latent dynamics tăng; $a_{ij}<0$: giảm.
   \end{intuition}
+  \vspace{3mm}
+  \begin{mathcard}[Diffusion --- lực do chênh lệch]
+    Hệ số dương và $w' > w$ tạo contribution dương lên $w$: giá trị cao “kéo” giá trị thấp lên.
+  \end{mathcard}
+  \vspace{3mm}
+  \begin{caution}[Không phải chứng minh nhân quả]
+    Diffusion ở đây là \textbf{cấu trúc mô hình và cách diễn giải tham số}, không phải causal experiment.
+  \end{caution}
 \end{column}
 \end{columns}
-\vfill
-{\small\color{DTNavy!65}Đổi \(w'=0\), lực kéo đổi dấu: \(0.5(0-1)=-0.5\). Cùng một “ống nối”, hướng chảy khác.}
+\vspace{2mm}
+\papersource{reaction--diffusion background, §3.2, p. 4; parameters, §3.3, p. 5. Mức 8/2 là minh họa.}
 \end{frame}
 
 % ============================================================
 % SLIDE 13
 % ============================================================
-\begin{frame}[shrink=24]{Từ kênh ẩn đến chuỗi thật}{Math 04 \textperiodcentered\ phép chiếu}
+\begin{frame}[shrink=24]{Eq. (3) --- thay một bộ số để đọc reaction--diffusion}{Method 03 \textperiodcentered\ một phép tính}
+\formula{\frac{dw_{ij}}{dt}=\textcolor{DTTeal}{a_{ij}w_{ij}}+\textcolor{DTGold}{\sum_{j'}d_{ijj'}(w_{ij'}-w_{ij})}}
+\vspace{3mm}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.48\textwidth}
-  \centering
-  \begin{tikzpicture}[x=0.8cm,y=0.72cm]
-    \node[dtaccent,minimum width=2.0cm,minimum height=1.7cm,align=center] (core) at (0,0)
-      {\sffamily\bfseries kênh ẩn\\$w_{ij}(t)$};
-    \node[dtgold,minimum width=1.5cm,minimum height=1.1cm,align=center] (kw) at (3.1,0.8)
-      {\sffamily\bfseries từ khóa\\$W^{key}_{iu}$};
-    \node[dtgold,minimum width=1.5cm,minimum height=1.1cm,align=center] (loc) at (3.1,-0.8)
-      {\sffamily\bfseries địa điểm\\$W^{loc}_{jv}$};
-    \node[dtbox,minimum width=2.25cm,minimum height=1.3cm,align=center] (obs) at (6.2,0)
-      {\sffamily\bfseries chuỗi quan sát\\$\widehat x_{uv}(t)$};
-    \draw[dtarrow] (core.east) -- (kw.west);
-    \draw[dtarrow] (core.east) -- (loc.west);
-    \draw[dtarrow] (kw.east) -- (obs.west);
-    \draw[dtarrow] (loc.east) -- (obs.west);
-    \node[tinylabel,text=DTNavy!55] at (3.1,-1.85) {trọng số không âm};
-  \end{tikzpicture}
-\end{column}
 \begin{column}{0.50\textwidth}
-  \begin{mathcard}[Chiếu lõi về dữ liệu]
-    \centering
-    \(\displaystyle
-      \widehat x_{uv}(t)
-      =\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}
-        w^{core}_{ij}(t)\,W^{key}_{iu}W^{loc}_{jv}\)
-  \end{mathcard}
-  \vspace{3mm}
-  \begin{itemize}
-    \item Một kênh đóng góp vào nhiều cặp từ khóa--địa điểm.
-    \item Trọng số càng lớn, mức liên hệ càng mạnh.
-    \item Trọng số không âm giữ nguyên chiều tăng/giảm.
-  \end{itemize}
-  \vspace{2mm}
-  \begin{intuition}[Cách đọc kết quả]
-    Một động học mạnh + hệ số từ khóa lớn + hệ số địa điểm lớn
-    \(\Rightarrow\) câu chuyện “từ khóa này đang tăng ở nhóm khu vực này”.
-  \end{intuition}
+\begin{intuition}[Chỉ hai latent nodes trong ví dụ]
+  Chọn $w=2$, $w'=8$, $a=0.1$, $d=0.5$.\\[2mm]
+  \begin{tabular}{ll}
+    \textbf{Reaction} & $0.1\times2=0.2$\\
+    \textbf{Diffusion} & $0.5\times(8-2)=3$\\
+    \textbf{Derivative} & $0.2+3=3.2$
+  \end{tabular}
+\end{intuition}
+\end{column}
+\begin{column}{0.46\textwidth}
+\begin{mathcard}[Một bước Euler minh họa]
+  Nếu lấy bước thời gian $\Delta t=1$:
+  \[w_{\text{mới}}\approx w+\Delta t\frac{dw}{dt}=2+1\times3.2=5.2.\]
+\end{mathcard}
+\vspace{3mm}
+\begin{takeaway}[Kiểm tra bằng trực giác]
+  Vì node lân cận cao hơn, contribution diffusion dương. Đổi $w'=0$ thì hạng diffusion đổi dấu.
+\end{takeaway}
 \end{column}
 \end{columns}
+\vspace{2mm}
+\papersource{Eq. (3), §3.3, p. 4; $a,d$, p. 5. Giá trị và bước Euler là minh họa, không phải parameter paper.}
 \end{frame}
 
 % ============================================================
 % SLIDE 14
 % ============================================================
-\begin{frame}[shrink=12]{Ghép mọi thứ thành một mô hình}{Math 05 \textperiodcentered\ mô hình đầy đủ}
-\begin{mathcard}[Ba thành phần, một mô hình]
+\begin{frame}[shrink=29]{Ghép đủ model --- trend, seasonal, outlier và nhiều regime}{Method 04 \textperiodcentered\ Eq. (4) + parameters}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.50\textwidth}
+\begin{mathcard}[Seasonal cũng được nén --- Eq. (4)]
   \centering
-  \(\mathcal X^c\approx\widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o\)
-  \hspace{8mm}
-  \(\widehat{\mathcal X}_s
-    =S^{time}\times_{key}S^{key}\times_{loc}S^{loc}\)
+  $\widehat{\mathcal X}_s=S^{time}\times_{key}S^{key}\times_{loc}S^{loc}$
 \end{mathcard}
 \vspace{2mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.47\textwidth}
-  \begin{itemize}
-    \item \textbf{Trend} \(\widehat{\mathcal X}_d\): lõi reaction--diffusion + hệ số.
-    \item \textbf{Seasonal} \(\widehat{\mathcal X}_s\): vài pattern lặp + hệ số.
-    \item \textbf{Outlier} \(\widehat{\mathcal X}_o\): tensor thưa, chỉ giữ bất thường.
-  \end{itemize}
-  \vspace{2mm}
-  \begin{intuition}[Vì sao cần nhiều mô hình?]
-    Một bộ quy tắc không đúng cho cả 10 năm. \(\mathcal F=\{\Theta_1,\ldots,\Theta_N\}\) lưu các “chương” khác nhau.
-  \end{intuition}
+{\small $d_s$ seasonal patterns; factors cho biết từ khóa/địa điểm liên hệ từng kiểu lặp bao nhiêu.}
+\vspace{3mm}
+\begin{intuition}[Ví dụ]
+  Cùng chu kỳ ra máy mỗi năm, nhưng cường độ seasonal có thể khác giữa iPhone/Galaxy và giữa các khu vực.
+\end{intuition}
 \end{column}
-\begin{column}{0.50\textwidth}
-  \begin{tikzpicture}[x=0.8cm,y=0.65cm,scale=.93,transform shape]
-    \node[dtbox,minimum width=2.0cm,minimum height=1.05cm,align=center] (th) at (0,0)
-      {$\Theta$\\[-.5mm]\scriptsize một mô hình};
-    \node[dtaccent,minimum width=2.4cm,minimum height=.95cm,align=center] (td) at (3.1,1.45)
-      {$\theta_d$\\[-.5mm]\scriptsize trend};
-    \node[dtaccent,minimum width=2.4cm,minimum height=.95cm,align=center] (ts) at (3.1,0)
-      {$\theta_s$\\[-.5mm]\scriptsize seasonal};
-    \node[dtgold,minimum width=2.4cm,minimum height=.95cm,align=center] (xo) at (3.1,-1.45)
-      {$\widehat{\mathcal X}_o$\\[-.5mm]\scriptsize outlier};
-    \draw[dtarrow] (td.west) -- (th.east);
-    \draw[dtarrow] (ts.west) -- (th.east);
-    \draw[dtarrow] (xo.west) -- (th.east);
-    \node[tinylabel,anchor=west] at (5.1,0) {\(\mathcal F=\{\Theta_1,\ldots,\Theta_N\}\)};
-  \end{tikzpicture}
+\begin{column}{0.47\textwidth}
+\centering
+\begin{tikzpicture}[x=.78cm,y=.67cm]
+  \node[dtgold,minimum width=4.2cm,minimum height=.8cm] (theta) at (3,5) {$\Theta=\{\theta_d,\theta_s,\widehat{\mathcal X}_o\}$};
+  \node[dtbox,minimum width=2.4cm,minimum height=1cm,align=center] (d) at (0,3.25)
+    {$\theta_d$\\trend/diffusion};
+  \node[dtbox,minimum width=2.4cm,minimum height=1cm,align=center] (s) at (3,3.25)
+    {$\theta_s$\\seasonality};
+  \node[dtbox,minimum width=2.4cm,minimum height=1cm,align=center] (o) at (6,3.25)
+    {$\widehat{\mathcal X}_o$\\outlier thưa};
+  \draw[dtdash] (theta.south)--(d.north); \draw[dtdash] (theta.south)--(s.north); \draw[dtdash] (theta.south)--(o.north);
+  \node[dtaccent,minimum width=6cm,minimum height=.95cm] (F) at (3,1.25) {$\mathcal F=\{\Theta_1,\Theta_2,\ldots,\Theta_N\}$};
+  \draw[dtarrow] (d.south)--(F.north west); \draw[dtarrow] (s.south)--(F.north); \draw[dtarrow] (o.south)--(F.north east);
+  \node[tinylabel] at (3,.35) {nhiều bộ tham số cho nhiều giai đoạn của stream};
+\end{tikzpicture}
 \end{column}
 \end{columns}
+\vspace{3mm}
+\begin{takeaway}[Một câu ghi nhớ]
+  Một $\Theta$ mô tả một giai đoạn; $\mathcal F$ cho phép D-Tracker \textbf{không ép toàn lịch sử vào một model duy nhất}.
+\end{takeaway}
+\vspace{2mm}
+\papersource{Eq. (4) và Definitions 3--5, §3.3, pp. 5--6.}
 \end{frame}
 
 % ============================================================
 % SLIDE 15
 % ============================================================
-\begin{frame}[shrink=22]{Học tham số: sửa từng mảnh ghép}{Thuật toán \textperiodcentered\ ALS}
+\begin{frame}[shrink=15]{ModelEstimation --- ALS sửa từng nhóm tham số}{Method 05 \textperiodcentered\ cách học}
+\centering
+\begin{tikzpicture}[x=.83cm,y=.75cm]
+  \node[dtaccent,minimum width=3.2cm,minimum height=1.15cm,align=center] (a) at (0,2)
+    {\textbf{1. Reaction--diffusion}\\fit $\theta,w_0$};
+  \node[dtbox,minimum width=3.2cm,minimum height=1.15cm,align=center] (b) at (4.6,2)
+    {\textbf{2. Trend factors}\\update $W^{key},W^{loc}$};
+  \node[dtbox,minimum width=3.2cm,minimum height=1.15cm,align=center] (c) at (9.2,2)
+    {\textbf{3. Seasonal factors}\\update $S^{time},S^{key},S^{loc}$};
+  \node[dtgold,minimum width=3.2cm,minimum height=1.15cm,align=center] (d) at (13.8,2)
+    {\textbf{4. Outliers}\\sparsify residual};
+  \draw[dtarrow] (a)--(b); \draw[dtarrow] (b)--(c); \draw[dtarrow] (c)--(d);
+  \draw[dtdash] (d.south) .. controls (13.8,-.3) and (0,-.3) .. (a.south);
+  \node[tinylabel] at (6.9,-.7) {lặp đến hội tụ};
+\end{tikzpicture}
+\vspace{5mm}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.45\textwidth}
-  \centering
-  \begin{tikzpicture}[x=0.9cm,y=0.8cm,scale=0.84,transform shape]
-    \node[circle,fill=DTNavy,text=white,font=\sffamily\bfseries\small,minimum size=1.35cm,align=center] (c) at (0,0) {lặp\\đến\\hội tụ};
-    \node[dtaccent,minimum width=2.2cm,minimum height=.9cm,align=center] (a) at (0,2.25) {hệ diffusion};
-    \node[dtaccent,minimum width=2.2cm,minimum height=.9cm,align=center] (b) at (3.25,0) {hệ số trend};
-    \node[dtaccent,minimum width=2.2cm,minimum height=.9cm,align=center] (d) at (0,-2.25) {mùa vụ};
-    \node[dtaccent,minimum width=2.2cm,minimum height=.9cm,align=center] (e) at (-3.25,0) {outlier};
-    \draw[dtarrow] (c) -- (a);
-    \draw[dtarrow] (c) -- (b);
-    \draw[dtarrow] (c) -- (d);
-    \draw[dtarrow] (c) -- (e);
-    \draw[dtarrow,DTGold!80] (a) .. controls (-2.4,2.1) and (-3.7,.8) .. (e);
-    \draw[dtarrow,DTGold!80] (b) .. controls (2.3,-2.0) and (.8,-3.2) .. (d);
-  \end{tikzpicture}
+\begin{column}{0.48\textwidth}
+\begin{intuition}[ALS nói bằng lờigì?]
+  Khi sửa một nhóm, \textbf{tạm giữ các nhóm khác cố định}. Sau đó đổi lượt và lặp lại.
+\end{intuition}
 \end{column}
-\begin{column}{0.53\textwidth}
-  \begin{mathcard}[Mục tiêu tối ưu]
-    \centering
-    \(\displaystyle
-      \min_{\Theta}\ \bigl\|\mathcal X^c-\widehat{\mathcal X}_d
-      -\widehat{\mathcal X}_s-\widehat{\mathcal X}_o\bigr\|_F^2\)
-  \end{mathcard}
-  \vspace{2mm}
-  {\small
-  \begin{enumerate}
-    \item Cố định ba phần, cập nhật hệ reaction--diffusion.
-    \item Cập nhật hệ số trend bằng cập nhật nhân, giữ không âm.
-    \item Cập nhật hệ số mùa vụ bằng bình phương tối thiểu.
-    \item Lọc outlier thưa theo chi phí MDL; lặp lại.
-  \end{enumerate}}
-  \vspace{1mm}
-  \begin{caution}[Không phải phép màu]
-    Bài toán không lồi; ALS có thể dừng ở cực trị địa phương. Paper không chứng minh tối ưu toàn cục.
-  \end{caution}
+\begin{column}{0.48\textwidth}
+\begin{mathcard}[Chi tiết cần nhớ]
+  Reaction--diffusion dùng nonlinear least squares + Levenberg--Marquardt; outlier được giữ nếu làm MDL cost giảm.
+\end{mathcard}
 \end{column}
 \end{columns}
+\vspace{3mm}
+\papersource{§4.1, p. 6; Algorithm 2, Appendix A.2, p. 10.}
 \end{frame}
 
 % ============================================================
 % SLIDE 16
 % ============================================================
-\begin{frame}[shrink=8]{Bao nhiêu kênh là đủ? Khi nào đổi mô hình?}{Tự động hóa \textperiodcentered\ MDL + regime}
+\begin{frame}[shrink=24]{MDL --- chọn model đủ tốt nhưng không rườm rà}{Method 06 \textperiodcentered\ tự động chọn cấu trúc}
+\begin{mathcard}\centering$\langle\mathcal X;\mathcal F\rangle=\textcolor{DTGold}{\langle\mathcal F\rangle}+\textcolor{DTTeal}{\langle\mathcal X\mid\mathcal F\rangle}$\end{mathcard}
+\vspace{3mm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.50\textwidth}
-  \begin{mathcard}[Chi phí mô tả]
-    \centering
-    \(\displaystyle
-      \bigl\langle\mathcal X;\mathcal F\bigr\rangle
-      =\underbrace{\bigl\langle\mathcal F\bigr\rangle}_{\text{mô hình}}
-      +\underbrace{\bigl\langle\mathcal X\mid\mathcal F\bigr\rangle}_{\text{phần chưa khớp}}\)
-  \end{mathcard}
-  \vspace{3mm}
-  \begin{tikzpicture}[x=0.85cm,y=0.7cm]
-    \fill[DTNavy!75,rounded corners=1mm] (0,2.2) rectangle (5.1,3.0);
-    \fill[DTTeal!55] (5.1,2.2) rectangle (7.1,3.0);
-    \node[font=\sffamily\small,text=white] at (2.55,2.6) {chi phí mô hình};
-    \node[font=\sffamily\small,text=white] at (6.1,2.6) {dữ liệu};
-    \draw[dtarrow] (0,1.55) -- (0,1.15);
-    \node[anchor=west,font=\sffamily\small,align=left] at (0.15,1.25) {tăng số kênh \(\rightarrow\) mô hình đắt hơn};
-    \draw[dtarrow] (7.2,1.55) -- (7.2,1.15);
-    \node[anchor=east,font=\sffamily\small,align=right] at (7.05,1.25) {nhưng sai ít hơn};
-    \node[font=\sffamily\bfseries\small,text=DTGold!90] at (3.55,0.45) {MDL chọn điểm cân bằng};
-  \end{tikzpicture}
-\end{column}
-\begin{column}{0.48\textwidth}
-  \begin{intuition}[Mỗi giai đoạn một mô hình]
-    \centering
-    \begin{tikzpicture}[x=0.7cm,y=0.7cm]
-      \fill[DTTeal!22,rounded corners=1mm] (0,0.2) rectangle (2.0,1.0);
-      \fill[DTGold!24,rounded corners=1mm] (2.15,0.2) rectangle (4.1,1.0);
-      \fill[DTClaret!18,rounded corners=1mm] (4.25,0.2) rectangle (6.35,1.0);
-      \node[font=\sffamily\scriptsize] at (1.0,0.6) {$\Theta_1$};
-      \node[font=\sffamily\scriptsize] at (3.1,0.6) {$\Theta_2$};
-      \node[font=\sffamily\scriptsize] at (5.3,0.6) {$\Theta_3$};
-      \draw[dtarrow,DTClaret] (2.0,1.3) -- (2.2,1.3);
-      \draw[dtarrow,DTClaret] (4.1,1.3) -- (4.3,1.3);
-      \node[tinylabel,align=center] at (3.2,1.7) {đổi cấu trúc \(\rightarrow\) đổi mô hình};
-      \node[tinylabel] at (3.2,-0.25) {thời gian};
-    \end{tikzpicture}
-  \end{intuition}
-  \vspace{2mm}
+\begin{mathcard}[Hai “hóa đơn”]
   \begin{itemize}
-    \item Số kênh \(d_k,d_l,d_s\) do MDL chọn.
-    \item Outlier nào đáng giữ cũng do chi phí quyết định.
-    \item “Parameter-free” nghĩa là không phải dò tay cấu trúc, không phải không có tham số kỹ thuật.
+    \item \textcolor{DTGold}{\textbf{Model cost}}: mô tả bộ tham số tốn bao nhiêu.
+    \item \textcolor{DTTeal}{\textbf{Data cost}}: mã hóa dữ liệu với model đó tốn bao nhiêu.
   \end{itemize}
+  Thêm kênh có thể giảm data cost nhưng tăng model cost.
+\end{mathcard}
+\end{column}
+\begin{column}{0.46\textwidth}
+\begin{intuition}[Ví dụ minh họa]
+  \centering
+  \begin{tabular}{lccc}
+    \toprule
+    Model & Model cost & Data cost & \textbf{Tổng}\\
+    \midrule
+    A & 20 & 70 & 90\\
+    B & 35 & 45 & \textbf{80}\\
+    \bottomrule
+  \end{tabular}
+  \vspace{2mm}
+
+  Chọn B vì tổng cost nhỏ hơn.
+\end{intuition}
 \end{column}
 \end{columns}
+\vspace{3mm}
+\begin{takeaway}[Giống viết ghi chú]
+  Đủ chi tiết để tái hiện nội dung, nhưng không chép lại mọi thứ. MDL dùng tổng hai cost để chọn cấu trúc và model switching.
+\end{takeaway}
+\vspace{2mm}
+\papersource{Eq. (10), §4.2, p. 6. Các số 20/70/35/45 là minh họa.}
 \end{frame}
 
 % ============================================================
 % SLIDE 17
 % ============================================================
-\begin{frame}[shrink=18]{Dữ liệu mới đến mỗi tuần}{Streaming \textperiodcentered\ chi phí không theo lịch sử}
-\begin{tikzpicture}[node distance=3.5mm]
-  \node[dtbox,text width=2.4cm,align=center,minimum height=1.0cm] (w) {\sffamily\bfseries cửa sổ \(L_c\)};
-  \node[dtaccent,text width=2.6cm,align=center,minimum height=1.0cm,right=of w] (e) {\sffamily\bfseries ước lượng\\[-.5mm]\scriptsize mô hình ứng viên};
-  \node[dtgold,text width=2.55cm,align=center,minimum height=1.0cm,right=of e] (c) {\sffamily\bfseries so chi phí\\[-.5mm]\scriptsize giữ hay thêm?};
-  \node[dtbox,text width=2.4cm,align=center,minimum height=1.0cm,right=of c] (f) {\sffamily\bfseries dự báo \(L_f\)\\[-.5mm]\scriptsize dùng mô hình mới nhất};
-  \draw[dtarrow] (w) -- (e);
-  \draw[dtarrow] (e) -- (c);
-  \draw[dtarrow] (c) -- (f);
-  \draw[dtarrow,dashed,DTNavy!45] (f.south) -- ++(0,-0.5) -| (w.south);
+\begin{frame}[shrink=33]{Model switching + RankUpdate --- thích nghi khi quy luật đổi}{Method 06 \textperiodcentered\ tự động cập nhật}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.54\textwidth}
+\centering
+\begin{tikzpicture}[x=.82cm,y=.68cm]
+  \draw[DTLine,line width=2pt] (0,0)--(8.2,0);
+  \draw[DTTeal!35,fill=DTTeal!12] (0,.45) rectangle (3.3,2.4);
+  \draw[DTGold!45,fill=DTGold!10] (3.5,.45) rectangle (7.4,2.4);
+  \node[biglabel,text=DTTeal] at (1.65,1.55) {$\Theta_1$};
+  \node[tinylabel] at (1.65,1.05) {regime cũ};
+  \node[biglabel,text=DTGold] at (5.45,1.55) {$\Theta_2$};
+  \node[tinylabel] at (5.45,1.05) {regime mới};
+  \draw[dtdash] (3.4,2.6)--(3.4,2.85);
+  \node[tinylabel] at (3.4,3.2) {switch};
 \end{tikzpicture}
 \vspace{3mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.48\textwidth}
+\begin{mathcard}[Accept candidate khi]
   \centering
-  \begin{tikzpicture}[x=0.76cm,y=0.54cm]
-    \draw[->,DTNavy!45] (0,0) -- (7.2,0) node[below,tinylabel]{độ dài stream};
-    \draw[->,DTNavy!45] (0,0) -- (0,3.0) node[left,tinylabel,rotate=90]{thời gian};
-    \draw[DTTeal,line width=1.5pt] plot[smooth] coordinates {(0.2,0.8) (1.2,0.85) (2.3,0.9) (3.5,0.9) (4.7,0.95) (6.8,0.98)};
-    \draw[DTGold,line width=1.2pt] plot[smooth] coordinates {(0.2,0.6) (1.2,0.9) (2.3,1.3) (3.5,1.8) (4.7,2.15) (6.8,2.6)};
-    \node[font=\sffamily\scriptsize,text=DTTeal] at (5.1,0.55) {D-Tracker};
-    \node[font=\sffamily\scriptsize,text=DTGold!90] at (5.7,2.75) {baseline};
-    \node[font=\sffamily\scriptsize,text=DTNavy!45] at (3.4,-0.45) {sơ đồ minh họa};
-  \end{tikzpicture}
+  $\langle\mathcal X^c;\mathcal F\cup\Theta'\rangle<\langle\mathcal X^c;\mathcal F\rangle$
+\end{mathcard}
 \end{column}
-\begin{column}{0.48\textwidth}
-  \begin{itemize}
-    \item Mỗi bước chỉ giữ \(\mathcal X^c=\{X_{t_c-L_c+1},\dots,X_{t_c}\}\).
-    \item Không quét lại toàn bộ lịch sử.
-    \item Tập mô hình có thể tăng khi có regime mới; rank update tạo các “spike” thời gian.
-  \end{itemize}
-  \begin{caution}[Đọc đúng scalability]
-    Không phải mọi phép tính là \(O(1)\). Chi phí vẫn phụ thuộc số từ khóa, địa điểm, rank và số lần cập nhật cấu trúc.
-  \end{caution}
+\begin{column}{0.43\textwidth}
+\begin{intuition}[ModelUpdate]
+  Candidate chỉ được thêm vào full parameter set khi \textbf{tổng MDL cost giảm}.
+\end{intuition}
+\vspace{3mm}
+\begin{questioncard}
+  \softlabel{RANKUPDATE}\par
+  Sau đó thử cấu trúc lân cận: prose nói mỗi lần chỉ đổi \textbf{một rank đi một đơn vị}, fit lại và giữ lựa chọn có cost thấp hơn.
+\end{questioncard}
+\vspace{3mm}
+\begin{caution}[Điều kiện cần nói rõ]
+  RankUpdate gọi ModelEstimation nhiều lần, nên có thể tạo spike về runtime.
+\end{caution}
 \end{column}
 \end{columns}
+\vspace{2mm}
+\papersource{§4.3, p. 7; Algorithms 3--4, p. 11; Figure 4 discussion, p. 8.}
 \end{frame}
-
-\section{Ứng dụng}
 
 % ============================================================
 % SLIDE 18
 % ============================================================
-\begin{frame}{Ứng dụng}{Phần 03 \textperiodcentered\ Từ tín hiệu đến hành động}
-\begin{columns}[c,onlytextwidth]
-\begin{column}{0.25\textwidth}
-  {\sffamily\bfseries\fontsize{58}{58}\selectfont\color{DTGold}03\par}
-  \vspace{2mm}
-  {\color{DTGold}\rule{2.2cm}{1pt}}
+\begin{frame}[shrink=10]{Streaming --- mỗi tuần mới đi qua ba bước}{Method 07 \textperiodcentered\ Algorithm 1}
+\centering
+\begin{tikzpicture}[x=.86cm,y=.72cm]
+  \node[dtbox,minimum width=2.5cm,minimum height=1.35cm,align=center] (x) at (0,0)
+    {$\mathcal X^c$\\cửa sổ mới};
+  \node[dtaccent,minimum width=3.1cm,minimum height=1.35cm,align=center] (e) at (4.1,0)
+    {\textbf{ModelEstimation}\\tạo candidate $\Theta'$};
+  \node[dtgold,minimum width=3.1cm,minimum height=1.35cm,align=center] (u) at (8.4,0)
+    {\textbf{ModelUpdate}\\update $\mathcal F$ + ranks};
+  \node[dtbox,minimum width=2.6cm,minimum height=1.35cm,align=center] (f) at (12.6,0)
+    {\textbf{Forecast}\\$\widehat X_{t_c+L_f}$};
+  \draw[dtarrow] (x)--(e); \draw[dtarrow] (e)--(u); \draw[dtarrow] (u)--(f);
+  \draw[dtdash] (f.south) .. controls (12.6,-2) and (0,-2) .. (x.south);
+  \node[tinylabel] at (6.3,-2.25) {nhận observation mới rồi lặp lại};
+\end{tikzpicture}
+\vspace{4mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\begin{intuition}[Vì sao scalable theo độ dài stream?]
+  Mỗi bước xét một \textbf{cửa sổ gần nhất}, thay vì tăng input theo toàn bộ lịch sử.
+\end{intuition}
 \end{column}
-\begin{column}{0.68\textwidth}
-  {\large\bfseries\color{DTNavy}Mô hình chỉ có ích khi trả lời được một quyết định.}\par
-  \vspace{5mm}
-  {\small
-  \begin{itemize}
-    \item Marketing: thị trường dẫn đầu, ngân sách, thời điểm.
-    \item Y tế công cộng: tín hiệu lan, chuẩn bị nguồn lực.
-    \item Sản phẩm: công nghệ lên/xuống, địa phương hóa.
-  \end{itemize}}
+\begin{column}{0.48\textwidth}
+\begin{caution}[Không nói quá]
+  Độ phức tạp Lemma 1 không bao trọn mọi seasonal/outlier/ODE/RankUpdate cost. “Independent of stream length” không có nghĩa mọi phép toán là O(1).
+\end{caution}
 \end{column}
 \end{columns}
+\vspace{3mm}
+\papersource{Algorithm 1, p. 5; Lemma 1, p. 6; Appendix A.3, p. 10; §5 Q2, p. 8.}
 \end{frame}
+
+\section{Experiments of the paper}
 
 % ============================================================
 % SLIDE 19
 % ============================================================
-\begin{frame}[shrink=12]{Dùng nó để quyết định gì?}{Ba ứng dụng}
+\begin{frame}[shrink=21]{Paper kiểm tra ba câu hỏi gì?}{Paper experiments \textperiodcentered\ Q1--Q3}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.32\textwidth}
-  \begin{tcolorbox}[enhanced,colback=white,colframe=DTTeal!55,boxrule=.7pt,arc=3mm,height=4.9cm,halign=left]
-    \begin{tikzpicture}
-      \fill[DTTeal!18] (0,0) circle (.45);
-      \draw[DTTeal,line width=1.2pt] (.2,.1) -- (.05,.35) -- (.3,.55);
-      \fill[DTTeal] (.12,.15) circle (2pt);
-    \end{tikzpicture}\hspace{1mm}{\sffamily\bfseries\large Marketing}\par\vspace{3mm}
-    {\small
-    \textbf{Hỏi:} nước nào dẫn đầu, ngân sách nên dồn đâu?\\[2mm]
-    \textbf{Nhận:} nhóm thị trường, hướng lan, dự báo 3/6/9 tháng.\\[2mm]
-    \textbf{Quyết:} thứ tự ra mắt và phân bổ ngân sách.}
-  \end{tcolorbox}
+\begin{intuition}[Q1 \quad Accuracy]
+  MAE và RMSE ở nhiều tầm dự báo; thấp hơn là tốt hơn.
+\end{intuition}
 \end{column}
 \begin{column}{0.32\textwidth}
-  \begin{tcolorbox}[enhanced,colback=white,colframe=DTGold!80,boxrule=.7pt,arc=3mm,height=4.9cm,halign=left]
-    \begin{tikzpicture}
-      \fill[DTGold!22] (0,0) circle (.45);
-      \draw[DTGold!95,line width=1.2pt] (-.15,.15) -- (0,.35) -- (.2,.18);
-      \fill[DTGold!95] (.18,.38) circle (2pt);
-    \end{tikzpicture}\hspace{1mm}{\sffamily\bfseries\large Y tế công cộng}\par\vspace{3mm}
-    {\small
-    \textbf{Hỏi:} vùng nào có nguy cơ tăng tiếp?\\[2mm]
-    \textbf{Nhận:} tín hiệu lan theo nhóm địa điểm, dự báo ngắn hạn.\\[2mm]
-    \textbf{Quyết:} chuẩn bị nguồn lực, giám sát sớm.}
-  \end{tcolorbox}
+\begin{mathcard}[Q2 \quad Scalability]
+  Wall-clock theo stream length và average computation time.
+\end{mathcard}
 \end{column}
 \begin{column}{0.32\textwidth}
-  \begin{tcolorbox}[enhanced,colback=white,colframe=DTClaret!65,boxrule=.7pt,arc=3mm,height=4.9cm,halign=left]
-    \begin{tikzpicture}
-      \fill[DTClaret!15] (0,0) circle (.45);
-      \draw[DTClaret!85,line width=1.2pt] (-.2,.2) -- (.1,.1) -- (.25,.35);
-      \fill[DTClaret!85] (-.16,.3) circle (2pt);
-      \fill[DTClaret!85] (.2,.05) circle (2pt);
-    \end{tikzpicture}\hspace{1mm}{\sffamily\bfseries\large Sản phẩm / công nghệ}\par\vspace{3mm}
-    {\small
-    \textbf{Hỏi:} công nghệ nào đang lên hoặc bị thay thế?\\[2mm]
-    \textbf{Nhận:} nhóm từ khóa, động học tăng/giảm, hướng dịch chuyển.\\[2mm]
-    \textbf{Quyết:} ưu tiên tính năng, địa phương hóa.}
-  \end{tcolorbox}
+\begin{takeaway}[Q3 \quad Effectiveness]
+  Latent dynamics, factors và diffusion có giúp diễn giải dữ liệu không?
+\end{takeaway}
 \end{column}
 \end{columns}
+\vspace{5mm}
+\centering
+{\small
+\begin{tabular}{@{}llcc@{}}
+  \toprule
+  Loại dữ liệu & D-Tracker input window & Forecast horizons & Đơn vị\\
+  \midrule
+  GoogleTrends & $L_c=104$ & 13, 26, 39 & tuần\\
+  Covid-19 & $L_c=56$ & 7, 14, 21 & ngày\\
+  \bottomrule
+\end{tabular}}
+\vspace{4mm}
+\begin{questioncard}
+  \softlabel{BASELINES}\par
+  DISMO \textperiodcentered\ FluxCube \textperiodcentered\ PatchTST \textperiodcentered\ Autoformer \textperiodcentered\ DeepAR \textperiodcentered\ LaST \textperiodcentered\ CoST\\[1mm]
+  {\small Table 3 nhân mọi MAE/RMSE với $10^{-2}$; reproduction phải giữ đúng scale này.}
+\end{questioncard}
 \vspace{2mm}
-\begin{takeaway}[Công thức ứng dụng]
-  Dữ liệu $\rightarrow$ tín hiệu có cấu trúc $\rightarrow$ ưu tiên hành động.
-  \hfill{\small\color{DTClaret!80}Luôn ghép với chuyên gia miền và kiểm chứng nhân quả khi cần.}
-\end{takeaway}
+\papersource{§5, Q1--Q3 và experimental protocol, p. 7.}
 \end{frame}
-
-\section{Kết luận}
 
 % ============================================================
 % SLIDE 20
 % ============================================================
-\begin{frame}{Kết luận}{Phần 04 \textperiodcentered\ Đọc kết quả có trách nhiệm}
-\begin{columns}[c,onlytextwidth]
-\begin{column}{0.25\textwidth}
-  {\sffamily\bfseries\fontsize{58}{58}\selectfont\color{DTGold}04\par}
-  \vspace{2mm}
-  {\color{DTGold}\rule{2.2cm}{1pt}}
+\begin{frame}[shrink=33]{Sáu thực nghiệm trên GoogleTrends và Covid-19}{Paper experiments \textperiodcentered\ data setup}
+\centering
+{\small
+\begin{tabular}{@{}llp{7.0cm}l@{}}
+  \toprule
+  ID & Dataset & Keywords / signals & Shape $(t,k,l)$\\
+  \midrule
+  1 & Device & 8 thiết bị: Apple Watch, \ldots, iPhone & $(676,8,50)$\\
+  2 & Pythonlib & 7 thư viện: matplotlib, \ldots, tensorflow & $(676,7,50)$\\
+  3 & VoD & 7 dịch vụ: Apple TV, \ldots, youtube & $(676,7,50)$\\
+  4 & Chatapp & 8 ứng dụng: facebook, \ldots, whatsapp & $(676,8,50)$\\
+  5 & Language & 9 ngôn ngữ/công nghệ web & $(676,9,50)$\\
+  6 & Covid-19 & new infected, new deceased & $(990,2,50)$\\
+  \bottomrule
+\end{tabular}}
+\vspace{4mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\begin{intuition}[GoogleTrends]
+  Search volume theo tuần, 2010--2022.
+\end{intuition}
 \end{column}
-\begin{column}{0.68\textwidth}
-  {\large\bfseries\color{DTNavy}Một mô hình tốt không chỉ dự báo đúng, mà còn phải nói đúng giới hạn của nó.}\par
-  \vspace{5mm}
-  {\small
-  \begin{itemize}
-    \item Kết quả paper hỗ trợ những gì?
-    \item Những kết luận nào không được phép rút ra?
-    \item Ba điều nên mang về.
-  \end{itemize}}
+\begin{column}{0.48\textwidth}
+\begin{mathcard}[Covid-19]
+  Số ca theo ngày, Jan 2020--Sep 2022.
+\end{mathcard}
 \end{column}
 \end{columns}
+\vspace{3mm}
+\begin{questioncard}
+  Toàn bộ được normalize về min 0, max 1. Table 4 dùng shape \textbf{(time, keyword, location)}; equations dùng \textbf{(keyword, location, time)}.
+\end{questioncard}
+\vspace{2mm}
+\begin{caution}[Chi tiết cần giữ khi reproduce]
+  Prose ghi 48 countries còn Table 4 ghi dimension 50; slide không tự “sửa” mâu thuẫn này.
+\end{caution}
+\vspace{1mm}
+\papersource{§5 Datasets, p. 7; Appendix B.1, Table 4, p. 11.}
 \end{frame}
 
 % ============================================================
 % SLIDE 21
 % ============================================================
-\begin{frame}[shrink=2]{Đáng tin đến đâu?}{Bằng chứng và giới hạn}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.55\textwidth}
-  \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.32\textwidth}
-    \begin{tcolorbox}[enhanced,colback=DTMist,colframe=DTTeal!45,boxrule=.5pt,arc=2mm,height=2.5cm,halign=center]
-      {\sffamily\bfseries\LARGE\color{DTTeal}6}\par{\scriptsize bộ dữ liệu thật}
-    \end{tcolorbox}
-  \end{column}
-  \begin{column}{0.32\textwidth}
-    \begin{tcolorbox}[enhanced,colback=DTWarm,colframe=DTGold!60,boxrule=.5pt,arc=2mm,height=2.5cm,halign=center]
-      {\sffamily\bfseries\LARGE\color{DTGold!90}MAE}\par{\scriptsize tốt nhất theo paper}
-    \end{tcolorbox}
-  \end{column}
-  \begin{column}{0.32\textwidth}
-    \begin{tcolorbox}[enhanced,colback=white,colframe=DTLine,boxrule=.5pt,arc=2mm,height=2.5cm,halign=center]
-      {\sffamily\bfseries\Large\color{DTNavy}gần phẳng}\par{\scriptsize thời gian theo stream}
-    \end{tcolorbox}
-  \end{column}
-  \end{columns}
-  \vspace{4mm}
-  \begin{itemize}
-    \item Paper báo cáo nhanh hơn tới \(8.0\times\); “cải thiện tới 57\%” không nêu rõ mẫu số tại câu đó.
-    \item Các module seasonal, diffusion, outlier và rank update có đóng góp khác nhau tùy dataset.
-    \item Kết quả mạnh nhất là sự kết hợp: diễn giải được + cập nhật theo stream.
-  \end{itemize}
-\end{column}
-\begin{column}{0.43\textwidth}
-  \begin{caution}[Ba điều không được suy ra]
-    \begin{enumerate}
-      \item \textbf{Nhân quả:} mũi tên diffusion không chứng minh A gây ra B.
-      \item \textbf{Bất định:} mô hình trả về dự báo điểm, không có khoảng tin cậy.
-      \item \textbf{Vạn năng:} hiệu quả phụ thuộc dữ liệu, định nghĩa vùng và cửa sổ.
-    \end{enumerate}
-  \end{caution}
-  \vspace{2mm}
-  {\fontsize{5.9}{6.8}\selectfont\color{DTMuted}Nguồn: Higashiguchi et al. (2025), arXiv:2505.00242v1. Đây là claim của paper, không phải kết quả tái hiện.}
-\end{column}
-\end{columns}
+\begin{frame}[shrink=30]{Q1 Accuracy --- D-Tracker dẫn đầu MAE trong thiết lập paper}{Paper experiments \textperiodcentered\ Table 3}
+\centering
+{\small
+\begin{tabular}{@{}lccccc@{}}
+  \toprule
+  Dataset & $L_f$ & D-Tracker MAE & Best baseline & Baseline MAE & Giảm MAE\\
+  \midrule
+  Device & 26 & \textbf{0.90} & DISMO & 1.19 & 24.4\%\\
+  Pythonlib & 26 & \textbf{0.32} & CoST & 0.45 & 28.9\%\\
+  VoD & 26 & \textbf{0.59} & DISMO & 0.66 & 10.6\%\\
+  Chatapp & 26 & \textbf{0.34} & DISMO & 0.48 & 29.2\%\\
+  Language & 26 & \textbf{0.35} & Autoformer & 0.41 & 14.6\%\\
+  Covid-19 & 14 & \textbf{0.70} & Autoformer & 1.18 & 40.7\%\\
+  \bottomrule
+\end{tabular}}
+\vspace{3mm}
+\begin{intuition}[Cách đọc bảng]
+  Mọi MAE đều có scale \textbf{$\times10^{-2}$}. “Giảm MAE” được tính lại bằng $100(B-D)/B$ từ chính các giá trị Table 3; đây là phép tính trên số paper, không phải kết quả reproduce.
+\end{intuition}
+\vspace{3mm}
+\begin{takeaway}[Kết quả đầy đủ paper báo cáo]
+  D-Tracker có best MAE trên các datasets và horizons được đánh giá. Paper đồng thời nói RMSE nhạy với lỗi lớn; backup A4 giữ đủ 18 cặp MAE--RMSE của D-Tracker.
+\end{takeaway}
+\vspace{2mm}
+\papersource{Table 3, p. 8; Q1 narrative, §5, p. 7.}
 \end{frame}
 
 % ============================================================
 % SLIDE 22
 % ============================================================
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay]
-  \fill[DTPaper] (current page.north west) rectangle (current page.south east);
-  \fill[DTGold] ($(current page.north west)+(0.72,-0.55)$) rectangle ++(0.065,-7.9);
-  \fill[DTGold!8] (current page.north east) circle (4.7cm);
-  \node[anchor=north west] at ($(current page.north west)+(1.2,-1.22)$) {%
-    \begin{minipage}{13cm}
-      {\sffamily\bfseries\fontsize{24}{28}\selectfont\color{DTNavy}Ba điều mang về\par}
-      \vspace{4mm}
-      {\large
-      \textcolor{DTGold}{\textbf{01}}\quad Tách tín hiệu trước khi tìm quy luật.\\[2.2mm]
-      \textcolor{DTGold}{\textbf{02}}\quad Nén thành vài kênh để con người hiểu được.\\[2.2mm]
-      \textcolor{DTGold}{\textbf{03}}\quad Dự báo và thích nghi khi dữ liệu mới đến.}
-      \vspace{4mm}
-      \par{\color{DTLine}\rule{\textwidth}{.6pt}}
-      \vspace{3mm}
-      \par{\sffamily\Large\bfseries\color{DTGold}Hỏi \& đáp}
-      \par{\small\color{DTMuted}D-Tracker \textperiodcentered\ KDD 2025 \textperiodcentered\ arXiv:2505.00242}
-    \end{minipage}};
-\end{tikzpicture}
+\begin{frame}[shrink=31]{Ablation --- mỗi thành phần giúp ở những dữ liệu khác nhau}{Paper experiments \textperiodcentered\ Figure 3}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.59\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{figures/drop_rate.png}\par
+  {\scriptsize\color{DTMuted}Higashiguchi et al., KDD 2025, Figure 3 \textperiodcentered\ CC BY 4.0}
+\end{column}
+\begin{column}{0.38\textwidth}
+  \begin{itemize}
+    \item \textbf{Seasonal:} hữu ích ở Device, Language, Covid-19 --- các dữ liệu seasonality mạnh.
+    \item \textbf{Diffusion:} cải thiện rõ ở VoD và Chatapp.
+    \item \textbf{Outlier:} giúp một số dữ liệu bằng cách lọc abrupt changes.
+    \item \textbf{RankUpdate:} thích nghi cấu trúc qua stream.
+  \end{itemize}
+  \vspace{2mm}
+  \begin{caution}[Không phải lúc nào cũng giúp]
+    Language không hưởng lợi từ diffusion. Seasonal/outlier cũng có thể không cải thiện khi những pattern này vắng mặt hoặc hiếm.
+  \end{caution}
+\end{column}
+\end{columns}
+\vspace{2mm}
+{\small Ablation dùng horizon \textbf{26 tuần} hoặc \textbf{14 ngày}; so sánh full model với bỏ từng mechanism.}
+\vspace{1mm}
+\papersource{Figure 3 và discussion, §5 Q1, pp. 7--8.}
+\end{frame}
+
+% ============================================================
+% SLIDE 23
+% ============================================================
+\begin{frame}[shrink=50]{Q2 Scalability --- nhanh hơn, nhưng vẫn có RankUpdate spikes}{Paper experiments \textperiodcentered\ Figure 4}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.485\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{figures/scalability.png}\par
+  {\scriptsize Wall-clock time vs. stream length}
+\end{column}
+\begin{column}{0.485\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{figures/avgtime.png}\par
+  {\scriptsize Average computation time}
+\end{column}
+\end{columns}
+\vspace{3mm}
+\begin{intuition}[Paper báo cáo]
+  D-Tracker có thời gian xử lý không phụ thuộc tổng stream length và fastest average time; §1 nêu mức \textbf{“up to 8.0$\times$ faster”}.
+\end{intuition}
+\vspace{3mm}
+\begin{caution}[Đọc cả spike]
+  Các spike nhỏ đến từ \textbf{RankUpdate}: thử nhiều rank candidates nên phải chạy ModelEstimation nhiều lần. Đây không phải claim rằng mọi phép toán là O(1).
+\end{caution}
+\vspace{2mm}
+{\scriptsize\color{DTMuted}Higashiguchi et al., KDD 2025, Figure 4 \textperiodcentered\ CC BY 4.0 \textperiodcentered\ §5 Q2, p. 8.}
+\end{frame}
+
+% ============================================================
+% SLIDE 24
+% ============================================================
+\begin{frame}[shrink=41]{Q3 Effectiveness --- factors giúp kể câu chuyện trong dữ liệu}{Paper experiments \textperiodcentered\ Figure 1(b)}
+\centering
+\includegraphics[width=.94\linewidth,height=3.45cm,keepaspectratio]{figures/Figure1_b.png}\par
+{\scriptsize\color{DTMuted}Higashiguchi et al., KDD 2025, Figure 1(b), Device data \textperiodcentered\ CC BY 4.0}
+\vspace{3mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.32\textwidth}
+\begin{intuition}[Latent dynamics]
+  Nén thành các nhóm keyword/location và đường dynamics theo thời gian.
+\end{intuition}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{mathcard}[2010--2011]
+  Paper diễn giải Galaxy/iPad liên hệ dynamics có diffusion từ Group 1 sang Group 2.
+\end{mathcard}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{takeaway}[2019--2021]
+  Paper diễn giải iPhone tăng ở Group 2 và diffusion từ Group 1 sang Group 2 ở dynamics khác.
+\end{takeaway}
+\end{column}
+\end{columns}
+\vspace{2mm}
+\begin{caution}[Ranh giới diễn giải]
+  Factor cao = liên hệ mạnh hơn \textbf{trong model}. Structural interpretability không phải bằng chứng causal experiment.
+\end{caution}
+\vspace{1mm}
+\papersource{§1.1, p. 2; effectiveness discussion, §5 Q3, p. 8.}
+\end{frame}
+
+\section{Reproduction of our team}
+
+% ============================================================
+% SLIDE 25
+% ============================================================
+\begin{frame}[shrink=30]{Reproduction setup --- khung cần ghi lại}{Reproduction \textperiodcentered\ protocol}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\begin{mathcard}[Paper target --- đã xác minh]
+  \small
+  \begin{tabular}{@{}ll@{}}
+    Dữ liệu & 5 GoogleTrends + Covid-19\\
+    Normalize & min 0, max 1\\
+    GoogleTrends & $L_c{=}104$; $L_f{=}13/26/39$\\
+    Covid-19 & $L_c{=}56$; $L_f{=}7/14/21$\\
+    Init ranks & $(d_k,d_l){\in}[2,4]$; $d_s{\in}[0,4]$\\
+    Objective & minimize MDL Eq. (10)
+  \end{tabular}
+\end{mathcard}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{questioncard}
+  \softlabel{TEAM CONFIG --- CHỜ THỰC NGHIỆM}\par
+  \small
+  \begin{tabular}{@{}ll@{}}
+    Code version / commit & ---\\
+    Dataset version + hash & ---\\
+    Split và evaluation loop & ---\\
+    Thư viện / phiên bản & ---\\
+    Hardware & ---\\
+    Seeds / stopping criterion & ---
+  \end{tabular}
+\end{questioncard}
+\end{column}
+\end{columns}
+\vspace{5mm}
+\begin{intuition}[Quy ước trên ba slide reproduction]
+  Ký hiệu \textbf{---} = \textbf{Nhóm sẽ bổ sung sau khi chạy thực nghiệm}. Phần bên trái là protocol trích từ paper, không phải xác nhận rằng nhóm đã chạy.
+\end{intuition}
+\vspace{3mm}
+\papersource{§5 Q1, p. 7; Appendix B.1, p. 11. Cột team chưa có dữ liệu thực nghiệm.}
+\end{frame}
+
+% ============================================================
+% SLIDE 26
+% ============================================================
+\begin{frame}[shrink=12]{Reproduction results --- Paper vs. nhóm}{Reproduction \textperiodcentered\ bảng kết quả}
+\centering
+{\small
+\begin{tabular}{@{}llcccccc@{}}
+  \toprule
+  Dataset & $L_f$ & Paper MAE & Team MAE & Paper RMSE & Team RMSE & Team runtime\\
+  \midrule
+  Device & 26 & 0.90 & --- & 1.95 & --- & ---\\
+  Pythonlib & 26 & 0.32 & --- & 1.54 & --- & ---\\
+  VoD & 26 & 0.59 & --- & 1.83 & --- & ---\\
+  Chatapp & 26 & 0.34 & --- & 1.01 & --- & ---\\
+  Language & 26 & 0.35 & --- & 1.14 & --- & ---\\
+  Covid-19 & 14 & 0.70 & --- & 2.42 & --- & ---\\
+  \bottomrule
+\end{tabular}}
+\vspace{4mm}
+\begin{caution}[Không được trộn hai nguồn]
+  Paper columns lấy trực tiếp Table 3, scale $\times10^{-2}$. Team columns là \textbf{--- = Nhóm sẽ bổ sung sau khi chạy thực nghiệm}; không dùng số paper để lấp team results.
+\end{caution}
+\vspace{4mm}
+\begin{takeaway}[Khi điền kết quả]
+  Chỉ so sánh nếu \textbf{cùng dataset version, normalization, evaluation loop và horizon}; kèm link tới log/code commit và nêu mọi sai khác.
+\end{takeaway}
+\vspace{2mm}
+\papersource{Table 3, p. 8 cho paper columns. Nhóm chưa cung cấp kết quả reproduction.}
+\end{frame}
+
+% ============================================================
+% SLIDE 27
+% ============================================================
+\begin{frame}[shrink=35]{Reproduction analysis --- điều gì giống và khác paper?}{Reproduction \textperiodcentered\ lessons}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.32\textwidth}
+\begin{intuition}[Accuracy]
+  So MAE/RMSE với paper và baselines ở cùng protocol. Nêu cả những dòng không tái hiện được.\\[3mm]
+  \textbf{---}
+\end{intuition}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{mathcard}[Runtime + resources]
+  Ghi wall-clock, hardware và các RankUpdate spikes; khác máy paper phải nói rõ.\\[3mm]
+  \textbf{---}
+\end{mathcard}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{questioncard}
+  \softlabel{ISSUES + ADJUSTMENTS}\par
+  Missing data? Version differences? Stopping criterion? Rank updates? Điều chỉnh gì và vì sao?\\[3mm]
+  \textbf{---}
+\end{questioncard}
+\end{column}
+\end{columns}
+\vspace{5mm}
+\begin{takeaway}[Mục tiêu reproduction]
+  Không chỉ tái tạo một con số đẹp; cần giải thích \textbf{điều kiện, sai khác và bằng chứng log}.
+\end{takeaway}
+\vspace{4mm}
+\centering
+{\color{DTMuted}--- = Nhóm sẽ bổ sung sau khi chạy thực nghiệm. Không có runtime hay conclusion giả định.}
+\end{frame}
+
+\section{Demo and conclusion}
+
+% ============================================================
+% SLIDE 28
+% ============================================================
+\begin{frame}{Demo}{Nội dung do nhóm bổ sung}
+\end{frame}
+
+% ============================================================
+% SLIDE 29
+% ============================================================
+\begin{frame}[shrink=27]{Ba điều mang về --- Q\&A}{Conclusion \textperiodcentered\ takeaway}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.32\textwidth}
+\begin{intuition}[01 \quad Nén và tách]
+  Tensor stream được tách thành trend/diffusion, seasonality và outlier; latent dynamics + factors làm dữ liệu dễ đọc hơn.
+\end{intuition}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{mathcard}[02 \quad Mô hình hóa]
+  Reaction mô tả tự tăng/giảm; diffusion mô tả liên hệ giữa latent groups và giúp structural interpretation.
+\end{mathcard}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{takeaway}[03 \quad Thích nghi]
+  ALS fit từng nhóm; MDL chọn model/rank/regime; cửa sổ streaming hỗ trợ dự báo liên tục.
+\end{takeaway}
+\end{column}
+\end{columns}
+\vspace{7mm}
+\centering
+{\LARGE\bfseries\color{DTNavy}Nén cho gọn --- mô hình hóa cho hiểu --- cập nhật cho hợp hiện tại.}
+\vspace{5mm}
+
+{\Large\color{DTGold}\textbf{Hỏi \& đáp}}
+\vspace{3mm}
+\begin{caution}[Một ranhn giới cuối]
+  Interpretable diffusion trong model không đồng nghĩa với chứng minh nhân quả. Reproduction và Demo chờ kết quả thật của nhóm.
+\end{caution}
+\vspace{2mm}
+\papersource{§6, p. 9.}
 \end{frame}
 
 \appendix
+\section{Backup}
 
 % ============================================================
 % SLIDE A1
 % ============================================================
-\begin{frame}[shrink=4]{Backup 01: tensor và Tucker}{Dùng cho câu hỏi kỹ thuật}
+\begin{frame}[shrink=27]{Backup 01 --- Tensor/Tucker dimensions và lỗi in}{Technical backup \textperiodcentered\ Eq. (2)}
+\formula{\widehat{\mathcal X}_d=\mathcal W^{core}\times_{key}W^{key}\times_{loc}W^{loc}}
+\vspace{3mm}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.48\textwidth}
-  \begin{mathcard}[Kích thước]
-    \begin{tabular}{@{}ll@{}}
-      $\mathcal X^c$ & $k\times l\times L_c$\\
-      $\mathcal W^{core}$ & $d_k\times d_l\times L_c$\\
-      $W^{key}$ & $d_k\times k$, không âm\\
-      $W^{loc}$ & $d_l\times l$, không âm
-    \end{tabular}
-  \end{mathcard}
-  \vspace{3mm}
-  {\small
-  \[
-    \widehat x_{d,uv}(t)
-    =\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}
-    w^{core}_{ij}(t)W^{key}_{iu}W^{loc}_{jv}
-  \]}
-\end{column}
-\begin{column}{0.48\textwidth}
+\begin{column}{0.50\textwidth}
+\begin{mathcard}[Kích thước]
   \begin{itemize}
-    \item \(d_k\ll k,\ d_l\ll l\): số nhóm ẩn nhỏ hơn số từ khóa/địa điểm.
-    \item Mode product chỉ là trải lõi theo từng chiều rồi cộng có trọng số.
-    \item Hệ số không âm giữ chiều của động học, phục vụ diễn giải.
-    \item Paper dùng Tucker cho trend; seasonal dùng PARAFAC.
+    \item $k,l$: số keyword/location.
+    $L_c$: độ dài window.
+    \item $\mathcal W^{core}\in\mathbb R^{d_k\times d_l\times L_c}$.
+    \item $W^{key}\in\mathbb R_+^{d_k\times k}$.
+    $W^{loc}\in\mathbb R_+^{d_l\times l}$.
+    \item Table 4: $(time,keyword,location)$; model equation: $(keyword,location,time)$.
   \end{itemize}
-  \begin{caution}[Typo]
-    Paper viết \(d_l\ll k\) ở một chỗ; theo kích thước và ngữ cảnh phải là \(d_l\ll l\).
-  \end{caution}
+\end{mathcard}
+\end{column}
+\begin{column}{0.46\textwidth}
+\begin{caution}[Likely typo trong paper]
+  §3.3 viết $d_l\ll k$. Theo shape $W^{loc}\in\mathbb R_+^{d_l\times l}$ và ngữ cảnh nén location, điều phù hợp là $d_l\ll l$. Slide công bố đây là phán đoán theo kích thước, không “chỉnh lặng” paper.
+\end{caution}
+\vspace{3mm}
+\begin{intuition}[Ý nghĩa nonnegative factors]
+  Projection không đảo dấu latent relationships; giá trị cao biểu thị association mạnh hơn, không phải causal coefficient.
+\end{intuition}
 \end{column}
 \end{columns}
+\vspace{2mm}
+\papersource{§3.3, pp. 4--5; Table 4, p. 11.}
 \end{frame}
 
 % ============================================================
 % SLIDE A2
 % ============================================================
-\begin{frame}{Backup 02: bốn phương trình mô hình}{Eq. (1)--(4)}
-\begin{mathcard}[Mô hình và các thành phần]
+\begin{frame}[shrink=44]{Backup 02 --- Bốn equations và initialization}{Technical backup \textperiodcentered\ model}
 \small
-\begin{align*}
-\mathcal X^c&\approx\widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o
-&&\text{(1)}\\
-\widehat{\mathcal X}_d&=\mathcal W^{core}\times_{key}W^{key}\times_{loc}W^{loc}
-&&\text{(2)}\\
-\frac{dw_{ij}}{dt}&=a_{ij}w_{ij}
-+\sum_{j'}d_{ijj'}(w_{ij'}-w_{ij})
-&&\text{(3)}\\
-\widehat{\mathcal X}_s&=S^{time}\times_{key}S^{key}\times_{loc}S^{loc}
-&&\text{(4)}
-\end{align*}
-\end{mathcard}
-\vspace{3mm}
+\begin{align}
+  \mathcal X^c&\approx\widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o,\\
+  \widehat{\mathcal X}_d&=\mathcal W^{core}\times_{key}W^{key}\times_{loc}W^{loc},\\
+  \frac{dw_{ij}}{dt}&=a_{ij}w_{ij}+\sum_{j'}d_{ijj'}(w_{ij'}-w_{ij}),\\
+  \widehat{\mathcal X}_s&=S^{time}\times_{key}S^{key}\times_{loc}S^{loc}.
+\end{align}
+\vspace{2mm}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.48\textwidth}
-  {\small
-  \(\theta=\{\mathbf A,\mathcal D\}\);\\
-  \(\theta_d=\{W^{key},W^{loc},\theta\}\);\\
-  \(\theta_s=\{S^{time},S^{key},S^{loc}\}\).}
+\begin{column}{0.49\textwidth}
+\begin{mathcard}[Parameter hierarchy]
+  \begin{itemize}
+    \item $\theta=\{A,\mathcal D\}$; $f_\theta(\theta,w_0,L)$ generates latent trajectory.
+    \item $\theta_d=\{W^{key},W^{loc},\theta\}$.
+    \item $\theta_s=\{S^{time},S^{key},S^{loc}\}$.
+    \item $\Theta=\{\theta_d,\theta_s,\widehat{\mathcal X}_o\}$.
+    $\mathcal F=\{\Theta_1,\ldots,\Theta_N\}$.
+  \end{itemize}
+\end{mathcard}
 \end{column}
 \begin{column}{0.48\textwidth}
-  {\small
-  \(\Theta=\{\theta_d,\theta_s,\widehat{\mathcal X}_o\}\);\\
-  \(\mathcal F=\{\Theta_1,\dots,\Theta_N\}\).\\[1.5mm]
-  \(N\): số regime; \(d_k,d_l,d_s\): số chiều ẩn.}
+\begin{intuition}[Initialization --- Appendix A.1]
+  \begin{enumerate}
+    \item STL tách trend / seasonal / residual.
+    \item PARAFAC trên seasonal component để khởi tạo seasonal factors.
+    \item Nonnegative Tucker Decomposition trên trend component để khởi tạo $W^{key},W^{loc}$.
+  \end{enumerate}
+\end{intuition}
+\vspace{3mm}
+\begin{takeaway}[Vai trò của sparse outliers]
+  $\widehat{\mathcal X}_o$ chỉ giữ những entry bất thường mà sparsification theo MDL chấp nhận.
+\end{takeaway}
 \end{column}
 \end{columns}
+\vspace{2mm}
+\papersource{§3.3, pp. 4--5; Appendix A.1, p. 10.}
 \end{frame}
 
 % ============================================================
 % SLIDE A3
 % ============================================================
-\begin{frame}{Backup 03: ALS, MDL và streaming}{Chi tiết cho Q\&A}
+\begin{frame}[shrink=28]{Backup 03 --- Algorithms, MDL và complexity}{Technical backup \textperiodcentered\ optimization}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.49\textwidth}
-  \begin{mathcard}[ModelEstimation]
-    \small
-    \[
-      \min\ \bigl\|\mathcal X^c-\widehat{\mathcal X}_d
-      -\widehat{\mathcal X}_s-\widehat{\mathcal X}_o\bigr\|_F^2
-    \]
-    \begin{enumerate}
-      \item LM cho hệ reaction--diffusion.
-      \item Cập nhật nhân cho \(W^{key},W^{loc}\).
-      \item ALS + giả nghịch đảo cho seasonal.
-      \item Sparsify residual cho outlier.
-      \item Lặp đến hội tụ.
-    \end{enumerate}
-  \end{mathcard}
+\begin{mathcard}[ModelEstimation --- Algorithm 2]
+  Initialize; repeat (1) reaction--diffusion, (2) trend factors, (3) seasonal factors, (4) outlier sparsification, đến convergence.
+\end{mathcard}
+\vspace{3mm}
+\begin{intuition}[ModelUpdate + RankUpdate]
+  Accept candidate khi MDL giảm; prose nói thử neighbor đổi một rank $\pm1$, re-estimate và giữ cost thấp hơn.
+\end{intuition}
+\vspace{3mm}
+\begin{caution}[Printed Algorithm 4 issue]
+  Candidate list lặp $(d_k,d_l+1,d_s)$ và không in $(d_k+1,d_l,d_s)$. Khi giải thích ý đồ $\pm1$, cần nói rõ duplication này.
+\end{caution}
 \end{column}
-\begin{column}{0.47\textwidth}
-  \begin{mathcard}[MDL]
-    \small
-    \[
-      \langle\mathcal X;\mathcal F\rangle
-      =\langle\mathcal F\rangle
-      +\langle\mathcal X\mid\mathcal F\rangle
-    \]
-    {\footnotesize
-    Mô tả mô hình + mô tả phần dư. Tăng rank làm mô hình đắt hơn nhưng có thể giảm phần dư.
-    Algorithm 4 thử đổi một rank \(\pm1\).}
-  \end{mathcard}
-  \vspace{2mm}
-  {\small
-  \(\mathcal X^c=\{X_{t_c-L_c+1},\dots,X_{t_c}\}\).\\
-  Chi phí mỗi bước không tăng theo tổng chiều dài stream; vẫn có spike khi rank update.}
+\begin{column}{0.48\textwidth}
+\begin{mathcard}[MDL cost]
+  \begin{itemize}
+    \item $\langle\mathcal X;\mathcal F\rangle=\langle\mathcal F\rangle+\langle\mathcal X|\mathcal F\rangle$.
+    \item Model cost dựa trên nonzero parameters; $c_F=32$ bits.
+    \item Data cost: Gaussian residual negative log-likelihood ở đơn vị bits.
+  \end{itemize}
+\end{mathcard}
+\vspace{3mm}
+\begin{questioncard}
+  \softlabel{LEMMA 1}\par
+  ModelEstimation: $O(d_kd_l^2+kd_k+ld_l)$. Appendix A.3 giữ $\#iter$ ở intermediate bound rồi coi là hằng số nhỏ. Không dùng lemma này như complexity trọn gói của mọi seasonal/outlier/ODE/RankUpdate step.
+\end{questioncard}
 \end{column}
 \end{columns}
+\vspace{2mm}
+\papersource{§4 pp. 5--7; Algorithm 2--4 và Appendix A.3, pp. 10--11.}
 \end{frame}
 
 % ============================================================
 % SLIDE A4
 % ============================================================
-\begin{frame}{Backup 04: đọc kết quả paper}{Số liệu, hình và giới hạn}
+\begin{frame}[shrink=24]{Backup 04 --- Full D-Tracker Table 3 và protocol phụ}{Technical backup \textperiodcentered\ paper results}
+\centering
+{\fontsize{7.2}{8.3}\selectfont
+\begin{tabular}{@{}llrr@{}}
+  \toprule
+  Dataset & $L_f$ & MAE & RMSE\\
+  \midrule
+  Device & 13 & 0.84 & 1.82\\
+  Device & 26 & 0.90 & 1.95\\
+  Device & 39 & 0.97 & 2.18\\
+  Pythonlib & 13 & 0.27 & 1.42\\
+  Pythonlib & 26 & 0.32 & 1.54\\
+  Pythonlib & 39 & 0.37 & 1.78\\
+  VoD & 13 & 0.53 & 1.58\\
+  VoD & 26 & 0.59 & 1.83\\
+  VoD & 39 & 0.63 & 2.02\\
+  \bottomrule
+\end{tabular}\qquad
+\begin{tabular}{@{}llrr@{}}
+  \toprule
+  Dataset & $L_f$ & MAE & RMSE\\
+  \midrule
+  Chatapp & 13 & 0.28 & 0.83\\
+  Chatapp & 26 & 0.34 & 1.01\\
+  Chatapp & 39 & 0.41 & 1.24\\
+  Language & 13 & 0.31 & 0.97\\
+  Language & 26 & 0.35 & 1.14\\
+  Language & 39 & 0.40 & 1.32\\
+  Covid-19 & 7 & 0.47 & 1.40\\
+  Covid-19 & 14 & 0.70 & 2.42\\
+  Covid-19 & 21 & 0.98 & 3.65\\
+  \bottomrule
+\end{tabular}}
+\vspace{3mm}
+{\small Mọi giá trị trên là \textbf{paper D-Tracker results}, scale $\times10^{-2}$.}
+\vspace{3mm}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.44\textwidth}
-  \centering
-  \includegraphics[height=4.35cm]{figures/Figure1_b.png}
-  \vspace{1mm}
-  {\scriptsize\color{DTNavy!60}Hình 1(b): động học ẩn, hệ số và diffusion. Nguồn: Higashiguchi et al. (2025), CC BY 4.0.}
+\begin{column}{0.50\textwidth}
+\begin{intuition}[Training / tuning]
+  GoogleTrends: 2010--2014 training, 2015 validation. Covid: 2020 training, Jan 2021 validation. Baselines có periodic retraining; một số chọn best $L_c\in\{52,104,156\}$.
+\end{intuition}
 \end{column}
-\begin{column}{0.52\textwidth}
-  {\small
-  \begin{itemize}
-    \item Paper Table 3: D-Tracker có MAE tốt nhất trên 6 dataset; một số RMSE tương đương vì nhạy lỗi lớn.
-    \item “57\%” và “8.0$\times$” là claim ở bullet cuối §1, không phải kết quả tái hiện.
-    \item Đọc kèm giả định: ba thành phần cộng, hệ số không âm, cửa sổ cố định, outlier thưa.
-    \item Các nhóm địa điểm là ẩn và không duy nhất; không nên đọc nhãn nhóm như chân lý.
-  \end{itemize}}
+\begin{column}{0.47\textwidth}
+\begin{questioncard}
+  \softlabel{HARDWARE PAPER}\par
+  Intel Xeon Platinum 8268 2.9\,GHz CPU \textperiodcentered\ RTX A6000 GPU \textperiodcentered\ 512\,GB memory.
+\end{questioncard}
 \end{column}
 \end{columns}
+\vspace{2mm}
+\papersource{Table 3, p. 8; Appendix B.1, p. 11.}
 \end{frame}
 
 \end{document}

@@ -181,6 +181,19 @@ All values below are direct Table 3 entries with scale `×10^-2`; they are paper
 
 The sentence above the table states D-Tracker outperforms competitors in MAE on all datasets and greatly reduces RMSE; it also says RMSE is sensitive to large errors and discusses comparable RMSE performance. Preserve both the main outcome and qualification — §5 Q1, p. 7.
 
+### Selected Table 3 comparison used on the main results slide
+
+The main slide uses `L_f=26` for GoogleTrends and `L_f=14` for Covid-19 so that the complete 18-row table is not squeezed onto one slide. “Best baseline” is the smallest of the seven baseline MAE values in the same Table 3 row. “Reduction” is independently arithmetic from those direct entries: `100 × (best_baseline_MAE − D-Tracker_MAE) / best_baseline_MAE`; it is not a quoted paper claim and is not a reproduction result. All MAEs retain the table's `×10^-2` scale.
+
+| Dataset | `L_f` | D-Tracker MAE | Best baseline | Baseline MAE | Recomputed reduction |
+|---|---:|---:|---|---:|---:|
+| Device | 26 | 0.90 | DISMO | 1.19 | 24.4% |
+| Pythonlib | 26 | 0.32 | CoST | 0.45 | 28.9% |
+| VoD | 26 | 0.59 | DISMO | 0.66 | 10.6% |
+| Chatapp | 26 | 0.34 | DISMO | 0.48 | 29.2% |
+| Language | 26 | 0.35 | Autoformer | 0.41 | 14.6% |
+| Covid-19 | 14 | 0.70 | Autoformer | 1.18 | 40.7% |
+
 ## 8. Ablation, scalability and interpretation findings
 
 | Finding | Exact evidence |
