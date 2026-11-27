@@ -1,3 +1,0 @@
-# Prefer XeLaTeX because the deck uses fontspec + unicode-math.
-$pdf_mode = 5;
-$dvi_mode = 0;

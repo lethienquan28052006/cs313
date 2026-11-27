@@ -1,1 +1,0 @@
-Task 4: Ruling: DeepSeek V4.1 Flash was delegated batch 1 but its deployment rejected image input; route visual delegation to opencode/nemotron-3.5-super-vl-free instead and correct render root to slides/.superpowers — cost if wrong: fallback model may miss visual issues; no native visual inspection or hallucinated DeepSeek findings permitted.
