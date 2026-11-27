@@ -14,7 +14,7 @@ This is the claim ledger for `slides/dtracker_talk/`. Paper-reported material mu
 - Canonical in-repo file: `slides/paper_explore/sources/paper.pdf` (already tracked; not duplicated).
 - Validation date: 2026-11-27. Direct arXiv download and canonical file both contain 5,004,454 bytes, 12 readable pages, 72,157 extracted text characters, and identical metadata title.
 - Both SHA-256: `8f3d301da12cbd17ec19cfcd6cb666654ded0fef06f57054826abf887ef9f715`.
-- Native executor read all 12 pages, including Appendix A and B. Visual review is explicitly delegated to DeepSeek, at most 4 images per prompt; text claims below come from PDF extraction and printed captions, not native visual interpretation.
+- Native executor read all 12 pages, including Appendix A and B. DeepSeek was delegated visual review first but its deployment rejected image input; actual visual review is delegated to Nemotron VL, at most 4 images per prompt. Text claims below come from PDF extraction and printed captions, not native visual interpretation.
 - The fuller legacy evidence record is `slides/paper_explore/sources/source_map.md`; this file governs the final-project talk.
 
 ## 1. Full coverage checklist

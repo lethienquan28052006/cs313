@@ -18,7 +18,7 @@ Deck dùng `fontspec` + `unicode-math`, font Latin Modern Sans/Mono và Latin Mo
 ```text
 main.tex          # Beamer 16:9, 33 trang
 theme.tex         # màu sắc, font, template, panel
-figures/          # bốn hình paper dùng ở phần experiments
+figures/          # hai hình/crop paper dùng ở phần experiments
 latexmkrc         # chọn XeLaTeX khi chạy latexmk
 OVERLEAF.md       # hướng dẫn này
 ```
@@ -36,4 +36,4 @@ Chắc chắn compiler là **XeLaTeX**. Nếu project dùng bản TeX Live quá 
 - Slide 28 Demo cố ý trống phần nội dung.
 - Không đổi paper-reported values thành team results.
 - Nếu đổi số slide, cập nhật cả `outline.md` và các marker `% SLIDE` trong `main.tex`, rồi chạy `make check` trên bản local.
-- Hình paper có credit KDD 2025/CC BY 4.0 ngay trên slide.
+- Hình/crop paper có credit KDD 2025/CC BY 4.0 ngay trên slide.

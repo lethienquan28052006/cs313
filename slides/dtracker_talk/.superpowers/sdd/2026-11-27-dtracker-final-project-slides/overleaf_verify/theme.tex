@@ -1,0 +1,161 @@
+% Academic-clean visual system inspired by a university seminar deck.
+\usepackage[main=vietnamese,english]{babel}
+\usepackage{fontspec}
+\setmainfont{lmsans10-regular.otf}[
+  BoldFont=lmsans10-bold.otf,
+  ItalicFont=lmsans10-oblique.otf,
+  BoldItalicFont=lmsans10-boldoblique.otf
+]
+\setsansfont{lmsans10-regular.otf}[
+  BoldFont=lmsans10-bold.otf,
+  ItalicFont=lmsans10-oblique.otf,
+  BoldItalicFont=lmsans10-boldoblique.otf
+]
+\setmonofont{lmmono10-regular.otf}[
+  ItalicFont=lmmono10-italic.otf,
+  Scale=0.90
+]
+\usepackage{unicode-math}
+\setmathfont{latinmodern-math.otf}
+\usefonttheme{professionalfonts}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,shapes.geometric,calc,backgrounds,decorations.pathreplacing,patterns}
+\usepackage[skins,breakable]{tcolorbox}
+\tcbset{halign=flush left,halign title=flush left}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{ragged2e}
+
+\definecolor{DTNavy}{HTML}{16283F}
+\definecolor{DTBlue}{HTML}{2C4A6E}
+\definecolor{DTTeal}{HTML}{0E7A4E}
+\definecolor{DTGold}{HTML}{B67B16}
+\definecolor{DTClaret}{HTML}{B23B3B}
+\definecolor{DTInk}{HTML}{1B1F24}
+\definecolor{DTMuted}{HTML}{5A6673}
+\definecolor{DTMist}{HTML}{F3F6F9}
+\definecolor{DTWarm}{HTML}{FBF4E7}
+\definecolor{DTPaper}{HTML}{F7F8FA}
+\definecolor{DTLine}{HTML}{D7DFE7}
+
+\setbeamercolor{normal text}{fg=DTInk,bg=DTPaper}
+\setbeamercolor{structure}{fg=DTGold}
+\setbeamercolor{frametitle}{fg=DTNavy,bg=}
+\setbeamercolor{framesubtitle}{fg=DTMuted,bg=}
+\setbeamercolor{footline}{fg=DTMuted,bg=}
+\setbeamercolor{itemize item}{fg=DTGold}
+\setbeamercolor{itemize subitem}{fg=DTTeal}
+\setbeamercolor{enumerate item}{fg=DTNavy}
+\setbeamerfont{frametitle}{family=\sffamily}
+\setbeamerfont{framesubtitle}{family=\sffamily}
+\setbeamerfont{footline}{family=\sffamily}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=0.68cm,text margin right=0.68cm}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamertemplate{itemize item}{\raise0.2ex\hbox{\scriptsize\color{DTGold}\(\blacktriangleright\)}}
+\setbeamertemplate{itemize subitem}{\raise0.2ex\hbox{\scriptsize\color{DTTeal}\(\bullet\)}}
+\setbeamertemplate{enumerate item}{\color{DTNavy}\bfseries\insertenumlabel.}
+
+\setlength{\parskip}{0.32em}
+\renewcommand{\familydefault}{\sfdefault}
+\renewcommand{\arraystretch}{1.12}
+\setlength{\emergencystretch}{2em}
+\raggedright
+
+\setbeamertemplate{background canvas}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[DTPaper] (current page.north west) rectangle (current page.south east);
+    \fill[DTGold!3] (current page.south west) circle (3.4cm);
+  \end{tikzpicture}%
+}
+
+\setbeamertemplate{frametitle}{%
+  \vspace{0.18cm}%
+  \begin{minipage}[b]{0.84\textwidth}
+    {\sffamily\fontsize{7.4}{8.8}\selectfont\color{DTMuted}%
+      \insertsectionhead\quad\textcolor{DTLine}{|}\quad\insertframesubtitle\par}
+    \vspace{0.04cm}
+    {\sffamily\fontsize{14.5}{17}\selectfont\bfseries\color{DTNavy}\insertframetitle\par}
+  \end{minipage}\hfill
+  \begin{minipage}[b]{0.12\textwidth}
+    \raggedleft
+    \tikz[baseline=-0.3ex]{
+      \fill[DTNavy,rounded corners=.5pt] (0,0) rectangle (.52,.52);
+      \fill[DTGold] (.39,.39) circle (.07);
+      \node[white,font=\fontsize{6}{6}\selectfont\bfseries] at (.24,.23) {D};
+    }\par
+    {\sffamily\fontsize{5.8}{6.5}\selectfont\color{DTMuted}CS313}
+  \end{minipage}
+  \vspace{0.06cm}%
+  {\color{DTGold!65}\rule{\textwidth}{0.55pt}}%
+  \vspace{0.11cm}%
+}
+
+\setbeamertemplate{footline}{%
+  \leavevmode
+  \hbox to\textwidth{%
+    {\sffamily\fontsize{7.2}{8.5}\selectfont\color{DTMuted}CS313 \textperiodcentered\ Nhóm D-Tracker}%
+    \hfill
+    {\sffamily\fontsize{7.2}{8.5}\selectfont\color{DTMuted}D-Tracker \textperiodcentered\ KDD 2025}%
+    \hfill
+    {\sffamily\fontsize{7.2}{8.5}\selectfont\color{DTNavy}\insertframenumber\,/\,\inserttotalframenumber}%
+  }%
+  \vspace{0.06cm}
+}
+
+\tikzset{
+  dtbox/.style={draw=DTLine,line width=.55pt,fill=white,rounded corners=1mm},
+  dtaccent/.style={draw=DTTeal!45,line width=.65pt,fill=DTMist,rounded corners=1mm},
+  dtgold/.style={draw=DTGold!55,line width=.65pt,fill=DTWarm,rounded corners=1mm},
+  dtarrow/.style={-{Latex[length=2.2mm,width=1.4mm]},line width=.9pt,DTGold!85},
+  dtdash/.style={-{Latex[length=2.2mm,width=1.4mm]},line width=.7pt,DTBlue!45,dashed},
+  label/.style={font=\sffamily\small,text=DTInk},
+  tinylabel/.style={font=\sffamily\scriptsize,text=DTMuted},
+  biglabel/.style={font=\sffamily\bfseries\large,text=DTNavy}
+}
+
+\newtcolorbox{intuition}[1][Trực giác]{%
+  enhanced, colback=DTMist, colframe=DTTeal,
+  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  title={\sffamily\bfseries\small\color{DTTeal}#1}, coltitle=DTTeal,
+  colbacktitle=DTMist, titlerule=0pt, fonttitle=\small,
+  before skip=0pt,after skip=0pt
+}
+\newtcolorbox{mathcard}[1][Công thức]{%
+  enhanced, colback=white, colframe=DTGold,
+  boxrule=0.6pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  title={\sffamily\bfseries\small\color{DTNavy}#1}, coltitle=DTNavy,
+  colbacktitle=white, titlerule=0pt, fonttitle=\small,
+  before skip=0pt,after skip=0pt
+}
+\newtcolorbox{caution}[1][Đừng nhầm]{%
+  enhanced, colback=DTWarm, colframe=DTClaret,
+  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  title={\sffamily\bfseries\small\color{DTClaret}#1}, coltitle=DTClaret,
+  colbacktitle=DTWarm, titlerule=0pt, fonttitle=\small,
+  before skip=0pt,after skip=0pt
+}
+\newtcolorbox{takeaway}[1][Mang về]{%
+  enhanced, colback=DTWarm, colframe=DTGold,
+  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  title={\sffamily\bfseries\small\color{DTGold}#1}, coltitle=DTGold,
+  colbacktitle=DTWarm, titlerule=0pt, fonttitle=\small,
+  before skip=0pt,after skip=0pt
+}
+\newtcolorbox{questioncard}{%
+  enhanced, colback=white, colframe=DTLine,
+  boxrule=.55pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  before skip=0pt,after skip=0pt
+}
+
+\newcommand{\numcircle}[2][DTTeal]{%
+  \tikz[baseline=-0.7ex]\node[circle,fill=#1,text=white,font=\sffamily\bfseries\small,
+  inner sep=2pt,minimum size=4.2mm]{#2};%
+}
+\newcommand{\softlabel}[1]{{\sffamily\scriptsize\bfseries\color{DTGold}#1}}
+\newcommand{\formula}[1]{\begin{mathcard}\centering$\displaystyle #1$\end{mathcard}}
+\newcommand{\papersource}[1]{{\scriptsize\color{DTMuted}Nguồn: #1}}
+\newcommand{\emphbox}[1]{\colorbox{DTMist}{\parbox{0.96\linewidth}{\vspace{1mm}#1\vspace{1mm}}}}

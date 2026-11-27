@@ -266,7 +266,7 @@ Nguồn paper được kiểm chứng tại `sources/source_map.md`: arXiv:2505.
 - **Tên:** Q2 Scalability — nhanh hơn, nhưng vẫn có RankUpdate spikes.
 - **Thời lượng:** 1:00.
 - **Mục đích:** trình bày wall-clock và average time với điều kiện đúng.
-- **Visual:** Figure 4 left/right `scalability.png`, `avgtime.png`, có credit.
+- **Visual:** callout lớn `up to 8.0×` cho claim paper và sơ đồ fixed-window → ModelEstimation → RankUpdate spikes; không nhúng hai dense plot không đọc được khi chiếu.
 - **Message:** thời gian xử lý cửa sổ không tăng theo tổng độ dài stream trong thí nghiệm; RankUpdate tạo spikes vì fit nhiều candidates.
 - **Formula/check:** paper nói fastest average time và “up to 8.0× faster”; gắn nhãn paper-reported.
 - **Source:** Figure 4 §5 Q2 p. 8; claim §1 p. 3.
@@ -276,8 +276,8 @@ Nguồn paper được kiểm chứng tại `sources/source_map.md`: arXiv:2505.
 - **Tên:** Q3 Effectiveness — factors giúp kể câu chuyện trong dữ liệu.
 - **Thời lượng:** 1:15.
 - **Mục đích:** nối output mô hình với diễn giải có kiểm chứng.
-- **Visual:** paper Figure 1(b) có credit; chuỗi `latent dynamics → keyword/location factor → diffusion`.
-- **Message:** Device preview diễn giải Galaxy/iPad 2010–2011 và iPhone 2019–2021 qua latent groups; đây là mô hình structural interpretation.
+- **Visual:** crop vùng diffusion 2010–2011 từ paper Figure 1(b) có credit; ba bước `latent dynamics → keyword/location factor → diffusion`.
+- **Message:** Device preview diễn giải Galaxy/iPad 2010–2011 qua latent groups và diffusion Group 1 → Group 2; đây là mô hình structural interpretation.
 - **Formula/check:** factor cao = liên hệ mạnh hơn; không suy ra causal intervention.
 - **Source:** §1.1 p. 2, Figure 1 caption/text; §5 Q3 p. 8 cho ý nghĩa effectiveness.
 - **Lời dẫn:** “Giá trị của mô hình không chỉ là dự báo đúng, mà còn cho ngườidùng một cách đọc các nhóm và luồng diffusion.”

@@ -26,7 +26,7 @@ Chỉ gồm **paper gốc + outline + slide**. Chưa cài đặt D-Tracker, chư
 - `theme.tex`: màu sắc, font, frametitle, footline và panel.
 - `dtracker_talk_overleaf.zip`: gói upload Overleaf.
 - `sources/source_map.md`: claim ledger với page/section/equation/figure/table anchors.
-- `sources/figure_manifest.tsv`: nguồn, caption, license và SHA-256 của bốn hình paper được dùng.
+- `sources/figure_manifest.tsv`: nguồn, caption, license và SHA-256 của hai hình/crop paper được dùng.
 
 Paper gốc đã được đối chiếu byte-identical với arXiv và nằm tại:
 
@@ -57,5 +57,5 @@ File ZIP chỉ chứa các thành phần cần trên Overleaf: `main.tex`, `them
 - Các số trong câu chuyện iPhone/Galaxy được gắn nhãn minh họa; không phải dữ liệu paper.
 - Kết quả experiments đều gắn nhãn **paper-reported**. Phần trăm trên slide 21 được tính lại từ Table 3; không phải kết quả reproduce.
 - Slide reproduction không dùng số paper để lấp kết quả nhóm. Demo chưa có implementation claim.
-- Bốn hình paper có credit KDD 2025/CC BY 4.0 và được kiểm tra hash với manifest nguồn.
-- Native executor chỉ kiểm tra log, cấu trúc và text bounds; visual review được ủy quyền cho DeepSeek với tối đa 4 ảnh/lượt.
+- Hai hình/crop paper có credit KDD 2025/CC BY 4.0 và được kiểm tra hash với manifest nguồn.
+- Native executor chỉ kiểm tra log, cấu trúc và text bounds. DeepSeek được gọi trước nhưng endpoint không nhận ảnh; visual review thực tế được ủy quyền cho Nemotron VL với tối đa 4 ảnh/lượt.

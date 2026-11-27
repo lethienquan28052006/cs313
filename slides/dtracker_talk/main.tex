@@ -104,11 +104,11 @@
     \end{scope}}
   \node[tinylabel,anchor=east] at (-.48,1.68) {iPhone};
   \node[tinylabel,anchor=east] at (-.48,.52) {Galaxy};
-  \node[tinylabel] at (.52,-.52) {Bắc Mỹ};
-  \node[tinylabel] at (1.52,-.52) {châu Âu};
-  \node[tinylabel] at (2.52,-.52) {ĐNÁ};
-  \draw[dtarrow] (4.7,-.45) -- (5.55,-.45);
-  \node[tinylabel,anchor=west,text=DTGold] at (5.65,-.45) {thời gian};
+  \node[tinylabel] at (.52,-1.45) {Bắc Mỹ};
+  \node[tinylabel] at (1.52,-1.45) {châu Âu};
+  \node[tinylabel] at (2.52,-1.45) {ĐNÁ};
+  \draw[dtarrow] (4.7,-1.45) -- (5.55,-1.45);
+  \node[tinylabel,anchor=west,text=DTGold] at (5.65,-1.45) {thời gian};
 \end{tikzpicture}
 \vspace{3mm}
 
@@ -263,10 +263,10 @@
   \node[dtaccent,minimum width=3.0cm,minimum height=1.45cm,align=center] (split) at (3.6,0)
     {\textbf{TÁCH}\\trend + seasonal\\+ outlier};
   \node[dtgold,minimum width=3.6cm,minimum height=1.45cm,align=center] (core) at (7.5,0)
-    {\textbf{NÉN + ĐỘNG HỌC}\\latent reaction--diffusion\\+ keyword/location factors};
-  \node[dtbox,minimum width=2.7cm,minimum height=1.45cm,align=center] (update) at (11.4,0)
-    {\textbf{THÍCH NGHI}\\MDL model update\\+ RankUpdate};
-  \node[dtaccent,minimum width=2.4cm,minimum height=1.45cm,align=center] (f) at (15,0)
+    {\textbf{NÉN + ĐỘNG HỌC}\\reaction--diffusion\\+ factors};
+  \node[dtbox,minimum width=2.7cm,minimum height=1.45cm,align=center] (update) at (11.7,0)
+    {\textbf{THÍCH NGHI}\\MDL + RankUpdate};
+  \node[dtaccent,minimum width=2.4cm,minimum height=1.45cm,align=center] (f) at (15.3,0)
     {forecast\\$\widehat X_{t_c+L_f}$};
   \draw[dtarrow] (x)--(split); \draw[dtarrow] (split)--(core);
   \draw[dtarrow] (core)--(update); \draw[dtarrow] (update)--(f);
@@ -875,62 +875,63 @@
 % ============================================================
 % SLIDE 23
 % ============================================================
-\begin{frame}[shrink=50]{Q2 Scalability --- nhanh hơn, nhưng vẫn có RankUpdate spikes}{Paper experiments \textperiodcentered\ Figure 4}
-\begin{columns}[c,onlytextwidth]
-\begin{column}{0.485\textwidth}
+\begin{frame}[shrink=16]{Q2 Scalability --- tốc độ và RankUpdate spikes}{Paper experiments \textperiodcentered\ Figure 4}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.37\textwidth}
+\begin{takeaway}[Paper-reported speed-up]
   \centering
-  \includegraphics[width=\linewidth]{figures/scalability.png}\par
-  {\scriptsize Wall-clock time vs. stream length}
+  {\fontsize{34}{38}\selectfont\bfseries\color{DTGold}up to 8.0$\times$\par}
+  \vspace{2mm}
+  {\large faster than competitors\par}
+  \vspace{3mm}
+  {\small Paper cũng báo cáo \textbf{fastest average time} trong Figure 4.}
+\end{takeaway}
 \end{column}
-\begin{column}{0.485\textwidth}
-  \centering
-  \includegraphics[width=\linewidth]{figures/avgtime.png}\par
-  {\scriptsize Average computation time}
+\begin{column}{0.60\textwidth}
+\centering
+\begin{tikzpicture}[x=.82cm,y=.60cm]
+  \node[dtaccent,minimum width=4.5cm,minimum height=1.0cm,align=center] (window) at (2.5,2.0)
+    {history dài dần\\nhưng window $L_c$ cố định};
+  \node[dtbox,minimum width=3.5cm,minimum height=.95cm,align=center] (estimate) at (2.5,0)
+    {ModelEstimation\\mỗi time step};
+  \draw[dtarrow] (window)--(estimate);
+  \node[dtgold,minimum width=4.2cm,minimum height=1.0cm,align=center] (rank) at (2.5,-2.0)
+    {RankUpdate gọi lại nhiều lần\\$\Rightarrow$ runtime spikes};
+  \draw[dtdash] (estimate)--(rank);
+\end{tikzpicture}
 \end{column}
 \end{columns}
 \vspace{3mm}
-\begin{intuition}[Paper báo cáo]
-  D-Tracker có thời gian xử lý không phụ thuộc tổng stream length và fastest average time; §1 nêu mức \textbf{“up to 8.0$\times$ faster”}.
-\end{intuition}
-\vspace{3mm}
-\begin{caution}[Đọc cả spike]
-  Các spike nhỏ đến từ \textbf{RankUpdate}: thử nhiều rank candidates nên phải chạy ModelEstimation nhiều lần. Đây không phải claim rằng mọi phép toán là O(1).
-\end{caution}
+{\small Paper báo cáo fixed-window updates giúp processing time không tăng theo tổng stream length; không có nghĩa mọi phép toán là O(1).}
 \vspace{2mm}
-{\scriptsize\color{DTMuted}Higashiguchi et al., KDD 2025, Figure 4 \textperiodcentered\ CC BY 4.0 \textperiodcentered\ §5 Q2, p. 8.}
+
+{\scriptsize\color{DTMuted}Nguồn: Figure 4/§5 Q2 p. 8 và speed-up claim §1 p. 3. Dense plots được thay bằng callout để dễ đọc khi chiếu.}
 \end{frame}
 
 % ============================================================
 % SLIDE 24
 % ============================================================
-\begin{frame}[shrink=41]{Q3 Effectiveness --- factors giúp kể câu chuyện trong dữ liệu}{Paper experiments \textperiodcentered\ Figure 1(b)}
-\centering
-\includegraphics[width=.94\linewidth,height=3.45cm,keepaspectratio]{figures/Figure1_b.png}\par
-{\scriptsize\color{DTMuted}Higashiguchi et al., KDD 2025, Figure 1(b), Device data \textperiodcentered\ CC BY 4.0}
-\vspace{3mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.32\textwidth}
-\begin{intuition}[Latent dynamics]
-  Nén thành các nhóm keyword/location và đường dynamics theo thời gian.
-\end{intuition}
+\begin{frame}[shrink=24]{Q3 Effectiveness --- đọc một diffusion pattern}{Paper experiments \textperiodcentered\ Figure 1(b), 2010--2011}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.56\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{figures/Figure1b_diffusion_2010.png}\par
+  {\scriptsize\color{DTMuted}Crop vùng diffusion 2010--2011 từ Figure 1(b), Higashiguchi et al., KDD 2025 \textperiodcentered\ CC BY 4.0}
 \end{column}
-\begin{column}{0.32\textwidth}
-\begin{mathcard}[2010--2011]
-  Paper diễn giải Galaxy/iPad liên hệ dynamics có diffusion từ Group 1 sang Group 2.
-\end{mathcard}
-\end{column}
-\begin{column}{0.32\textwidth}
-\begin{takeaway}[2019--2021]
-  Paper diễn giải iPhone tăng ở Group 2 và diffusion từ Group 1 sang Group 2 ở dynamics khác.
-\end{takeaway}
+\begin{column}{0.41\textwidth}
+  \begin{itemize}
+    \item $\mathcal W^{core}$: preview dùng 3 keyword groups × 2 location groups.
+    \item $W^{key}$: Dynamics \#3 liên hệ Galaxy và iPad.
+    \item $W^{loc}+\mathcal D$: paper diễn giải diffusion của Dynamics \#3 từ Group 1 sang Group 2 trong 2010--2011.
+  \end{itemize}
 \end{column}
 \end{columns}
+\vspace{3mm}
+{\small \textbf{Cách đọc:} dynamics = chuyện gì diễn ra; factors = keyword/location liên hệ; reaction--diffusion = hướng liên hệ giữa nhóm.}
 \vspace{2mm}
-\begin{caution}[Ranh giới diễn giải]
-  Factor cao = liên hệ mạnh hơn \textbf{trong model}. Structural interpretability không phải bằng chứng causal experiment.
-\end{caution}
-\vspace{1mm}
-\papersource{§1.1, p. 2; effectiveness discussion, §5 Q3, p. 8.}
+{\small\color{DTClaret}Structural interpretation trong model không phải causal experiment.}
+\vspace{2mm}
+\papersource{§1.1 và Figure 1(b), p. 2; effectiveness discussion, §5 Q3, p. 8.}
 \end{frame}
 
 \section{Reproduction of our team}
@@ -979,7 +980,7 @@
 % ============================================================
 % SLIDE 26
 % ============================================================
-\begin{frame}[shrink=12]{Reproduction results --- Paper vs. nhóm}{Reproduction \textperiodcentered\ bảng kết quả}
+\begin{frame}[shrink=19]{Reproduction results --- Paper vs. nhóm}{Reproduction \textperiodcentered\ bảng kết quả}
 \centering
 {\small
 \begin{tabular}{@{}llcccccc@{}}
@@ -994,15 +995,13 @@
   Covid-19 & 14 & 0.70 & --- & 2.42 & --- & ---\\
   \bottomrule
 \end{tabular}}
-\vspace{4mm}
-\begin{caution}[Không được trộn hai nguồn]
-  Paper columns lấy trực tiếp Table 3, scale $\times10^{-2}$. Team columns là \textbf{--- = Nhóm sẽ bổ sung sau khi chạy thực nghiệm}; không dùng số paper để lấp team results.
-\end{caution}
-\vspace{4mm}
-\begin{takeaway}[Khi điền kết quả]
-  Chỉ so sánh nếu \textbf{cùng dataset version, normalization, evaluation loop và horizon}; kèm link tới log/code commit và nêu mọi sai khác.
-\end{takeaway}
-\vspace{2mm}
+\vspace{5mm}
+\begin{itemize}
+  \item Paper columns lấy Table 3, scale $\times10^{-2}$. \textbf{--- = Nhóm sẽ bổ sung sau khi chạy thực nghiệm.}
+  \item Không dùng số paper lấp team results; chỉ so sánh cùng dataset version, normalization, evaluation loop và horizon.
+  \item Khi có kết quả, kèm link tới log/code commit và nêu rõ sai khác.
+\end{itemize}
+\vspace{3mm}
 \papersource{Table 3, p. 8 cho paper columns. Nhóm chưa cung cấp kết quả reproduction.}
 \end{frame}
 
