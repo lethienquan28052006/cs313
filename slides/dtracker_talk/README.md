@@ -24,9 +24,13 @@ Makefile ưu tiên Tectonic trên `PATH`, sau đó binary đã có ở
 vào `.tools/` cục bộ.
 
 ```bash
-make check   # unit test checker + kiểm tra outline/deck/hình
-make clean   # xóa build/ và PDF đã copy
+make check        # unit test checker + kiểm tra outline/deck/hình
+make overleaf-zip # tạo dtracker_talk_overleaf.zip
+make clean        # xóa build/, PDF và zip đã tạo
 ```
+
+File `dtracker_talk_overleaf.zip` chỉ chứa các file cần cho Overleaf:
+`main.tex`, `theme.tex`, `latexmkrc`, `OVERLEAF.md` và `figures/`.
 
 ## Cấu trúc trình bày
 

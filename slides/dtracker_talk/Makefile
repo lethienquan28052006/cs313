@@ -17,12 +17,21 @@ else
   TOOL_PREREQ :=
 endif
 
-.PHONY: all check test clean
+OVERLEAF_ZIP := dtracker_talk_overleaf.zip
+OVERLEAF_FILES := main.tex theme.tex latexmkrc OVERLEAF.md figures
 
-all: check
+.PHONY: all pdf overleaf-zip check test clean
+
+all: pdf overleaf-zip
+
+pdf: check
 	mkdir -p $(BUILD)
 	$(ENGINE) --keep-logs --outdir $(BUILD) main.tex
 	cp $(BUILD)/main.pdf dtracker_talk.pdf
+
+overleaf-zip:
+	rm -f $(OVERLEAF_ZIP)
+	zip -r -X $(OVERLEAF_ZIP) $(OVERLEAF_FILES)
 
 check:
 	$(PYTHON) scripts/test_check_deck.py
@@ -35,4 +44,4 @@ $(LOCAL_TECTONIC):
 
 clean:
 	rm -rf $(BUILD)
-	rm -f dtracker_talk.pdf
+	rm -f dtracker_talk.pdf $(OVERLEAF_ZIP)
