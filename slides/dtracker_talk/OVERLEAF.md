@@ -22,7 +22,7 @@ pdfLaTeX sẽ không compile được vì `fontspec`.
 ## Cấu trúc
 
 ```text
-main.tex          # Beamer 16:9, 21 slide
+main.tex          # Beamer 16:9, 26 slide
 theme.tex         # màu sắc, font, template
 figures/          # hình paper dùng ở backup slide
 latexmkrc         # gợi ý dùng XeLaTeX nếu Overleaf chạy latexmk

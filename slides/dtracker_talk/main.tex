@@ -1,5 +1,5 @@
 % !TEX program = xelatex
-\documentclass[aspectratio=169,10pt]{beamer}
+\documentclass[aspectratio=169,11pt]{beamer}
 \input{theme}
 
 \title{D-Tracker}
@@ -16,40 +16,81 @@
 % ============================================================
 \begin{frame}[plain]
 \begin{tikzpicture}[remember picture,overlay]
-  \fill[DTNavy] (current page.north west) rectangle (current page.south east);
-  \fill[DTTeal!18] (current page.north east) circle (5.4cm);
-  \fill[DTGold!14] (current page.south west) circle (4cm);
-  \begin{scope}[shift={($(current page.north east)+(-4.1,-2.0)$)}]
-    \foreach \a in {0,30,...,330} {
-      \fill[DTTeal!35] (\a:0.7) circle (1.2pt);
-      \fill[DTTeal!22] (\a:1.45) circle (1.6pt);
-    }
-    \draw[DTTeal!35,line width=.6pt] (0,0) circle (2.15);
-    \draw[DTTeal!22,line width=.4pt] (0,0) ellipse (2.15 and .7);
-    \draw[DTTeal!22,line width=.4pt] (0,0) ellipse (.8 and 2.15);
-    \fill[DTGold] (25:1.45) circle (2.8pt);
-    \fill[DTTeal!80] (150:2.15) circle (2.3pt);
-    \fill[DTTeal!70] (250:0.7) circle (2pt);
-  \end{scope}
-  \node[anchor=west,text=white] at ($(current page.west)+(0.95,0.45)$) {%
-    \begin{minipage}{11.2cm}
-      {\sffamily\bfseries\fontsize{46}{50}\selectfont D-Tracker\par}
+  \fill[DTPaper] (current page.north west) rectangle (current page.south east);
+  \fill[DTGold!6] (current page.south east) circle (5.1cm);
+  \fill[DTGold] ($(current page.north west)+(0.72,-0.55)$) rectangle ++(0.065,-7.9);
+  \node[anchor=north west,align=left] at ($(current page.north west)+(1.18,-0.38)$) {%
+    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}CS313 \textperiodcentered\ KHOA CÔNG NGHỆ THÔNG TIN\par}
+    {\sffamily\fontsize{7}{8}\selectfont\color{DTMuted}BÀI GIẢNG TRỰC QUAN\par}};
+  \node[anchor=north east] at ($(current page.north east)+(-0.75,-0.38)$) {%
+    \tikz{\fill[DTNavy,rounded corners=.6pt] (0,0) rectangle (.7,.7);\fill[DTGold] (.54,.54) circle (.085);\node[white,font=\fontsize{8}{8}\selectfont\bfseries] at (.33,.31){D};}};
+  \node[anchor=west,align=left] at ($(current page.north west)+(1.2,-2.55)$) {%
+    \begin{minipage}{13.2cm}
+      {\sffamily\bfseries\fontsize{38}{42}\selectfont\color{DTNavy}D-Tracker\par}
+      \vspace{2.5mm}
+      {\sffamily\fontsize{19}{23}\selectfont\color{DTInk}Hiểu dữ liệu quan tâm\\ đang lan đi đâu\par}
+      \vspace{5mm}
+      {\color{DTGold}\rule{8.2cm}{1.1pt}\par}
       \vspace{3mm}
-      {\sffamily\fontsize{22}{27}\selectfont Hiểu dữ liệu quan tâm\\ đang lan đi đâu\par}
-      \vspace{7mm}
-      {\color{DTTeal!25}\rule{8.5cm}{1pt}\par}
-      \vspace{4mm}
-      {\small\color{white!72} Modeling Interest Diffusion in Social Activity Tensor Data Streams\par}
+      {\small\color{DTMuted}Modeling Interest Diffusion in Social Activity Tensor Data Streams\par}
       \vspace{1mm}
-      {\scriptsize\color{white!55} KDD 2025 \textperiodcentered\ arXiv:2505.00242\par}
+      {\scriptsize\color{DTMuted}KDD 2025 \textperiodcentered\ arXiv:2505.00242\par}
     \end{minipage}};
-  \node[anchor=west] at ($(current page.south west)+(0.95,0.65)$) {%
-    {\sffamily\small\color{white!65} Bài giảng trực quan \textperiodcentered\ 35 phút \textperiodcentered\ CS313}};
+  \node[anchor=south west] at ($(current page.south west)+(1.2,0.55)$) {%
+    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}Bài giảng trực quan \textperiodcentered\ 35 phút \textperiodcentered\ Người mới bắt đầu}};
 \end{tikzpicture}
 \end{frame}
 
+\section{Tổng quan}
+
 % ============================================================
 % SLIDE 2
+% ============================================================
+\begin{frame}[shrink=8]{Nội dung}{Bản đồ 35 phút}
+{\renewcommand{\arraystretch}{1.45}\small
+\begin{tabular}{@{}p{1.1cm}p{4.2cm}p{8.4cm}@{}}
+  \toprule
+  & \textbf{Phần} & \textbf{Nội dung} \\
+  \midrule
+  {\sffamily\bfseries\Large\color{DTGold}01} & Dữ liệu và bài toán & Tensor tuần, ba thách thức, pipeline \\
+  {\sffamily\bfseries\Large\color{DTGold}02} & Cơ chế hoạt động & Tách tín hiệu, Tucker, diffusion, ALS, MDL, streaming \\
+  {\sffamily\bfseries\Large\color{DTGold}03} & Ứng dụng & Marketing, y tế công cộng, sản phẩm/công nghệ \\
+  {\sffamily\bfseries\Large\color{DTGold}04} & Kết luận & Bằng chứng, giới hạn, ba điều mang về \\
+  \bottomrule
+\end{tabular}}
+\vfill
+\begin{takeaway}[Cách đọc bài này]
+  Mỗi ý toán đi theo bốn bước: \textbf{hình dung → nói bằng lời → công thức → kiểm tra}.
+\end{takeaway}
+\end{frame}
+
+\section{Dữ liệu và bài toán}
+
+% ============================================================
+% SLIDE 3
+% ============================================================
+\begin{frame}{Dữ liệu và bài toán}{Phần 01 \textperiodcentered\ Nền tảng}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.25\textwidth}
+  {\sffamily\bfseries\fontsize{58}{58}\selectfont\color{DTGold}01\par}
+  \vspace{2mm}
+  {\color{DTGold}\rule{2.2cm}{1pt}}
+\end{column}
+\begin{column}{0.68\textwidth}
+  {\large\bfseries\color{DTNavy}Trước khi mô hình hóa, ta cần nhìn đúng dữ liệu.}\par
+  \vspace{6mm}
+  {\small
+  \begin{itemize}
+    \item Mỗi tuần là một bản đồ từ khóa $\times$ địa điểm.
+    \item Dữ liệu có trend, mùa vụ, cú sốc và lan truyền chồng lên nhau.
+    \item Mô hình chỉ giữ cửa sổ gần nhất nhưng phải dự báo dài hơn.
+  \end{itemize}}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 4
 % ============================================================
 \begin{frame}[shrink=15]{Một sản phẩm, 50 quốc gia}{Câu hỏi mở đầu}
 \begin{columns}[T,onlytextwidth]
@@ -99,10 +140,8 @@
 \end{columns}
 \end{frame}
 
-\section{Dữ liệu và bài toán}
-
 % ============================================================
-% SLIDE 3
+% SLIDE 5
 % ============================================================
 \begin{frame}[shrink=20]{Dữ liệu là một chồng bản đồ tuần}{Nền tảng \textperiodcentered\ tensor}
 \begin{columns}[T,onlytextwidth]
@@ -151,9 +190,9 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 4
+% SLIDE 6
 % ============================================================
-\begin{frame}{Vì sao khó, và D-Tracker làm gì}{Từ vấn đề đến pipeline}
+\begin{frame}[shrink=4]{Vì sao khó, và D-Tracker làm gì}{Từ vấn đề đến pipeline}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.31\textwidth}
   \begin{tcolorbox}[enhanced,colback=white,colframe=DTLine,boxrule=.6pt,arc=2mm,height=3.55cm,halign=left]
@@ -191,7 +230,30 @@
 \section{Cơ chế hoạt động}
 
 % ============================================================
-% SLIDE 5
+% SLIDE 7
+% ============================================================
+\begin{frame}{Cơ chế hoạt động}{Phần 02 \textperiodcentered\ Mô hình}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.25\textwidth}
+  {\sffamily\bfseries\fontsize{58}{58}\selectfont\color{DTGold}02\par}
+  \vspace{2mm}
+  {\color{DTGold}\rule{2.2cm}{1pt}}
+\end{column}
+\begin{column}{0.68\textwidth}
+  {\large\bfseries\color{DTNavy}Từ dữ liệu thô đến một mô hình có thể đọc được.}\par
+  \vspace{5mm}
+  {\small
+  \begin{itemize}
+    \item Tách trend, mùa vụ và bất thường.
+    \item Nén trend thành vài kênh ẩn; mô hình hóa lan truyền.
+    \item Ước lượng, chọn cấu trúc và cập nhật theo stream.
+  \end{itemize}}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 8
 % ============================================================
 \begin{frame}[shrink=10]{Tách ba lớp tín hiệu}{Math 01 \textperiodcentered\ phân rã}
 \begin{columns}[T,onlytextwidth]
@@ -231,7 +293,7 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 6
+% SLIDE 9
 % ============================================================
 \begin{frame}{Nén thành vài “kênh” ẩn}{Trực giác trước công thức}
 \begin{columns}[T,onlytextwidth]
@@ -279,7 +341,7 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 7
+% SLIDE 10
 % ============================================================
 \begin{frame}[shrink=16]{Tucker: trộn kênh để tái tạo dữ liệu}{Math 02 \textperiodcentered\ nén tensor}
 \begin{columns}[T,onlytextwidth]
@@ -329,7 +391,7 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 8
+% SLIDE 11
 % ============================================================
 \begin{frame}[shrink=2]{Quan tâm lan như nước}{Trực giác trước công thức}
 \begin{columns}[T,onlytextwidth]
@@ -367,9 +429,9 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 9
+% SLIDE 12
 % ============================================================
-\begin{frame}[shrink=8]{Viết điều đó bằng một phương trình}{Math 03 \textperiodcentered\ reaction--diffusion}
+\begin{frame}[shrink=11]{Viết điều đó bằng một phương trình}{Math 03 \textperiodcentered\ reaction--diffusion}
 \begin{mathcard}[Hệ phương trình cho từng kênh ẩn]
   \centering
   \[
@@ -401,7 +463,7 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 10
+% SLIDE 13
 % ============================================================
 \begin{frame}[shrink=24]{Từ kênh ẩn đến chuỗi thật}{Math 04 \textperiodcentered\ phép chiếu}
 \begin{columns}[T,onlytextwidth]
@@ -447,9 +509,9 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 11
+% SLIDE 14
 % ============================================================
-\begin{frame}{Ghép mọi thứ thành một mô hình}{Math 05 \textperiodcentered\ mô hình đầy đủ}
+\begin{frame}[shrink=12]{Ghép mọi thứ thành một mô hình}{Math 05 \textperiodcentered\ mô hình đầy đủ}
 \begin{mathcard}[Ba thành phần, một mô hình]
   \centering
   \(\mathcal X^c\approx\widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o\)
@@ -471,7 +533,7 @@
   \end{intuition}
 \end{column}
 \begin{column}{0.50\textwidth}
-  \begin{tikzpicture}[x=0.8cm,y=0.65cm]
+  \begin{tikzpicture}[x=0.8cm,y=0.65cm,scale=.93,transform shape]
     \node[dtbox,minimum width=2.0cm,minimum height=1.05cm,align=center] (th) at (0,0)
       {$\Theta$\\[-.5mm]\scriptsize một mô hình};
     \node[dtaccent,minimum width=2.4cm,minimum height=.95cm,align=center] (td) at (3.1,1.45)
@@ -490,7 +552,7 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 12
+% SLIDE 15
 % ============================================================
 \begin{frame}[shrink=22]{Học tham số: sửa từng mảnh ghép}{Thuật toán \textperiodcentered\ ALS}
 \begin{columns}[T,onlytextwidth]
@@ -534,9 +596,9 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 13
+% SLIDE 16
 % ============================================================
-\begin{frame}{Bao nhiêu kênh là đủ? Khi nào đổi mô hình?}{Tự động hóa \textperiodcentered\ MDL + regime}
+\begin{frame}[shrink=8]{Bao nhiêu kênh là đủ? Khi nào đổi mô hình?}{Tự động hóa \textperiodcentered\ MDL + regime}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.50\textwidth}
   \begin{mathcard}[Chi phí mô tả]
@@ -586,7 +648,7 @@
 \end{frame}
 
 % ============================================================
-% SLIDE 14
+% SLIDE 17
 % ============================================================
 \begin{frame}[shrink=18]{Dữ liệu mới đến mỗi tuần}{Streaming \textperiodcentered\ chi phí không theo lịch sử}
 \begin{tikzpicture}[node distance=3.5mm]
@@ -626,12 +688,35 @@
 \end{columns}
 \end{frame}
 
-\section{Ứng dụng và kết luận}
+\section{Ứng dụng}
 
 % ============================================================
-% SLIDE 15
+% SLIDE 18
 % ============================================================
-\begin{frame}[shrink=10]{Dùng nó để quyết định gì?}{Ba ứng dụng}
+\begin{frame}{Ứng dụng}{Phần 03 \textperiodcentered\ Từ tín hiệu đến hành động}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.25\textwidth}
+  {\sffamily\bfseries\fontsize{58}{58}\selectfont\color{DTGold}03\par}
+  \vspace{2mm}
+  {\color{DTGold}\rule{2.2cm}{1pt}}
+\end{column}
+\begin{column}{0.68\textwidth}
+  {\large\bfseries\color{DTNavy}Mô hình chỉ có ích khi trả lời được một quyết định.}\par
+  \vspace{5mm}
+  {\small
+  \begin{itemize}
+    \item Marketing: thị trường dẫn đầu, ngân sách, thời điểm.
+    \item Y tế công cộng: tín hiệu lan, chuẩn bị nguồn lực.
+    \item Sản phẩm: công nghệ lên/xuống, địa phương hóa.
+  \end{itemize}}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 19
+% ============================================================
+\begin{frame}[shrink=12]{Dùng nó để quyết định gì?}{Ba ứng dụng}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.32\textwidth}
   \begin{tcolorbox}[enhanced,colback=white,colframe=DTTeal!55,boxrule=.7pt,arc=3mm,height=4.9cm,halign=left]
@@ -681,8 +766,33 @@
 \end{takeaway}
 \end{frame}
 
+\section{Kết luận}
+
 % ============================================================
-% SLIDE 16
+% SLIDE 20
+% ============================================================
+\begin{frame}{Kết luận}{Phần 04 \textperiodcentered\ Đọc kết quả có trách nhiệm}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.25\textwidth}
+  {\sffamily\bfseries\fontsize{58}{58}\selectfont\color{DTGold}04\par}
+  \vspace{2mm}
+  {\color{DTGold}\rule{2.2cm}{1pt}}
+\end{column}
+\begin{column}{0.68\textwidth}
+  {\large\bfseries\color{DTNavy}Một mô hình tốt không chỉ dự báo đúng, mà còn phải nói đúng giới hạn của nó.}\par
+  \vspace{5mm}
+  {\small
+  \begin{itemize}
+    \item Kết quả paper hỗ trợ những gì?
+    \item Những kết luận nào không được phép rút ra?
+    \item Ba điều nên mang về.
+  \end{itemize}}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 21
 % ============================================================
 \begin{frame}[shrink=2]{Đáng tin đến đâu?}{Bằng chứng và giới hạn}
 \begin{columns}[T,onlytextwidth]
@@ -720,34 +830,33 @@
     \end{enumerate}
   \end{caution}
   \vspace{2mm}
-  {\scriptsize\color{DTNavy!55}Nguồn số liệu: Higashiguchi et al., KDD 2025, arXiv:2505.00242v1. Đây là claim của paper, không phải kết quả tái hiện.}
+  {\fontsize{5.9}{6.8}\selectfont\color{DTMuted}Nguồn: Higashiguchi et al. (2025), arXiv:2505.00242v1. Đây là claim của paper, không phải kết quả tái hiện.}
 \end{column}
 \end{columns}
 \end{frame}
 
 % ============================================================
-% SLIDE 17
+% SLIDE 22
 % ============================================================
 \begin{frame}[plain]
 \begin{tikzpicture}[remember picture,overlay]
-  \fill[DTNavy] (current page.north west) rectangle (current page.south east);
-  \fill[DTTeal!18] (current page.south east) circle (5cm);
-  \fill[DTGold!10] (current page.north west) circle (4cm);
-  \node[anchor=west,text=white] at ($(current page.west)+(0.95,2.6)$) {%
-    \begin{minipage}{10cm}
-      {\sffamily\Large\bfseries Ba điều mang về\par}
-      \vspace{7mm}
+  \fill[DTPaper] (current page.north west) rectangle (current page.south east);
+  \fill[DTGold] ($(current page.north west)+(0.72,-0.55)$) rectangle ++(0.065,-7.9);
+  \fill[DTGold!8] (current page.north east) circle (4.7cm);
+  \node[anchor=north west] at ($(current page.north west)+(1.2,-1.22)$) {%
+    \begin{minipage}{13cm}
+      {\sffamily\bfseries\fontsize{24}{28}\selectfont\color{DTNavy}Ba điều mang về\par}
+      \vspace{4mm}
       {\large
-      \textcolor{DTGold}{\textbf{01}} \quad Tách tín hiệu trước khi tìm quy luật.\\[3mm]
-      \textcolor{DTGold}{\textbf{02}} \quad Nén thành vài kênh để con người hiểu được.\\[3mm]
-      \textcolor{DTGold}{\textbf{03}} \quad Dự báo và thích nghi khi dữ liệu mới đến.}
-      \vspace{10mm}
-      \par{\color{DTTeal!25}\rule{8.5cm}{1pt}}
-      \vspace{7mm}
-      \par{\sffamily\Large\color{white}Hỏi \& đáp}
+      \textcolor{DTGold}{\textbf{01}}\quad Tách tín hiệu trước khi tìm quy luật.\\[2.2mm]
+      \textcolor{DTGold}{\textbf{02}}\quad Nén thành vài kênh để con người hiểu được.\\[2.2mm]
+      \textcolor{DTGold}{\textbf{03}}\quad Dự báo và thích nghi khi dữ liệu mới đến.}
+      \vspace{4mm}
+      \par{\color{DTLine}\rule{\textwidth}{.6pt}}
+      \vspace{3mm}
+      \par{\sffamily\Large\bfseries\color{DTGold}Hỏi \& đáp}
+      \par{\small\color{DTMuted}D-Tracker \textperiodcentered\ KDD 2025 \textperiodcentered\ arXiv:2505.00242}
     \end{minipage}};
-  \node[anchor=west] at ($(current page.south west)+(0.95,0.75)$) {%
-    {\sffamily\small\color{white!62}D-Tracker \textperiodcentered\ KDD 2025 \textperiodcentered\ arXiv:2505.00242}};
 \end{tikzpicture}
 \end{frame}
 
@@ -756,7 +865,7 @@
 % ============================================================
 % SLIDE A1
 % ============================================================
-\begin{frame}{Backup 01: tensor và Tucker}{Dùng cho câu hỏi kỹ thuật}
+\begin{frame}[shrink=4]{Backup 01: tensor và Tucker}{Dùng cho câu hỏi kỹ thuật}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
   \begin{mathcard}[Kích thước]

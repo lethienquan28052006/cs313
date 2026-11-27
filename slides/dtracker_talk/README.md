@@ -1,6 +1,8 @@
 # D-Tracker overview talk
 
 Bộ Beamer 16:9 tiếng Việt, khoảng 35 phút, dành cho người chưa có kiến thức nền.
+Phong cách academic-clean: nền sáng, Latin Modern Sans, header breadcrumb, logo nhỏ,
+footer ba phần và section overview, lấy cảm hứng từ seminar deck đại học.
 Trọng tâm là ứng dụng và trực giác; các ý toán vẫn được dạy theo thứ tự:
 
 > trực quan → nói bằng lời → công thức → kiểm tra bằng ví dụ số.
@@ -10,7 +12,7 @@ Trọng tâm là ứng dụng và trực giác; các ý toán vẫn được d�
 - `outline.md`: outline từng slide, timing, mục tiêu, visual, phần toán và lời dẫn.
 - `main.tex`: nội dung Beamer.
 - `theme.tex`: màu sắc, font, frametitle, footline, box.
-- `dtracker_talk.pdf`: bản PDF sau khi build, 21 slide (17 slide chính + 4 backup), 16:9.
+- `dtracker_talk.pdf`: bản PDF sau khi build, 26 slide (22 slide chính + 4 backup), 16:9.
 
 ## Build
 
@@ -34,6 +36,8 @@ File `dtracker_talk_overleaf.zip` chỉ chứa các file cần cho Overleaf:
 
 ## Cấu trúc trình bày
 
+- Cover và mục lục 4 phần.
+- Section overview trước mỗi phần.
 - Mở đầu bằng câu hỏi thực tế.
 - Dữ liệu tensor, vì sao khó, pipeline.
 - Ba lớp trend + seasonal + outlier.
