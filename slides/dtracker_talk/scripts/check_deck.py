@@ -11,6 +11,38 @@ OUTLINE_RE = re.compile(r"^### Slide (S?[0-9]+|A[0-9]+)\b", re.MULTILINE)
 SLIDE_RE = re.compile(r"^% SLIDE (S?[0-9]+|A[0-9]+)\s*$", re.MULTILINE)
 FIGURE_RE = re.compile(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}")
 PLACEHOLDER_RE = re.compile(r"\b(?:TODO|TBD)\b|chưa điền", re.IGNORECASE)
+INPUT_RE = re.compile(r"\\input\{([^}]+)\}")
+
+
+def source_with_inputs(
+    root: Path, entry: Path, issues: list[str], seen: set[Path] | None = None
+) -> str:
+    r"""Return LaTeX source with root-relative \input files expanded."""
+    root = root.resolve()
+    entry = entry.resolve()
+    relative = entry.relative_to(root)
+    seen = set() if seen is None else seen
+    if relative in seen:
+        issues.append(f"input cycle: {relative}")
+        return ""
+    if not entry.is_file():
+        issues.append(f"input not found: {relative}")
+        return ""
+
+    seen.add(relative)
+    try:
+        source = entry.read_text()
+
+        def expand(match: re.Match[str]) -> str:
+            raw = match.group(1).strip()
+            included = root / raw
+            if not included.suffix:
+                included = included.with_suffix(".tex")
+            return source_with_inputs(root, included, issues, seen)
+
+        return INPUT_RE.sub(expand, source)
+    finally:
+        seen.remove(relative)
 
 
 def check(root: Path) -> list[str]:
@@ -25,7 +57,7 @@ def check(root: Path) -> list[str]:
         return issues
 
     expected = OUTLINE_RE.findall(outline.read_text())
-    source = main.read_text()
+    source = source_with_inputs(root, main, issues)
     actual = SLIDE_RE.findall(source)
     if expected != actual:
         issues.append(f"slide mismatch: outline={expected}, deck={actual}")

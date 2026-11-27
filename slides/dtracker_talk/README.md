@@ -22,11 +22,28 @@ Chỉ gồm **paper gốc + outline + slide**. Chưa cài đặt D-Tracker, chư
 
 - `dtracker_talk.pdf`: 33 trang = 29 slide chính + 4 backup, 16:9.
 - `outline.md`: mục tiêu, timing, visual, công thức, nguồn và lời dẫn từng slide.
-- `main.tex`: nội dung Beamer.
+- `main.tex`: entry point Beamer; chỉ giữ preamble, metadata và các `\input`.
+- `parts/`: bảy file nội dung theo phần trình bày, được liệt kê bên dưới.
 - `theme.tex`: màu sắc, font, frametitle, footline và panel.
 - `dtracker_talk_overleaf.zip`: gói upload Overleaf.
 - `sources/source_map.md`: claim ledger với page/section/equation/figure/table anchors.
 - `sources/figure_manifest.tsv`: nguồn, caption, license và SHA-256 của hai hình/crop paper được dùng.
+
+## Chỉnh nội dung theo `parts/`
+
+Sửa file tương ứng với phần cần thay đổi, không sửa các PDF/ZIP đã tạo:
+
+```text
+parts/00_cover.tex           # slide 1
+parts/01_problem.tex         # slide 2–6
+parts/02_methodology.tex     # slide 7–18
+parts/03_experiments.tex     # slide 19–24
+parts/04_reproduction.tex    # slide 25–27
+parts/05_demo_conclusion.tex # slide 28–29
+parts/99_backup.tex          # slide A1–A4
+```
+
+`main.tex` ghép các file theo đúng thứ tự trên bằng `\input`. Structural checker đọc cả input lồng nhau và báo rõ input bị thiếu hoặc cycle. Sau khi sửa hãy chạy `make check && make all`.
 
 Paper gốc đã được đối chiếu byte-identical với arXiv và nằm tại:
 
@@ -48,7 +65,7 @@ make clean        # xóa build/, PDF và ZIP đã tạo
 
 Makefile ưu tiên Tectonic trên `PATH`, sau đó binary tại `../paper_explore/.tools/tectonic`. Nếu cả hai không có, `make` tải Tectonic 0.15.0 vào `.tools/` cục bộ.
 
-File ZIP chỉ chứa các thành phần cần trên Overleaf: `main.tex`, `theme.tex`, `latexmkrc`, `OVERLEAF.md` và `figures/`. Source map, paper gốc và các artifact kiểm chứng không được đưa vào ZIP.
+File ZIP chỉ chứa các thành phần cần trên Overleaf: `main.tex`, `theme.tex`, `latexmkrc`, `OVERLEAF.md`, `figures/` và `parts/`. Source map, paper gốc và các artifact kiểm chứng không được đưa vào ZIP.
 
 ## Ghi chú nội dung
 

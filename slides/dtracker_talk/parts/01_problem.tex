@@ -1,0 +1,208 @@
+\section{Problem}
+
+% ============================================================
+% SLIDE 2
+% ============================================================
+\begin{frame}[shrink=11]{Một bảng dữ liệu, ba câu hỏi}{Problem \textperiodcentered\ motivation}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.43\textwidth}
+  {\large\bfseries\color{DTNavy}Ví dụ minh họa: lượt tìm kiếm điện thoại theo tuần}
+  \vspace{3mm}
+  \begin{itemize}
+    \item Hai từ khóa: \textbf{iPhone}, \textbf{Galaxy}.
+    \item Ba khu vực: Bắc Mỹ, châu Âu, Đông Nam Á.
+    \item Quan sát mới đến sau mỗi tuần.
+  \end{itemize}
+  \vspace{2mm}
+  \begin{intuition}[Không chỉ là đếm]
+    Ta muốn hiểu \textbf{quy luật đang thay đổi}, không chỉ nhìn một tổng cuối kỳ.
+  \end{intuition}
+\end{column}
+\begin{column}{0.55\textwidth}
+  \begin{questioncard}
+    \softlabel{01 \quad TĂNG HAY GIẢM?}\par
+    {\large Mức quan tâm đang đi theo hướng nào?}\par
+    {\small\color{DTMuted}Trend khác nhau theo từ khóa và khu vực.}
+  \end{questioncard}
+  \vspace{2mm}
+  \begin{questioncard}
+    \softlabel{02 \quad CÓ LAN GIỮA CÁC VÙNG?}\par
+    {\large Nơi nào đi trước, nơi nào thay đổi sau?}\par
+    {\small\color{DTMuted}Ta cần diễn giải liên hệ, không chỉ fit từng chuỗi.}
+  \end{questioncard}
+  \vspace{2mm}
+  \begin{questioncard}
+    \softlabel{03 \quad TUẦN TỚI RA SAO?}\par
+    {\large Có thể dự báo khi dữ liệu vẫn đang đến?}\par
+    {\small\color{DTMuted}Mô hình cũ có thể lỗi thời ngay khi quy luật đổi.}
+  \end{questioncard}
+\end{column}
+\end{columns}
+\vspace{2mm}
+\papersource{ý tưởng marketing trong §1, p. 1; chi tiết iPhone/Galaxy và ba vùng là ví dụ giảng dạy.}
+\end{frame}
+
+% ============================================================
+% SLIDE 3
+% ============================================================
+\begin{frame}[shrink=17]{Dữ liệu thực chất là một chồng bảng theo tuần}{Problem \textperiodcentered\ tensor bằng ví dụ}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.50\textwidth}
+\centering
+\begin{tikzpicture}[x=.78cm,y=.68cm]
+  \foreach \shift/\week/\shade in {0/t/35,1.0/{t+1}/60} {
+    \begin{scope}[shift={(\shift,-\shift)}]
+      \fill[white,draw=DTLine] (-.12,-.12) rectangle (3.45,2.55);
+      \foreach \x/\v in {0/25,1/50,2/75} {
+        \fill[DTTeal!\v,draw=white] (\x,1.15) rectangle ++(1,1);
+        \fill[DTTeal!\shade,draw=white] (\x,0) rectangle ++(1,1);
+      }
+      \node[tinylabel,anchor=west] at (3.55,1.05) {tuần $\week$};
+    \end{scope}}
+  \node[tinylabel,anchor=east] at (-.48,1.68) {iPhone};
+  \node[tinylabel,anchor=east] at (-.48,.52) {Galaxy};
+  \node[tinylabel] at (.52,-1.45) {Bắc Mỹ};
+  \node[tinylabel] at (1.52,-1.45) {châu Âu};
+  \node[tinylabel] at (2.52,-1.45) {ĐNÁ};
+  \draw[dtarrow] (4.7,-1.45) -- (5.55,-1.45);
+  \node[tinylabel,anchor=west,text=DTGold] at (5.65,-1.45) {thời gian};
+\end{tikzpicture}
+\vspace{3mm}
+
+{\small\color{DTMuted}Hai lát 2 × 3; màu đậm hơn biểu thị giá trị lớn hơn (minh họa).}
+\end{column}
+\begin{column}{0.47\textwidth}
+  \begin{intuition}[Nói đơn giản]
+    Mỗi tuần là một \textbf{bảng từ khóa × địa điểm}. Xếp các bảng theo thứ tự thời gian, ta có \textbf{tensor bậc ba}.
+  \end{intuition}
+  \vspace{3mm}
+  \begin{mathcard}[Ký hiệu]
+    \centering
+    $X_t\in\mathbb N^{k\times l}$ \quad(một tuần)\\[2mm]
+    $\mathcal X\in\mathbb N^{k\times l\times t_c}$ \quad(đến hiện tại)
+  \end{mathcard}
+  \vspace{3mm}
+  \begin{itemize}
+    \item Ví dụ: $k=2$ từ khóa, $l=3$ vùng.
+    \item Một tuần có $2\times3=6$ ô.
+    \item 104 tuần có $2\times3\times104=624$ ô minh họa.
+  \end{itemize}
+\end{column}
+\end{columns}
+\vspace{1mm}
+\papersource{Problem definition, §3.1, p. 4; kích thước 2 × 3 × 104 là minh họa.}
+\end{frame}
+
+% ============================================================
+% SLIDE 4
+% ============================================================
+\begin{frame}[shrink=24]{Problem 1 --- stream forecasting}{Problem \textperiodcentered\ input và output}
+\centering
+\begin{tikzpicture}[x=.83cm,y=.75cm]
+  \draw[DTLine,line width=2pt] (0,0) -- (13,0);
+  \foreach \x/\lab in {0/$t_1$,1.4/$t_2$,2.8/$\cdots$,8.6/$t_{c-1}$,10/$t_c$,12.6/$t_c+L_f$} {
+    \fill[DTTeal] (\x,0) circle (.08);
+    \node[tinylabel,anchor=north] at (\x,-.28) {\lab};}
+  \draw[DTGold,line width=4pt] (4.3,.4) -- (10,.4);
+  \draw[DTGold] (4.3,.1) -- (4.3,.72); \draw[DTGold] (10,.1) -- (10,.72);
+  \node[biglabel,anchor=south] at (7.15,.72) {cửa sổ hiện tại $\mathcal X^c$: $L_c$ bước};
+  \draw[dtarrow] (10.25,0) -- (12.25,0);
+  \node[font=\sffamily\small,text=DTGold,anchor=south] at (11.2,.1) {dự báo};
+\end{tikzpicture}
+\vspace{3mm}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\begin{mathcard}[Input tại mỗi thờingian]
+  \centering
+  $\mathcal X^c=\{X_t\}_{t=t_c-L_c+1}^{t_c}$\\[2mm]
+  {\small Cửa sổ gần nhất thay vì toàn bộ lịch sử.}
+\end{mathcard}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{mathcard}[Output]
+  \centering
+  time-varying dynamics $+\widehat X_{t_c+L_f}$\\[2mm]
+  {\small Trend, seasonality, diffusion và dự báo $L_f$ bước.}
+\end{mathcard}
+\end{column}
+\end{columns}
+\vspace{3mm}
+\begin{takeaway}[Ví dụ cấu hình paper]
+  GoogleTrends dùng $L_c=104$ tuần và các tầm dự báo 13/26/39 tuần; Covid-19 dùng $L_c=56$ ngày và 7/14/21 ngày.
+\end{takeaway}
+\vspace{2mm}
+\papersource{Problem 1, §3.1, p. 4; experimental protocol, §5 Q1, p. 7.}
+\end{frame}
+
+% ============================================================
+% SLIDE 5
+% ============================================================
+\begin{frame}[shrink=25]{Vì sao khó? Ba phức tạp chồng lên nhau}{Problem \textperiodcentered\ ba thách thức}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.32\textwidth}
+\begin{intuition}[01 \quad Complex patterns]
+  \textbf{Trend} tăng/giảm, \textbf{seasonality} lặp, \textbf{diffusion} lan và \textbf{outlier} bất ngờ cùng tồn tại.\\[2mm]
+  {\small Cường độ và thờingian khác theo keyword/location.}
+\end{intuition}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{mathcard}[02 \quad Dynamic changes]
+  Quy luật \textbf{thay đổi theo thời gian}.\\[2mm]
+  Một diffusion pattern có thể chỉ xuất hiện trong giai đoạn ngắn; model học từ quá khứ có thể lỗi thời ngay.
+\end{mathcard}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{caution}[03 \quad High-dimensional stream]
+  Nhiều từ khóa × nhiều quốc gia × thời gian không giới hạn.\\[2mm]
+  Tăng chi phí tính toán và làm kết quả khó diễn giải.
+\end{caution}
+\end{column}
+\end{columns}
+\vspace{5mm}
+\centering
+\begin{tikzpicture}[x=.85cm,y=.75cm]
+  \node[dtbox,minimum width=2.8cm,minimum height=.9cm] (a) at (0,0){nhiều chuỗi};
+  \node[dtbox,minimum width=2.8cm,minimum height=.9cm] (b) at (4,0){nhiều quy luật};
+  \node[dtbox,minimum width=2.8cm,minimum height=.9cm] (c) at (8,0){nhiều giai đoạn};
+  \draw[dtarrow] (a)--(b); \draw[dtarrow] (b)--(c);
+  \node[dtgold,minimum width=4.2cm,minimum height=1.0cm,align=center] (d) at (4,-2)
+    {cần \textbf{nén + tách + thích nghi}};
+  \draw[dtdash] (a.south)--(d.west); \draw[dtdash] (c.south)--(d.east);
+\end{tikzpicture}
+\vspace{2mm}
+\papersource{§1, pp. 1--2.}
+\end{frame}
+
+% ============================================================
+% SLIDE 6
+% ============================================================
+\begin{frame}[shrink=5]{Lộ trình buổi trình bày}{Problem \textperiodcentered\ roadmap}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.235\textwidth}
+\begin{intuition}[01 \quad Method]
+  Tách và nén dữ liệu; mô hình hóa reaction--diffusion; học và cập nhật.
+\end{intuition}
+\end{column}
+\begin{column}{0.235\textwidth}
+\begin{mathcard}[02 \quad Paper experiments]
+  Accuracy, scalability, effectiveness trên sáu tensor streams.
+\end{mathcard}
+\end{column}
+\begin{column}{0.235\textwidth}
+\begin{questioncard}
+  \softlabel{03 \quad REPRODUCTION}\par
+  Protocol, bảng Paper vs. nhóm, runtime và lessons.\\[2mm]
+  {\small Phần kết quả chờ thực nghiệm của nhóm.}
+\end{questioncard}
+\end{column}
+\begin{column}{0.235\textwidth}
+\begin{takeaway}[04 \quad Demo]
+  Một slide trống để nhóm thêm sản phẩm minh họa.
+\end{takeaway}
+\end{column}
+\end{columns}
+\vspace{7mm}
+\centering
+{\large\color{DTNavy}Xuyên suốt method: quay lại ba câu hỏi \textbf{tăng/giảm --- lan --- dự báo}.}
+\end{frame}

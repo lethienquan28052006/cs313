@@ -1,0 +1,30 @@
+
+% ============================================================
+% SLIDE 1
+% ============================================================
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[DTPaper] (current page.north west) rectangle (current page.south east);
+  \fill[DTGold!6] (current page.south east) circle (5.1cm);
+  \fill[DTGold] ($(current page.north west)+(0.72,-0.55)$) rectangle ++(0.065,-7.9);
+  \node[anchor=north west,align=left] at ($(current page.north west)+(1.18,-0.38)$) {%
+    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}CS313 \textperiodcentered\ ĐỒ ÁN DATA MINING\par}
+    {\sffamily\fontsize{7}{8}\selectfont\color{DTMuted}PAPER PRESENTATION \textperiodcentered\ 30--35 PHÚT\par}};
+  \node[anchor=north east] at ($(current page.north east)+(-0.75,-0.38)$) {%
+    \tikz{\fill[DTNavy,rounded corners=.6pt] (0,0) rectangle (.7,.7);\fill[DTGold] (.54,.54) circle (.085);\node[white,font=\fontsize{8}{8}\selectfont\bfseries] at (.33,.31){D};}};
+  \node[anchor=west,align=left] at ($(current page.north west)+(1.2,-2.3)$) {%
+    \begin{minipage}{13.5cm}
+      {\sffamily\bfseries\fontsize{38}{42}\selectfont\color{DTNavy}D-Tracker\par}
+      \vspace{2mm}
+      {\sffamily\fontsize{21}{25}\selectfont\color{DTInk}Theo dõi sự lan tỏa của mối quan tâm\par}
+      \vspace{4mm}
+      {\color{DTGold}\rule{8.2cm}{1.1pt}\par}
+      \vspace{3mm}
+      {\small\color{DTMuted}Modeling Interest Diffusion in Social Activity Tensor Data Streams\par}
+      \vspace{1mm}
+      {\scriptsize\color{DTMuted}Higashiguchi et al. \textperiodcentered\ KDD 2025 \textperiodcentered\ arXiv:2505.00242v1\par}
+    \end{minipage}};
+  \node[anchor=south west] at ($(current page.south west)+(1.2,0.55)$) {%
+    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}Problem \textperiodcentered\ Method \textperiodcentered\ Experiments \textperiodcentered\ Reproduction \textperiodcentered\ Demo}};
+\end{tikzpicture}
+\end{frame}

@@ -87,6 +87,37 @@ class CheckDeckTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("PASS", result.stdout)
 
+    def test_nested_inputs_expand_and_pass(self) -> None:
+        slides = ["1", "A1"]
+        self.write("outline.md", self.outline(slides))
+        self.write("parts/frames.tex", self.deck(slides))
+        self.write("parts/body.tex", "\\input{parts/frames}\n")
+        self.write(
+            "main.tex",
+            "\\documentclass{beamer}\n\\begin{document}\n\\input{parts/body}\n\\end{document}\n",
+        )
+        result = self.run_check()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_missing_input_fails(self) -> None:
+        self.write("outline.md", self.outline(["1"]))
+        self.write(
+            "main.tex",
+            "\\documentclass{beamer}\n\\begin{document}\n\\input{parts/missing}\n\\end{document}\n",
+        )
+        self.assert_fails_with(self.run_check(), "input not found: parts/missing.tex")
+
+    def test_input_cycle_fails(self) -> None:
+        self.write("outline.md", self.outline(["1"]))
+        body = "% SLIDE 1\n\\begin{frame}\nNội dung.\n\\end{frame}\n"
+        self.write("parts/a.tex", body + "\\input{parts/b}\n")
+        self.write("parts/b.tex", "\\input{parts/a}\n")
+        self.write(
+            "main.tex",
+            "\\documentclass{beamer}\n\\begin{document}\n\\input{parts/a}\n\\end{document}\n",
+        )
+        self.assert_fails_with(self.run_check(), "input cycle:")
+
 
 if __name__ == "__main__":
     unittest.main()
