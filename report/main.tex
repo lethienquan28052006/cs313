@@ -1,0 +1,83 @@
+% !TEX program = pdflatex
+\documentclass[conference]{IEEEtran}
+
+% Style adapted from the user-supplied CS114 IEEEtran template.
+\usepackage[T5]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[protrusion=false]{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{balance}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\pending}[1]{\textcolor{blue!65!black}{[\textsf{#1}]}}
+
+\begin{document}
+
+% Compact one-column project-information page, not a separate cover page.
+\onecolumn
+\begin{center}
+  {\large\textbf{UNIVERSITY / FACULTY NAME}\par}
+  {\small\textbf{DATA MINING --- FINAL PROJECT}\par}
+  \vspace{0.25cm}
+  \rule{\linewidth}{0.5pt}
+  \vspace{0.35cm}
+  \includegraphics[width=0.12\linewidth]{images/Logo_UIT.svg.png}
+  \vspace{0.35cm}
+
+  {\LARGE\textbf{D-Tracker: Modeling Interest Diffusion\\in Social Activity Tensor Data Streams}\par}
+  \vspace{0.3cm}
+  {\large\textbf{Four-Page Paper Report}\par}
+  \vspace{0.6cm}
+\end{center}
+
+\begin{flushleft}
+\begin{tabular}{@{}ll@{}}
+  \textbf{Course / class:} & \pending{Course code and class section} \\[1mm]
+  \textbf{Instructor:} & \pending{Instructor name} \\[1mm]
+  \textbf{Team:} & \pending{Team name or number} \\[1mm]
+  \textbf{Members:} & \pending{Member 1 -- Student ID} \\
+                       & \pending{Member 2 -- Student ID} \\
+                       & \pending{Additional members as needed} \\[1mm]
+  \textbf{Date:} & \pending{Submission date}
+\end{tabular}
+\end{flushleft}
+
+\vspace{0.35cm}
+{\small\tableofcontents}
+\clearpage
+
+% Main report body follows the template's two-column IEEE format.
+\twocolumn
+\begin{abstract}
+\pending{Write 80--100 words covering the problem, D-Tracker's core idea, the selected experimental evidence, and the planned reproduction. Keep paper-reported outcomes separate from future team results.}
+\end{abstract}
+
+\begin{IEEEkeywords}
+Data mining, tensor data streams, time-series forecasting, tensor decomposition, interest diffusion, D-Tracker.
+\end{IEEEkeywords}
+
+\input{sections/01_introduction}
+\input{sections/02_problem_setup}
+\input{sections/03_method}
+\input{sections/04_experiments}
+\input{sections/05_conclusion}
+\input{sections/06_tasks}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

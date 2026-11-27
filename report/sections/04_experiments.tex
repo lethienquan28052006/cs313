@@ -1,0 +1,43 @@
+% Target after editing: approximately 0.75--1 page including tables and reproduction protocol.
+\section{Experiments}
+
+\subsection{Experimental Setup}
+\pending{Report the six datasets, tensor shapes, baselines, normalization, input windows, forecast horizons, evaluation metrics, hardware, and any tuning settings actually used in the selected discussion. Cite exact table/section locations from the paper.}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Selected Forecasting Results Supported by the Paper Only}
+  \label{tab:paper-reference-format}
+  \small
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Dataset & Horizon & MAE & RMSE \\
+    \midrule
+    \pending{Choose one} & \pending{value} & \pending{value} & \pending{value} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Results from the Original Paper}
+\pending{Summarize forecasting accuracy, ablation, scalability, and effectiveness evidence. Use values supported by the paper and mark them explicitly as ``paper-reported,'' not ours. Include comparisons against the relevant baselines.}
+
+\subsection{Our Reproduction}
+\pending{Document code/data versions, environment and hardware, preprocessing, train/validation/test indexing, window boundaries, stopping rules, seeds, and the exact evaluation loop.}
+
+\pending{Insert measured MAE/RMSE, runtime and ablation comparisons from team experiment logs. If a result is unavailable or differs from the paper, explain the discrepancy rather than inventing a value or claiming success.}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Team Reproduction Results versus Paper References}
+  \label{tab:team-reproduction-format}
+  \small
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    Metric & Paper Reference & Our Run \\
+    \midrule
+    MAE & \pending{cited value} & \pending{measured value} \\
+    RMSE & \pending{cited value} & \pending{measured value} \\
+    Runtime & \pending{cited setup/value} & \pending{measured value} \\
+    \bottomrule
+  \end{tabular}
+\end{table}

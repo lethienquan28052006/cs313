@@ -1,0 +1,2 @@
+# IEEEtran skeleton uses pdfLaTeX (fontenc/inputenc), not fontspec.
+$pdf_mode = 1;

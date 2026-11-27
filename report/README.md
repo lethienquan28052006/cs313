@@ -1,39 +1,59 @@
-# `report/` – Report 4 trang (LaTeX)
+# D-Tracker — Overleaf report skeleton
 
-**Phụ trách:** #7 (viết chính, gom nội dung). Các thành viên khác cung cấp nội dung cho section liên quan.
+Khung LaTeX tiếng Anh cho report đồ án Data Mining, dựa trên `CS114_Report.zip` do người dùng cung cấp. **Đây chưa phải report hoàn chỉnh** và không chứa implementation/reproduction result do nhóm tự tạo.
 
-## Yêu cầu
+## Layout và giới hạn trang
 
-- 4 trang, tiếng Anh.
-- Có đủ: Introduction, Problem Setup, Method, Experiments, Conclusion, **Tasks assigned to each member**.
-- Dùng template ACM 2 cột (`acmart`, định dạng của KDD), cho thống nhất với paper gốc.
+- `IEEEtran` conference, kiểu hai cột của template; không dùng `titlepage`.
+- Trang 1: thông tin project một cột và ToC.
+- Trang 2 trở đi: Abstract + hai cột Introduction → Task Assignment.
+- Hiện bản khung compile thành **3 trang**, trong giới hạn tối đa **4 trang**.
+- Khi thay placeholders bằng nội dung thật, phải kiểm tra lại `make check`; không được thu nhỏ font/lề để né giới hạn trang.
 
-## Dự kiến tổ chức
+## Cấu trúc cần sửa
 
-| Thành phần | Nội dung |
-|---|---|
-| File chính | Khai báo template, tiêu đề, tác giả, ghép các section |
-| `sections/` | **Mỗi section một file riêng**, để nhiều người sửa song song mà không bị conflict |
-| `figures/` | Bản cuối của các hình (PDF), copy từ `experiments/` và `demos/` |
-| File tài liệu tham khảo | BibTeX, trong đó có paper D-Tracker |
+`main.tex` chứa preamble, metadata và thứ tự các `\input`. Chỉnh nội dung trong từng file:
 
-Có thể nối thư mục này với Overleaf (Overleaf hỗ trợ đồng bộ với GitHub) để viết trực tuyến.
+```text
+sections/01_introduction.tex    # Introduction, motivation, project scope
+sections/02_problem_setup.tex   # Input window, notation, challenges
+sections/03_method.tex          # Decomposition, latent factors, diffusion, estimation
+sections/04_experiments.tex    # Setup, original-paper results, team reproduction
+sections/05_conclusion.tex     # Summary, limitations, next steps
+sections/06_tasks.tex           # Work assigned to each member
+references.bib                 # D-Tracker KDD 2025 entry and additional sources
+images/Logo_UIT.svg.png         # Optional logo copied unchanged from supplied template
+```
 
-## Section và nguồn nội dung
+`references.bib` có sẵn entry thật cho D-Tracker: DOI `10.1145/3690624.3709192`, arXiv:2505.00242v1.
 
-| Section | Người viết nháp | Nguồn | Độ dài gợi ý |
-|---|---|---|---|
-| Introduction | #7 | `docs/paper_notes.md` mục 1 | ~0.5 trang |
-| Problem Setup | #7 (nhờ #1 duyệt) | `docs/paper_notes.md` mục 1–2 | ~0.5 trang |
-| Method | #3 nháp → #7 biên tập | `docs/paper_notes.md` mục 3–5 | ~1 trang |
-| Experiments | #4 (tái hiện), #5 + #6 (demo) nháp → #7 biên tập | `experiments/results/`, `demos/*/` | ~1.5 trang |
-| Conclusion | #7 | Key findings thống nhất với #2 | ~0.25 trang |
-| Tasks of each member | #7 | Bảng thành viên trong `README.md` gốc | ~0.25 trang |
+## Quy ước viết
 
-## Việc cần làm
+- Thay `\pending{...}` bằng nội dung thật. Các hướng dẫn trong dấu ngoặc vuông chỉ là gợi ý, không phải dữ kiện được xác nhận.
+- Course, instructor, team name, member IDs và Task Assignment là vùng nhóm phải tự điền.
+- **Results from the Original Paper** chỉ chứa kết quả có trong paper, kèm trang/table/figure citation.
+- **Our Reproduction** chỉ điền kết quả từ experiment log thực tế. Không chép số paper thành kết quả nhóm, không suy diễn runtime hay success.
+- File 01–04 có citation `higashiguchi2025dtracker` làm mẫu; thêm citation cụ thể vào đoạn văn sau khi viết.
+- Không cần build lại PDF/ZIP bằng tay trên Overleaf; Overleaf tự sinh PDF từ source.
 
-- [ ] Dựng file chính và các section rỗng với template ACM; build thử ra PDF
-- [ ] Viết Introduction và Problem Setup
-- [ ] Nhận nháp Method, Experiments; biên tập cho thống nhất giọng văn và ký hiệu (ký hiệu theo `docs/paper_notes.md` mục 2)
-- [ ] Kiểm tra giới hạn 4 trang; nếu thừa thì cắt chữ, không thu nhỏ font hay lề
-- [ ] Viết bảng phân công thành viên
+## Build local
+
+```bash
+cd report
+make all           # PDF + Overleaf ZIP
+make check         # 6 unit tests + structure/layout/page-count check
+make pdf           # chỉ build dtracker_report.pdf
+make overleaf-zip  # chỉ tạo dtracker_report_overleaf.zip
+make clean         # xóa build/, PDF và ZIP đã tạo
+```
+
+Checker yêu cầu đủ section, ngăn `titlepage`, duy trì hai subsection Original Paper/Our Reproduction và kiểm tra PDF ≤4 trang. `make clean` không xóa source.
+
+Makefile ưu tiên Tectonic tại `report/.tools/tectonic` (bản 0.17.0 đã được cài cục bộ), sau đó binary trên `PATH`, cuối cùng `../slides/paper_explore/.tools/tectonic`. Bản local 0.17.0 tránh BibTeX rerun bug `tectonic#1150`; thư mục `.tools/` và `build/` không được đưa vào Overleaf ZIP hay cố ý commit binary.
+
+## Lưu ý tương thích
+
+- `references.bib` dùng BibTeX + `IEEEtran.bst`; không cần Biber/biblatex.
+- Với Tectonic XeTeX, có thể xuất hiện notices `inputenc package ignored` và font-shape substitution `TU/ptm`. Đây là ghi chú riêng của engine khi dùng `inputenc`/T5; không phải missing glyph hay layout error. Overleaf sẽ dùng pdfLaTeX.
+
+Xem `OVERLEAF.md` để upload trực tiếp.

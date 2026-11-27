@@ -28,7 +28,9 @@ third_party/D-Tracker/
 result/
 results/raw/
 
-# LaTeX build files
+# LaTeX build files and local build tools
+report/.tools/
+report/build/
 report/*.aux
 report/*.log
 report/*.out
