@@ -44,6 +44,9 @@ This is the claim ledger for `slides/dtracker_talk/`. Paper-reported material mu
 | The observed stream has `X_t ∈ N^(k×l)`, and observations through `t_c` form `𝒳 ∈ N^(k×l×t_c)`; the recent window is used because retaining everything is constrained by time/memory. | §3.1, p. 4. |
 | “Diffusion” is an assumption/inspired model of attention flowing from high-interest to low-interest locations, analogous to chemical concentration; it is not a causal-identification result. | §3.2, p. 4; §1 interpretation relies on model parameters and factors. |
 
+- **Printed indexing ambiguity (deck convention).** §3.1, p. 4 prints `{X_t}_(t=t_c−L_c)^(t_c)`, which contains `L_c+1` observations under inclusive indexing despite defining an `L_c`-long window. The deck explicitly writes `t_c-L_c+1` through `t_c` to obtain exactly `L_c` observations. This is an indexing convention documented for consistency, not a claim that the paper prints `+1`; reproduction must state and check the chosen convention against the reference code/protocol.
+
+
 ## 3. Big idea and claimed properties
 
 | Claim | Exact evidence |

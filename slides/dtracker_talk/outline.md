@@ -58,8 +58,8 @@ Nguồn paper được kiểm chứng tại `sources/source_map.md`: arXiv:2505.
 - **Mục đích:** chốt input/output và lý do chỉ giữ cửa sổ gần nhất.
 - **Visual:** băng chuyền tuần; cửa sổ `L_c`; mũi tên dự báo `L_f`.
 - **Message:** tại mỗi thời điểm, dùng dữ liệu gần nhất để học quy luật đang thay đổi và dự báo tiếp.
-- **Formula:** `𝒳^c={X_t}_(t=t_c−L_c)^(t_c)` → learn dynamics → `X̂_(t_c+L_f)`.
-- **Check:** cửa sổ 104 tuần, dự báo 13 tuần tương ứng cấu hình GoogleTrends của paper.
+- **Formula:** `𝒳^c={X_t}_(t=t_c−L_c+1)^(t_c)` → learn dynamics → `X̂_(t_c+L_f)`.
+- **Check:** cận dưới `t_c−L_c+1` làm cửa sổ có đúng `L_c` phần tử; paper in cận dưới `t_c−L_c`, nên deck ghi rõ indexing convention thay vì copy công thức có thể đếm thành `L_c+1`. Cửa sổ 104 tuần, dự báo 13 tuần tương ứng cấu hình GoogleTrends của paper.
 - **Source:** Problem 1 §3.1 p. 4; §5 Q1 p. 7.
 - **Lời dẫn:** “Không cần giữ toàn bộ lịch sử trong bộ nhớ, nhưng vẫn phải thích nghi với hiện tại.”
 
@@ -290,7 +290,7 @@ Nguồn paper được kiểm chứng tại `sources/source_map.md`: arXiv:2505.
 - **Mục đích:** chuẩn bị cấu trúc báo cáo reproducibility.
 - **Visual:** hai cột paper target và team environment/config.
 - **Message:** giữ đúng normalization, input window, horizons và init search; ghi code/data versions và hardware.
-- **Formula/check:** paper-side values có source; team-side `—` được chú thích “Nhóm sẽ bổ sung sau khi chạy thực nghiệm”.
+- **Formula/check:** paper-side values có source; team-side `—` được chú thích “Nhóm sẽ bổ sung sau khi chạy thực nghiệm”. Reproduction phải ghi rõ indexing `t_c-L_c+1…t_c` để giữ đúng `L_c` quan sát và đối chiếu với reference code.
 - **Source:** §5 p. 7; Appendix B.1 p. 11.
 - **Lời dẫn:** “Đây là protocol dự kiến, chưa phải tuyên bố rằng nhóm đã chạy.”
 
