@@ -38,7 +38,7 @@
 \begin{column}{0.40\textwidth}
   \small Thách thức chính: \textbf{trend và lan truyền bị che} bởi mùa vụ và ngoại lai.\par
   \vspace{2mm}
-  \formula{\mathcal X_c \;\approx\; \widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o}
+  \formula[1]{\mathcal X_c \;\approx\; \widehat{\mathcal X}_d+\widehat{\mathcal X}_s+\widehat{\mathcal X}_o}
   \vspace{1mm}
   {\scriptsize\color{DTMuted}cả ba cùng kích thước $k\times l\times L_c$\par}
   \vspace{2mm}
@@ -105,7 +105,7 @@
 % SLIDE 8
 % ============================================================
 \begin{frame}{Phân rã Tucker: $\mathcal W^{(\mathrm{core})}$, $W^{(\mathrm{key})}$, $W^{(\mathrm{loc})}$}{Trend tensor}
-\formula{\widehat{\mathcal X}_d \;=\; \mathcal W^{(\mathrm{core})} \times_{\mathrm{key}} W^{(\mathrm{key})} \times_{\mathrm{loc}} W^{(\mathrm{loc})}}
+\formula[2]{\widehat{\mathcal X}_d \;=\; \mathcal W^{(\mathrm{core})} \times_{\mathrm{key}} W^{(\mathrm{key})} \times_{\mathrm{loc}} W^{(\mathrm{loc})}}
 \vspace{2mm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.50\textwidth}
@@ -149,11 +149,10 @@ $\times_{\mathrm{loc}}$ trộn các nhóm vùng thành nước thật.
 \begin{column}{0.55\textwidth}
   {\small Gốc hóa học: chất đi từ nơi \textbf{nồng độ cao} sang nơi \textbf{nồng độ thấp}.\par}
   \vspace{1mm}
-  \begin{mathcard}[D-Tracker áp lên $\mathcal W^{(\mathrm{core})}$ (Eq.~3)]
-  \centering
-  $\displaystyle \frac{dw_{ij}}{dt}=
+  \begin{mathcard}[D-Tracker áp lên $\mathcal W^{(\mathrm{core})}$]
+  \eqline[3]{\frac{dw_{ij}}{dt}=
   \underbrace{\colorbox{DTTeal!12}{$a_{ij}\,w_{ij}$}}_{\text{phản ứng}}
-  +\underbrace{\colorbox{DTGold!18}{$\sum_{j'} d_{ijj'}\,(w_{ij'}-w_{ij})$}}_{\text{khuếch tán}}$
+  +\underbrace{\colorbox{DTGold!18}{$\sum_{j'} d_{ijj'}\,(w_{ij'}-w_{ij})$}}_{\text{khuếch tán}}}
   \end{mathcard}
   \vspace{1mm}
   \small
@@ -279,7 +278,7 @@ $\times_{\mathrm{loc}}$ trộn các nhóm vùng thành nước thật.
 % SLIDE 12
 % ============================================================
 \begin{frame}{Seasonal tensor: nén mùa vụ vào ba ma trận}{Seasonal tensor}
-\formula{\widehat{\mathcal X}_s = S^{(\mathrm{time})}\times_{\mathrm{key}} S^{(\mathrm{key})}\times_{\mathrm{loc}} S^{(\mathrm{loc})}
+\formula[4]{\widehat{\mathcal X}_s = S^{(\mathrm{time})}\times_{\mathrm{key}} S^{(\mathrm{key})}\times_{\mathrm{loc}} S^{(\mathrm{loc})}
 \qquad
 \hat x^{s}_{uv}(t)=\sum_{r=1}^{d_s} S^{(\mathrm{key})}_{ru}\,S^{(\mathrm{loc})}_{rv}\,S^{(\mathrm{time})}_{rt}}
 \vspace{2mm}

@@ -218,7 +218,16 @@
   borderline west={2.4pt}{0pt}{Accent},title={\HeavyFont\small\color{Accent}#1}}
 \newtcolorbox{questioncard}{uitbox,colback=white,borderline={0.6pt}{0pt}{Rule}}
 \newtcolorbox{formulabox}{uitbox,colback=Panel,left=3mm,right=3mm,top=1.6mm,bottom=1.6mm}
-\newcommand{\formula}[1]{\begin{formulabox}\centering$\displaystyle #1$\end{formulabox}}
+% Equation numbers follow the paper: \eqtag{3} prints "(3)".
+\newcommand{\eqtag}[1]{{\normalfont\small\color{Muted}(#1)}}
+% \eqline[n]{math}: centred display maths with the paper's number on the right.
+\newcommand{\eqline}[2][]{%
+  \if\relax\detokenize{#1}\relax
+    \makebox[\linewidth]{\hfill$\displaystyle #2$\hfill}%
+  \else
+    \makebox[\linewidth]{\phantom{\eqtag{#1}}\hfill$\displaystyle #2$\hfill\eqtag{#1}}%
+  \fi}
+\newcommand{\formula}[2][]{\begin{formulabox}\eqline[#1]{#2}\end{formulabox}}
 
 \newcommand{\numcircle}[2][Accent]{%
   \tikz[baseline=-0.7ex]\node[circle,fill=#1,text=white,font=\HeavyFont\small,

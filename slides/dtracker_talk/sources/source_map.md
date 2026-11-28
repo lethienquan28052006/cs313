@@ -24,7 +24,7 @@ Bảng đối chiếu từng slide với paper. Mọi số liệu trên slide đ
 | 13 | Outlier thưa, Def. 4–5, đổi mô hình | §3.3, Def. 4–5, Figure 1(a) | |
 | 14 | Algorithm 1; grid search khởi tạo | §4, Algorithm 1; Appendix B.1 “Hyperparameter tuning” | |
 | 15 | ALS, LM, multiplicative update, CP-ALS, sparsify; Lemma 1 | §4.1.1–4.1.3, Eq. (5)(6)(8), footnote 1, Lemma 1 | |
-| 16 | MDL | §4.2, Eq. (9)(10), footnote 2 ($c_F=32$) | |
+| 16 | MDL | §4.2, Eq. (10), footnote 2 ($c_F=32$) | Các biểu thức cost chi tiết trong §4.2 không được đánh số |
 | 17 | ModelUpdate, RankUpdate; Pythonlib $d_k$: 2 → 3 | §4.3; §5 Q2 (gai thời gian); §5 Q3 | |
 | 18 | Dataset, $L_c$, $L_f$, baseline, metric | §5; Table 4; Appendix B.1 | |
 | 19 | Table 3 đầy đủ (chuyển từ Phụ lục) | Table 3; Appendix B.1 | Script kiểm tra 18/18 dòng; ô tô đậm = nhỏ nhất theo từng metric |
@@ -39,6 +39,10 @@ Bảng đối chiếu từng slide với paper. Mọi số liệu trên slide đ
 ## Đối chiếu tự động Table 3
 
 Bảng ở slide 19, 20 và cột Paper ở slide 24 được so với text trích từ `paper.pdf` (`pdftotext`). Thứ tự cột của paper: D-Tracker, DISMO, FluxCube, PatchTST, Autoformer, DeepAR, LaST, CoST; mỗi phương pháp có MAE ×3 rồi RMSE ×3. Kết quả: 18/18 dòng khớp. Ô tô đậm đúng là giá trị nhỏ nhất theo từng metric, và D-Tracker có MAE nhỏ nhất ở cả 18 dòng.
+
+## Đánh số công thức
+
+Số "(n)" canh phải trên slide lấy đúng theo paper (đã kiểm bằng cách render trang 4–6 của PDF): (1) slide 6, (2) slide 8, (3) slide 9, (4) slide 12, (10) slide 16, (5) A3, (6)(7) A4, (8)(9) A5. Các công thức paper không đánh số (dạng tổng quát của phản ứng–khuếch tán ở §3.2, công thức diễn giải sau Def. 2, các biểu thức cost chi tiết ở §4.2) và các công thức do nhóm viết thêm (ví dụ $\hat x_{uv}(t)$ ở slide 8) để không số.
 
 ## Hình
 

@@ -269,7 +269,7 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
   - **Dùng ở 3 chỗ:** (1) giữ điểm nào làm outlier; (2) chọn d_k, d_l, d_s; (3) có nên đổi mô hình không.
   - ⇒ Đây là lý do D-Tracker **không cần hyperparameter**.
 - **Hình:** Cân hai đĩa: “bit mô hình” vs “bit sai số”; hoặc ví dụ: lưu 1 điểm outlier tốn ~32 bit + vị trí — chỉ đáng nếu nó tiết kiệm nhiều hơn thế ở phần sai số.
-- **Nguồn:** §4.2, Eq. (7)(9)(10). Công thức chi tiết → Appendix A6.
+- **Nguồn:** §4.2, Eq. (10). Các biểu thức cost chi tiết (không đánh số trong paper) → Appendix A6.
 
 ### Slide 17 — ModelUpdate: khi nào đổi mô hình, đổi rank
 - **Trên slide:**
@@ -367,10 +367,10 @@ Eq. (5), Levenberg–Marquardt, O(d_k d_l²). Nguồn: §4.1.1.
 Eq. (6)(7), multiplicative update, khởi tạo NTD. Nguồn: §4.1.1, App. A.1.
 
 ### Slide A5 — Cập nhật S^(·)
-Eq. (8), CP-ALS (Khatri–Rao, Hadamard, pseudoinverse). Nguồn: §4.1.2.
+Eq. (8)(9), CP-ALS (Khatri–Rao, Hadamard, pseudoinverse). Nguồn: §4.1.2.
 
 ### Slide A6 — Cost MDL đầy đủ
-Eq. (9)(10), c_F = 32 bit, log*. Nguồn: §4.2.
+Eq. (10) và các biểu thức cost không đánh số, c_F = 32 bit, log*. Nguồn: §4.2.
 
 ### Slide A7 — Algorithm 2 (ModelEstimation)
 Pseudocode + Lemma 1. Nguồn: App. A.2–A.3.

@@ -82,7 +82,7 @@
 % SLIDE A3
 % ============================================================
 \begin{frame}{A3. Cập nhật hệ phản ứng--khuếch tán $\theta$}{ModelEstimation --- §4.1.1}
-\formula{\{\theta,w_0\}=\arg\min_{\theta',w_0'}\Big\|\mathcal X_c-\widehat{\mathcal X}_s-\widehat{\mathcal X}_o
+\formula[5]{\{\theta,w_0\}=\arg\min_{\theta',w_0'}\Big\|\mathcal X_c-\widehat{\mathcal X}_s-\widehat{\mathcal X}_o
 -f_\theta(\theta',w_0',L_c)\times_{\mathrm{key}}W^{(\mathrm{key})}\times_{\mathrm{loc}}W^{(\mathrm{loc})}\Big\|}
 \vspace{3mm}
 \begin{itemize}\small
@@ -101,21 +101,22 @@
 \begin{frame}{A4. Cập nhật $W^{(\mathrm{key})}$, $W^{(\mathrm{loc})}$ (multiplicative update)}{ModelEstimation --- §4.1.1}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.56\textwidth}
-\begin{mathcard}[Eq.~(6)]
+\begin{mathcard}[Cập nhật nhân]
   \small
-  \[
+  \eqline[6]{
   \begin{aligned}
   P^{(\mathrm{m})}&=\max\!\big(\epsilon,\;X_d^{(\mathrm{m})}\cdot G^{(\mathrm{m})\top}\big)\\
   Q^{(\mathrm{m})}&=\max\!\big(\epsilon,\;W^{(\mathrm{m})}\cdot G^{(\mathrm{m})}\cdot G^{(\mathrm{m})\top}\big)\\
   W^{(\mathrm{m})}&\leftarrow W^{(\mathrm{m})}\otimes P^{(\mathrm{m})}\oslash Q^{(\mathrm{m})}
-  \end{aligned}
-  \]
+  \end{aligned}}
 \end{mathcard}
 \vspace{1mm}
-\begin{mathcard}[Eq.~(7)]
+\begin{mathcard}[Các ma trận unfold]
   \small
-  $X_d^{(\mathrm{m})}=\mathrm{unfold}(\mathcal X_c-\widehat{\mathcal X}_s-\widehat{\mathcal X}_o,\ \mathrm{m})$\\[1mm]
-  $G^{(\mathrm{m})}=\mathrm{unfold}(\mathcal W^{(\mathrm{core})}\times_{\bar{\mathrm m}}W^{(\bar{\mathrm m})},\ \mathrm{m})$
+  \eqline[7]{\begin{aligned}
+  X_d^{(\mathrm{m})}&=\mathrm{unfold}(\mathcal X_c-\widehat{\mathcal X}_s-\widehat{\mathcal X}_o,\ \mathrm{m})\\
+  G^{(\mathrm{m})}&=\mathrm{unfold}(\mathcal W^{(\mathrm{core})}\times_{\bar{\mathrm m}}W^{(\bar{\mathrm m})},\ \mathrm{m})
+  \end{aligned}}
 \end{mathcard}
 \end{column}
 \begin{column}{0.41\textwidth}
@@ -137,7 +138,7 @@
 % SLIDE A5
 % ============================================================
 \begin{frame}{A5. Cập nhật seasonal factors (CP-ALS)}{ModelEstimation --- §4.1.2}
-\formula{U^{(\mathrm m)}=\bigodot_{i\neq \mathrm m}S^{(i)},\qquad
+\formula[8]{U^{(\mathrm m)}=\bigodot_{i\neq \mathrm m}S^{(i)},\qquad
 V^{(\mathrm m)}=\mathop{\scalebox{1.3}{$\ast$}}_{i\neq \mathrm m}S^{(i)\top}S^{(i)},\qquad
 S^{(\mathrm m)}=X_s^{(\mathrm m)}\,U^{(\mathrm m)}\,V^{(\mathrm m)\dagger}}
 \vspace{3mm}
@@ -147,8 +148,8 @@ S^{(\mathrm m)}=X_s^{(\mathrm m)}\,U^{(\mathrm m)}\,V^{(\mathrm m)\dagger}}
 \begin{itemize}
   \item $\mathrm m\in M=\{\mathrm{time},\mathrm{key},\mathrm{loc}\}$, cập nhật lần lượt từng mode.
   \item $\bigodot$: tích Khatri--Rao; $\ast$: tích Hadamard; $\dagger$: giả nghịch đảo Moore--Penrose.
-  \item $X_s^{(\mathrm m)}=\mathrm{unfold}(\mathcal X_c-\widehat{\mathcal X}_d-\widehat{\mathcal X}_o,\ \mathrm m)$.
 \end{itemize}
+\eqline[9]{X_s^{(\mathrm m)}=\mathrm{unfold}(\mathcal X_c-\widehat{\mathcal X}_d-\widehat{\mathcal X}_o,\ \mathrm m)}
 \end{column}
 \begin{column}{0.46\textwidth}
 \begin{intuition}[Ý tưởng]
@@ -160,7 +161,7 @@ S^{(\mathrm m)}=X_s^{(\mathrm m)}\,U^{(\mathrm m)}\,V^{(\mathrm m)\dagger}}
 \end{column}
 \end{columns}
 \vfill
-\papersource{Eq.~(8), dựa trên [25] (Kolda \& Bader).}
+\papersource{Eq.~(8)(9), dựa trên [25] (Kolda \& Bader).}
 \end{frame}
 
 % ============================================================
@@ -201,7 +202,7 @@ S^{(\mathrm m)}=X_s^{(\mathrm m)}\,U^{(\mathrm m)}\,V^{(\mathrm m)\dagger}}
 \end{column}
 \end{columns}
 \vfill
-\papersource{§4.2, Eq.~(9)(10), footnote 2.}
+\papersource{§4.2: Eq.~(10) và các biểu thức cost (không đánh số trong paper), footnote 2.}
 \end{frame}
 
 % ============================================================
