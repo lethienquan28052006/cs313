@@ -119,35 +119,35 @@
 
 \newtcolorbox{intuition}[1][Trực giác]{%
   enhanced, colback=DTMist, colframe=DTTeal,
-  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
   title={\sffamily\bfseries\small\color{DTTeal}#1}, coltitle=DTTeal,
   colbacktitle=DTMist, titlerule=0pt, fonttitle=\small,
   before skip=0pt,after skip=0pt
 }
 \newtcolorbox{mathcard}[1][Công thức]{%
   enhanced, colback=white, colframe=DTGold,
-  boxrule=0.6pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  boxrule=0.6pt, leftrule=2.2pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
   title={\sffamily\bfseries\small\color{DTNavy}#1}, coltitle=DTNavy,
   colbacktitle=white, titlerule=0pt, fonttitle=\small,
   before skip=0pt,after skip=0pt
 }
 \newtcolorbox{caution}[1][Đừng nhầm]{%
   enhanced, colback=DTWarm, colframe=DTClaret,
-  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
   title={\sffamily\bfseries\small\color{DTClaret}#1}, coltitle=DTClaret,
   colbacktitle=DTWarm, titlerule=0pt, fonttitle=\small,
   before skip=0pt,after skip=0pt
 }
 \newtcolorbox{takeaway}[1][Mang về]{%
   enhanced, colback=DTWarm, colframe=DTGold,
-  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
   title={\sffamily\bfseries\small\color{DTGold}#1}, coltitle=DTGold,
   colbacktitle=DTWarm, titlerule=0pt, fonttitle=\small,
   before skip=0pt,after skip=0pt
 }
 \newtcolorbox{questioncard}{%
   enhanced, colback=white, colframe=DTLine,
-  boxrule=.55pt, arc=0pt, left=3mm,right=3mm,top=2mm,bottom=2mm,
+  boxrule=.55pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
   before skip=0pt,after skip=0pt
 }
 
@@ -156,6 +156,19 @@
   inner sep=2pt,minimum size=4.2mm]{#2};%
 }
 \newcommand{\softlabel}[1]{{\sffamily\scriptsize\bfseries\color{DTGold}#1}}
-\newcommand{\formula}[1]{\begin{mathcard}\centering$\displaystyle #1$\end{mathcard}}
-\newcommand{\papersource}[1]{{\scriptsize\color{DTMuted}Nguồn: #1}}
+\newtcolorbox{formulabox}{%
+  enhanced, colback=white, colframe=DTGold,
+  boxrule=0.6pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=1.5mm,bottom=1.5mm,
+  before skip=0pt,after skip=0pt
+}
+\newcommand{\formula}[1]{\begin{formulabox}\centering$\displaystyle #1$\end{formulabox}}
+\newcommand{\papersource}[1]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=south west,inner sep=0pt,font=\sffamily\fontsize{6.4}{7.5}\selectfont,text=DTMuted]
+      at ($(current page.south west)+(0.68cm,0.42cm)$) {Nguồn: #1};
+  \end{tikzpicture}}
 \newcommand{\emphbox}[1]{\colorbox{DTMist}{\parbox{0.96\linewidth}{\vspace{1mm}#1\vspace{1mm}}}}
+
+% Table highlighting
+\newcommand{\bestcell}[1]{\textbf{\color{DTTeal}#1}}
+\newcommand{\secondcell}[1]{\underline{#1}}

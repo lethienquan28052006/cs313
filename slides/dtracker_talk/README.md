@@ -1,78 +1,45 @@
-# D-Tracker final-project talk
+# D-Tracker — slide seminar
 
-Bộ Beamer 16:9 tiếng Việt cho đồ án Data Mining, thời lượng **32 phút 45 giây**, dành cho sinh viên chưa có nhiều nền tảng toán. Deck giữ phong cách academic-clean: nền sáng, Latin Modern Sans, header breadcrumb, logo nhỏ và footer ba phần.
-
-Mỗi khái niệm được giải thích theo thứ tự:
-
-> ví dụ/hình → nói bằng lời → công thức tối thiểu → kiểm tra bằng ví dụ số.
-
-## Phạm vi hiện tại
-
-Chỉ gồm **paper gốc + outline + slide**. Chưa cài đặt D-Tracker, chưa chạy reproduction và chưa soạn report 4 trang.
-
-- Slide 1–7: Problem và big picture.
-- Slide 8–18: Methodology qua ví dụ từ khóa × địa điểm × tuần.
-- Slide 19–24: Experiments của paper.
-- Slide 25–27: khung reproduction; `---` nghĩa là “Nhóm sẽ bổ sung sau khi chạy thực nghiệm”.
-- Slide 28: Demo, cố ý trống phần nội dung.
-- Slide 29: Takeaways/Q&A.
-- Slide A1–A4: backup kỹ thuật, không tính vào thời lượng chính.
+Bộ Beamer 16:9 tiếng Việt (giữ thuật ngữ tiếng Anh) cho đồ án CS313. Thời lượng: **20 phút trình bày paper + 15 phút demo**.
+Người nghe không cần theo được chứng minh. Mỗi khái niệm đi theo thứ tự: câu hỏi → trực giác/ví dụ → công thức tối thiểu → nói lại công thức bằng lời. Phần tối ưu nặng toán chỉ giữ ý tưởng ở main deck, công thức đầy đủ nằm ở Appendix.
 
 ## Sản phẩm
 
-- `dtracker_talk.pdf`: 33 trang = 29 slide chính + 4 backup, 16:9.
-- `outline.md`: mục tiêu, timing, visual, công thức, nguồn và lời dẫn từng slide.
-- `main.tex`: entry point Beamer; chỉ giữ preamble, metadata và các `\input`.
-- `parts/`: bảy file nội dung theo phần trình bày, được liệt kê bên dưới.
-- `theme.tex`: màu sắc, font, frametitle, footline và panel.
-- `dtracker_talk_overleaf.zip`: gói upload Overleaf.
-- `sources/source_map.md`: claim ledger với page/section/equation/figure/table anchors.
-- `sources/figure_manifest.tsv`: nguồn, caption, license và SHA-256 của hai hình/crop paper được dùng.
+- `dtracker_talk.pdf`: 34 trang = 25 slide chính (gồm slide Demo để trống và slide Q&A) + 9 slide Appendix A1–A9.
+- `outline.md`: mạch kể chuyện, bảng thời gian, nội dung và lời dẫn từng slide, cùng các điểm đã chỉnh so với outline ban đầu.
+- `main.tex`: entry point; `theme.tex`: màu, font, hộp; `parts/`: nội dung.
+- `dtracker_talk_overleaf.zip`: gói upload Overleaf (xem `OVERLEAF.md`).
+- `sources/source_map.md`: đối chiếu slide → section / equation / figure / table của paper.
+- `sources/figure_manifest.tsv`: nguồn, license, SHA-256 của các hình lấy từ paper.
 
-## Chỉnh nội dung theo `parts/`
-
-Sửa file tương ứng với phần cần thay đổi, không sửa các PDF/ZIP đã tạo:
+## Cấu trúc
 
 ```text
-parts/00_cover.tex           # slide 1
-parts/01_problem.tex         # slide 2–6
-parts/02_methodology.tex     # slide 7–18
-parts/03_experiments.tex     # slide 19–24
-parts/04_reproduction.tex    # slide 25–27
-parts/05_demo_conclusion.tex # slide 28–29
-parts/99_backup.tex          # slide A1–A4
+parts/00_cover.tex        # slide 1
+parts/01_problem.tex      # slide 2–5    Vấn đề
+parts/02_model.tex        # slide 6–13   Mô hình
+parts/03_estimation.tex   # slide 14–17  Tìm tham số (ý tưởng)
+parts/04_experiments.tex  # slide 18–23  Thực nghiệm + takeaways
+parts/05_demo_qa.tex      # slide 24–25  Demo (trống), Q&A
+parts/99_appendix.tex     # slide A1–A9  Toán chi tiết, Table 3 đầy đủ
 ```
 
-`main.tex` ghép các file theo đúng thứ tự trên bằng `\input`. Structural checker đọc cả input lồng nhau và báo rõ input bị thiếu hoặc cycle. Sau khi sửa hãy chạy `make check && make all`.
+Mỗi frame có marker `% SLIDE n` khớp với heading `### Slide n` trong `outline.md`. Nếu thêm hoặc bớt slide, sửa cả hai chỗ rồi chạy `make check`.
 
-Paper gốc đã được đối chiếu byte-identical với arXiv và nằm tại:
-
-```text
-slides/paper_explore/sources/paper.pdf
-```
-
-ArXiv:2505.00242v1, KDD 2025, 12 trang; SHA-256 `8f3d301da12cbd17ec19cfcd6cb666654ded0fef06f57054826abf887ef9f715`.
-
-## Build và kiểm tra
+## Build
 
 ```bash
 cd slides/dtracker_talk
-make all          # PDF + Overleaf ZIP
-make check        # unit test checker + outline/deck/hình
-make overleaf-zip # chỉ tạo lại ZIP
-make clean        # xóa build/, PDF và ZIP đã tạo
+make all      # check + PDF + Overleaf ZIP
+make check    # unit test checker + đồng bộ outline/deck/hình
+make clean
 ```
 
-Makefile ưu tiên Tectonic trên `PATH`, sau đó binary tại `../paper_explore/.tools/tectonic`. Nếu cả hai không có, `make` tải Tectonic 0.15.0 vào `.tools/` cục bộ.
+Makefile ưu tiên `latexmk` + XeLaTeX nếu máy đã cài TeX Live. Nếu không có, Makefile dùng Tectonic (cần mạng để tải bundle lần đầu).
+Deck dùng `fontspec` và `unicode-math`, nên phải compile bằng **XeLaTeX**, không dùng pdfLaTeX.
 
-File ZIP chỉ chứa các thành phần cần trên Overleaf: `main.tex`, `theme.tex`, `latexmkrc`, `OVERLEAF.md`, `figures/` và `parts/`. Source map, paper gốc và các artifact kiểm chứng không được đưa vào ZIP.
+## Quy ước nội dung
 
-## Ghi chú nội dung
-
-- Các công thức chính là Eq. (1)–(4), Eq. (10), algorithm flow và một bước Euler minh họa.
-- Không chứng minh ALS/MDL; mục tiêu là đọc và diễn giải được mô hình.
-- Các số trong câu chuyện iPhone/Galaxy được gắn nhãn minh họa; không phải dữ liệu paper.
-- Kết quả experiments đều gắn nhãn **paper-reported**. Phần trăm trên slide 21 được tính lại từ Table 3; không phải kết quả reproduce.
-- Slide reproduction không dùng số paper để lấp kết quả nhóm. Demo chưa có implementation claim.
-- Hai hình/crop paper có credit KDD 2025/CC BY 4.0 và được kiểm tra hash với manifest nguồn.
-- Native executor chỉ kiểm tra log, cấu trúc và text bounds. DeepSeek được gọi trước nhưng endpoint không nhận ảnh; visual review thực tế được ủy quyền cho Nemotron VL với tối đa 4 ảnh/lượt.
+- Mọi số liệu đều lấy từ paper (paper-reported), không phải kết quả nhóm chạy lại. Table 3 ở slide 19 và A9 đã được đối chiếu tự động với text paper.
+- Ví dụ COVID, Black Friday, Tết và các chuỗi đồ chơi là minh họa của nhóm; trên slide đều có ghi chú.
+- Hình lấy từ paper (CC BY 4.0) có ghi nguồn ở chân mỗi slide.

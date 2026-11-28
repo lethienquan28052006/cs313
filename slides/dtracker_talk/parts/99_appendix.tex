@@ -1,0 +1,307 @@
+\appendix
+\section{Appendix}
+
+% ============================================================
+% SLIDE A1
+% ============================================================
+\begin{frame}{A1. Mode product và unfolding}{Phân rã Tucker}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.50\textwidth}
+\begin{mathcard}[Mode product]
+  \small Với tensor $\mathcal G\in\mathbb R^{d_k\times d_l\times L}$ và ma trận $W\in\mathbb R^{d_k\times k}$:
+  \[
+  (\mathcal G\times_{\mathrm{key}}W)_{u\,j\,t}=\sum_{i=1}^{d_k} W_{iu}\,\mathcal G_{ijt}
+  \]
+  Kết quả cỡ $k\times d_l\times L$: chiều keyword ``phóng'' từ $d_k$ lên $k$.
+\end{mathcard}
+\vspace{2mm}
+\begin{mathcard}[Áp dụng hai lần]
+  \small $\widehat{\mathcal X}_d=\mathcal W^{(\mathrm{core})}\times_{\mathrm{key}}W^{(\mathrm{key})}\times_{\mathrm{loc}}W^{(\mathrm{loc})}$
+  $\;\Leftrightarrow\;$
+  $\hat x_{uvt}=\sum_{i}\sum_{j}W^{(\mathrm{key})}_{iu}W^{(\mathrm{loc})}_{jv}\,w_{ijt}$
+\end{mathcard}
+\end{column}
+\begin{column}{0.47\textwidth}
+\begin{mathcard}[Unfolding (matricization)]
+  \small $\mathrm{unfold}(\mathcal X,\mathrm{key})\in\mathbb R^{k\times (l L)}$: xếp mọi ``sợi'' theo chiều keyword thành cột của một ma trận.
+  Mode product trở thành nhân ma trận:
+  \[
+  \mathrm{unfold}(\mathcal G\times_{\mathrm{key}}W,\mathrm{key}) = W^{\top}\,\mathrm{unfold}(\mathcal G,\mathrm{key})
+  \]
+\end{mathcard}
+\vspace{2mm}
+\begin{intuition}[Kích thước, ví dụ Device]
+  \small $\mathcal W^{(\mathrm{core})}$: $3\times2\times104$;\;
+  $W^{(\mathrm{key})}$: $3\times8$;\;
+  $W^{(\mathrm{loc})}$: $2\times50$\\
+  $\Rightarrow\widehat{\mathcal X}_d$: $8\times50\times104$.
+\end{intuition}
+\end{column}
+\end{columns}
+\vfill
+\papersource{Eq.~(2); Kolda \& Bader (2009), \emph{Tensor Decompositions and Applications}.}
+\end{frame}
+
+% ============================================================
+% SLIDE A2
+% ============================================================
+\begin{frame}{A2. Diễn giải: chiếu hệ ẩn về từng chuỗi thật}{Interpretability of $\theta_d$}
+\small Với từ khóa $u$ và địa điểm $v$ bất kỳ, kết hợp Eq.~(2) và (3):
+\formula{\frac{d\,\mathcal X_{uv}}{dt}=
+\underbrace{\sum_{i=1}^{d_k}\sum_{j=1}^{d_l}W^{(\mathrm{key})}_{iu}W^{(\mathrm{loc})}_{jv}}_{\text{chiếu đa tuyến tính}}
+\underbrace{\Big(a_{ij}w_{ij}+\sum_{j'=1}^{d_l}d_{ijj'}(w_{ij'}-w_{ij})\Big)}_{\text{hệ phản ứng--khuếch tán ẩn}}}
+\vspace{2mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\begin{intuition}[Ý nghĩa]
+  Hệ ẩn mô tả $d_k\cdot d_l$ động thái quan trọng: $d_k$ nhóm từ khóa ẩn, $d_l$ nhóm vùng ẩn.
+  Phép chiếu cho biết mỗi nhóm \textbf{đóng góp bao nhiêu} vào chuỗi thật của từ khóa $u$ tại địa điểm $v$.
+\end{intuition}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{takeaway}[Vì sao vẫn diễn giải được]
+  Hai ma trận chiếu \textbf{không âm}, nên không đảo chiều quan hệ giữa các động thái ẩn.
+  ``Nhóm $j'$ lan sang nhóm $j$'' vẫn giữ nguyên chiều khi nhìn ở các nước thuộc hai nhóm đó.
+\end{takeaway}
+\end{column}
+\end{columns}
+\vfill
+\papersource{§3.3, đoạn ``Interpretability of $\theta_d$'' sau Def.~2.}
+\end{frame}
+
+% ============================================================
+% SLIDE A3
+% ============================================================
+\begin{frame}{A3. Cập nhật hệ phản ứng--khuếch tán $\theta$}{ModelEstimation --- §4.1.1}
+\formula{\{\theta,w_0\}=\arg\min_{\theta',w_0'}\Big\|\mathcal X_c-\widehat{\mathcal X}_s-\widehat{\mathcal X}_o
+-f_\theta(\theta',w_0',L_c)\times_{\mathrm{key}}W^{(\mathrm{key})}\times_{\mathrm{loc}}W^{(\mathrm{loc})}\Big\|}
+\vspace{3mm}
+\begin{itemize}\small
+  \item Cố định $W^{(\mathrm{key})},W^{(\mathrm{loc})}$, $\theta_s$, $\widehat{\mathcal X}_o$; chỉ tối ưu $A$, $\mathcal D$ và trạng thái đầu $w_0$.
+  \item $f_\theta$ là nghiệm số của ODE, phi tuyến theo tham số $\Rightarrow$ bài toán \textbf{bình phương tối thiểu phi tuyến}.
+  \item Paper giải bằng \textbf{Levenberg--Marquardt}: lai giữa Gauss--Newton (gần nghiệm) và gradient descent (xa nghiệm).
+  \item Số tham số: $|A|+|\mathcal D| = d_k d_l + d_k d_l^2$ $\Rightarrow$ chi phí $O(d_k d_l^2)$.
+\end{itemize}
+\vfill
+\papersource{Eq.~(5), footnote 1; Algorithm 2 dòng 3--4; Appendix A.3.}
+\end{frame}
+
+% ============================================================
+% SLIDE A4
+% ============================================================
+\begin{frame}{A4. Cập nhật $W^{(\mathrm{key})}$, $W^{(\mathrm{loc})}$ (multiplicative update)}{ModelEstimation --- §4.1.1}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.56\textwidth}
+\begin{mathcard}[Eq.~(6)]
+  \small
+  \[
+  \begin{aligned}
+  P^{(\mathrm{m})}&=\max\!\big(\epsilon,\;X_d^{(\mathrm{m})}\cdot G^{(\mathrm{m})\top}\big)\\
+  Q^{(\mathrm{m})}&=\max\!\big(\epsilon,\;W^{(\mathrm{m})}\cdot G^{(\mathrm{m})}\cdot G^{(\mathrm{m})\top}\big)\\
+  W^{(\mathrm{m})}&\leftarrow W^{(\mathrm{m})}\otimes P^{(\mathrm{m})}\oslash Q^{(\mathrm{m})}
+  \end{aligned}
+  \]
+\end{mathcard}
+\vspace{1mm}
+\begin{mathcard}[Eq.~(7)]
+  \small
+  $X_d^{(\mathrm{m})}=\mathrm{unfold}(\mathcal X_c-\widehat{\mathcal X}_s-\widehat{\mathcal X}_o,\ \mathrm{m})$\\[1mm]
+  $G^{(\mathrm{m})}=\mathrm{unfold}(\mathcal W^{(\mathrm{core})}\times_{\bar{\mathrm m}}W^{(\bar{\mathrm m})},\ \mathrm{m})$
+\end{mathcard}
+\end{column}
+\begin{column}{0.41\textwidth}
+\small
+\begin{itemize}
+  \item $\mathrm m\in\{\mathrm{key},\mathrm{loc}\}$; $\bar{\mathrm m}$ là mode còn lại.
+  \item $\otimes$: nhân từng phần tử; $\oslash$: chia từng phần tử; $\epsilon$: hằng số nhỏ.
+  \item Nhân với tỉ số của hai đại lượng không âm $\Rightarrow$ $W$ \textbf{luôn không âm}, không cần chiếu.
+  \item Khởi tạo bằng \textbf{Nonnegative Tucker Decomposition} (NTD) trên $\widehat{\mathcal X}_d$.
+  \item Chi phí $O(k d_k + l d_l)$.
+\end{itemize}
+\end{column}
+\end{columns}
+\vfill
+\papersource{Eq.~(6)(7), dựa trên [24]; Appendix A.1, A.3.}
+\end{frame}
+
+% ============================================================
+% SLIDE A5
+% ============================================================
+\begin{frame}{A5. Cập nhật seasonal factors (CP-ALS)}{ModelEstimation --- §4.1.2}
+\formula{U^{(\mathrm m)}=\bigodot_{i\neq \mathrm m}S^{(i)},\qquad
+V^{(\mathrm m)}=\mathop{\scalebox{1.3}{$\ast$}}_{i\neq \mathrm m}S^{(i)\top}S^{(i)},\qquad
+S^{(\mathrm m)}=X_s^{(\mathrm m)}\,U^{(\mathrm m)}\,V^{(\mathrm m)\dagger}}
+\vspace{3mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.50\textwidth}
+\small
+\begin{itemize}
+  \item $\mathrm m\in M=\{\mathrm{time},\mathrm{key},\mathrm{loc}\}$, cập nhật lần lượt từng mode.
+  \item $\bigodot$: tích Khatri--Rao; $\ast$: tích Hadamard; $\dagger$: giả nghịch đảo Moore--Penrose.
+  \item $X_s^{(\mathrm m)}=\mathrm{unfold}(\mathcal X_c-\widehat{\mathcal X}_d-\widehat{\mathcal X}_o,\ \mathrm m)$.
+\end{itemize}
+\end{column}
+\begin{column}{0.46\textwidth}
+\begin{intuition}[Ý tưởng]
+  \small Cố định hai ma trận, ma trận thứ ba là nghiệm của một bài \textbf{bình phương tối thiểu tuyến tính}, có nghiệm đóng.
+  Xoay vòng ba mode đến khi hội tụ.
+\end{intuition}
+\vspace{1mm}
+{\small\color{DTMuted}Ghi chú: $\theta_s$ thực chất là phân rã CP (PARAFAC) rank $d_s$.\par}
+\end{column}
+\end{columns}
+\vfill
+\papersource{Eq.~(8), dựa trên [25] (Kolda \& Bader).}
+\end{frame}
+
+% ============================================================
+% SLIDE A6
+% ============================================================
+\begin{frame}{A6. Hàm cost MDL đầy đủ}{Automatic tensor compression --- §4.2}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.55\textwidth}
+\begin{mathcard}[Model description cost]
+  \scriptsize
+  $\langle\mathcal F\rangle=\sum_{\Theta\in\mathcal F}\langle\Theta\rangle,\quad
+  \langle\Theta\rangle=\langle\theta_d\rangle+\langle\theta_s\rangle+\langle\widehat{\mathcal X}_o\rangle$\\[1mm]
+  $\langle\theta_d\rangle=\langle W^{(\mathrm{key})}\rangle+\langle W^{(\mathrm{loc})}\rangle+\langle A\rangle+\langle\mathcal D\rangle$\\[1mm]
+  $\langle W^{(\mathrm{key})}\rangle=|W^{(\mathrm{key})}|(\log d_k+\log k+c_F)+\log^*|W^{(\mathrm{key})}|$\\[0.5mm]
+  $\langle W^{(\mathrm{loc})}\rangle=|W^{(\mathrm{loc})}|(\log d_l+\log l+c_F)+\log^*|W^{(\mathrm{loc})}|$\\[0.5mm]
+  $\langle A\rangle=|A|(\log d_k+\log d_l+c_F)+\log^*|A|$\\[0.5mm]
+  $\langle\mathcal D\rangle=|\mathcal D|(\log d_k+2\log d_l+c_F)+\log^*|\mathcal D|$\\[0.5mm]
+  $\langle S^{(\mathrm{time})}\rangle=|S^{(\mathrm{time})}|(\log d_s+\log L_c+c_F)+\log^*|S^{(\mathrm{time})}|$\\[0.5mm]
+  {\color{DTMuted}(tương tự cho $S^{(\mathrm{key})}$, $S^{(\mathrm{loc})}$)}\\[0.5mm]
+  $\langle\widehat{\mathcal X}_o\rangle=|\widehat{\mathcal X}_o|(\log n+\log k+\log l+c_F)+\log^*|\widehat{\mathcal X}_o|$
+\end{mathcard}
+\end{column}
+\begin{column}{0.42\textwidth}
+\begin{mathcard}[Data encoding cost]
+  \small
+  \[
+  \langle\mathcal X\mid\mathcal F\rangle=\sum_{x\in\mathcal X}-\log_2 p_{\mu,\sigma}\big(x-\hat x_d-\hat x_s-\hat x_o\big)
+  \]
+\end{mathcard}
+\vspace{1mm}
+\small
+\begin{itemize}
+  \item $|\cdot|$: số phần tử khác 0.
+  \item $c_F=32$ bit cho một số thực.
+  \item $\log^*$: độ dài mã phổ quát cho số nguyên.
+  \item Mỗi số khác 0 trả tiền cho \textbf{vị trí} (các $\log$) và \textbf{giá trị} ($c_F$).
+\end{itemize}
+\end{column}
+\end{columns}
+\vfill
+\papersource{§4.2, Eq.~(9)(10), footnote 2.}
+\end{frame}
+
+% ============================================================
+% SLIDE A7
+% ============================================================
+\begin{frame}[fragile]{A7. Algorithm 2 --- ModelEstimation}{Appendix A.2}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.60\textwidth}
+\begin{questioncard}
+\small
+\textbf{Input}: $\mathcal X_c$, $d_k,d_l,d_s$\quad \textbf{Output}: $\Theta$\par\vspace{1mm}
+\begin{tabular}{@{}r@{\;\;}l@{}}
+1: & $\{\theta_d,\theta_s\}\leftarrow$ Initialization$(\mathcal X_c,d_k,d_l,d_s)$;\; $\widehat{\mathcal X}_o\leftarrow0$\\
+2: & \textbf{repeat}\\
+3--4: & \quad $\theta\leftarrow\arg\min_{\theta^*}\|\mathcal X_c-\widehat{\mathcal X}_s-\widehat{\mathcal X}_o-f_{\theta_d}(\cdot)\|$ \hfill (Eq.~5)\\
+5--6: & \quad $\mathcal W^{(\mathrm{core})}\leftarrow f_\theta(\theta,w_0,L)$\\
+7: & \quad $\{W^{(\mathrm{key})},W^{(\mathrm{loc})}\}\leftarrow$ Update(\ldots) \hfill (Eq.~6)\\
+8--9: & \quad $\{S^{(\mathrm{time})},S^{(\mathrm{key})},S^{(\mathrm{loc})}\}\leftarrow$ Update(\ldots) \hfill (Eq.~8)\\
+10--11: & \quad $\widehat{\mathcal X}_o\leftarrow$ Sparsify$(\mathcal X_c-\widehat{\mathcal X}_d-\widehat{\mathcal X}_s)$\\
+12: & \textbf{until} hội tụ\\
+13: & \textbf{return} $\Theta=\{\theta_d,\theta_s,\widehat{\mathcal X}_o\}$
+\end{tabular}
+\end{questioncard}
+\end{column}
+\begin{column}{0.37\textwidth}
+\begin{intuition}[Khởi tạo]
+  \small STL tách $\mathcal X_c$ thành trend $\widehat{\mathcal X}_d$ và mùa vụ $\widehat{\mathcal X}_s$.
+  PARAFAC trên $\widehat{\mathcal X}_s$ $\to$ $S^{(\cdot)}$; NTD trên $\widehat{\mathcal X}_d$ $\to$ $W^{(\mathrm{key})},W^{(\mathrm{loc})}$.
+\end{intuition}
+\vspace{2mm}
+\begin{takeaway}[Lemma 1]
+  \small Mỗi vòng $O(d_k d_l^2+k d_k+l d_l)$; số vòng là hằng nhỏ
+  $\Rightarrow$ tổng $O(d_k d_l^2+k d_k+l d_l)$.\\
+  Không có $L$ hay $t_c$ trong độ phức tạp.
+\end{takeaway}
+\end{column}
+\end{columns}
+\vfill
+\papersource{Appendix A.1--A.3, Algorithm 2, Lemma 1.}
+\end{frame}
+
+% ============================================================
+% SLIDE A8
+% ============================================================
+\begin{frame}{A8. ModelUpdate và RankUpdate}{Appendix A.4}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.49\textwidth}
+\begin{mathcard}[ModelUpdate (Algorithm 3)]
+  \small
+  \begin{enumerate}
+    \item Tính cost khi mô hình hóa $\mathcal X_c$ bằng các $\Theta\in\mathcal F$ hiện có.
+    \item Tính cost khi thêm ứng viên $\Theta'$: $\langle\mathcal X;\mathcal F\cup\{\Theta'\}\rangle$.
+    \item Nếu rẻ hơn: $\mathcal F\leftarrow\mathcal F\cup\{\Theta'\}$, dùng $\Theta'$ cho giai đoạn hiện tại.
+    \item Gọi RankUpdate để điều chỉnh $d_k,d_l,d_s$.
+  \end{enumerate}
+\end{mathcard}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{mathcard}[RankUpdate (Algorithm 4)]
+  \small
+  \begin{itemize}
+    \item Ứng viên: $(d_k\pm1,d_l,d_s)$, $(d_k,d_l\pm1,d_s)$, $(d_k,d_l,d_s\pm1)$.
+    \item Với mỗi ứng viên: chạy ModelEstimation, tính cost MDL.
+    \item Giữ rank cho cost nhỏ nhất (kể cả rank cũ).
+  \end{itemize}
+\end{mathcard}
+\vspace{2mm}
+\begin{intuition}[Vì sao chỉ đổi $\pm1$?]
+  \small Giả định cấu trúc tối ưu thay đổi \textbf{từ từ} trong luồng $\Rightarrow$ không phải grid search lại toàn bộ, giữ chi phí thấp. Đây là nguồn của các ``gai'' trong Figure 4.
+\end{intuition}
+\end{column}
+\end{columns}
+\vfill
+\papersource{§4.3, Appendix A.4, Algorithm 3--4.}
+\end{frame}
+
+% ============================================================
+% SLIDE A9
+% ============================================================
+\begin{frame}{A9. Table 3 đầy đủ (MAE / RMSE, $\times10^{-2}$)}{Kết quả}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.1pt}
+\renewcommand{\arraystretch}{1.02}
+\begin{tabular}{@{}llc|cc|cc|cc|cc|cc|cc|cc|cc@{}}
+\toprule
+& Dataset & $L_f$ & \multicolumn{2}{c|}{\textbf{D-Tracker}} & \multicolumn{2}{c|}{DISMO} & \multicolumn{2}{c|}{FluxCube} & \multicolumn{2}{c|}{PatchTST} & \multicolumn{2}{c|}{Autoformer} & \multicolumn{2}{c|}{DeepAR} & \multicolumn{2}{c|}{LaST} & \multicolumn{2}{c}{CoST}\\
+& & & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE\\
+\midrule
+\#1 & Device & 13 & \bestcell{0.84} & \bestcell{1.82} & 1.08 & 2.18 & 3.86 & 7.20 & 1.39 & 3.20 & 1.21 & 2.03 & 2.14 & 2.99 & 1.91 & 4.00 & 1.63 & 3.45\\
+ & & 26 & \bestcell{0.90} & \bestcell{1.95} & 1.19 & 2.45 & 3.85 & 7.26 & 1.54 & 3.19 & 1.31 & 2.13 & 2.21 & 3.16 & 2.07 & 4.31 & 1.80 & 3.79\\
+ & & 39 & \bestcell{0.97} & \bestcell{2.18} & 1.22 & 2.60 & 3.97 & 7.63 & 1.21 & 2.76 & 1.34 & 2.22 & 2.37 & 3.34 & 2.37 & 5.83 & 1.74 & 3.77\\
+\#2 & Pythonlib & 13 & \bestcell{0.27} & \bestcell{1.42} & 0.47 & 1.74 & 0.86 & 3.57 & 0.89 & 4.26 & 0.49 & 1.45 & 2.01 & 3.84 & 0.71 & 2.54 & 0.40 & 2.46\\
+ & & 26 & \bestcell{0.32} & 1.54 & 0.52 & 1.96 & 0.93 & 3.68 & 0.95 & 4.17 & 0.47 & \bestcell{1.35} & 2.01 & 3.84 & 0.86 & 2.80 & 0.45 & 2.76\\
+ & & 39 & \bestcell{0.37} & 1.78 & 0.57 & 2.22 & 1.09 & 4.08 & 0.83 & 3.33 & 0.42 & \bestcell{1.52} & 2.01 & 3.86 & 0.92 & 2.99 & 0.47 & 3.08\\
+\#3 & VoD & 13 & \bestcell{0.53} & 1.58 & 0.56 & 1.64 & 2.83 & 6.96 & 0.95 & 2.17 & 0.56 & \bestcell{1.33} & 1.77 & 2.23 & 2.91 & 13.26 & 2.98 & 14.29\\
+ & & 26 & \bestcell{0.59} & 1.83 & 0.66 & 1.91 & 2.83 & 6.95 & 0.84 & 1.82 & 0.74 & \bestcell{1.63} & 1.88 & 2.42 & 2.53 & 11.42 & 2.36 & 11.17\\
+ & & 39 & \bestcell{0.63} & \bestcell{2.02} & 0.78 & 2.22 & 2.79 & 6.84 & 1.69 & 2.57 & 1.13 & 2.07 & 1.98 & 2.61 & 1.55 & 5.50 & 3.27 & 15.18\\
+\#4 & Chatapp & 13 & \bestcell{0.28} & 0.83 & 0.47 & 1.16 & 1.47 & 4.06 & 0.47 & \bestcell{0.81} & 0.84 & 1.34 & 1.85 & 2.35 & 2.66 & 13.16 & 1.76 & 7.30\\
+ & & 26 & \bestcell{0.34} & \bestcell{1.01} & 0.48 & 1.21 & 1.48 & 4.02 & 0.74 & 1.13 & 0.81 & 1.43 & 2.16 & 3.04 & 2.34 & 9.91 & 2.09 & 9.11\\
+ & & 39 & \bestcell{0.41} & \bestcell{1.24} & 0.50 & 1.27 & 1.47 & 3.93 & 0.88 & 1.53 & 0.54 & 1.41 & 1.93 & 2.61 & 2.18 & 8.59 & 2.18 & 7.48\\
+\#5 & Language & 13 & \bestcell{0.31} & 0.97 & 0.94 & 2.25 & 1.38 & 3.34 & 0.41 & 1.47 & 0.37 & \bestcell{0.85} & 1.98 & 3.63 & 0.74 & 1.94 & 0.40 & 1.50\\
+ & & 26 & \bestcell{0.35} & 1.14 & 1.12 & 2.68 & 1.42 & 3.33 & 0.50 & 1.97 & 0.41 & \bestcell{0.93} & 2.03 & 3.65 & 0.80 & 2.13 & 0.47 & 1.73\\
+ & & 39 & \bestcell{0.40} & 1.32 & 1.36 & 3.19 & 1.51 & 3.44 & 0.51 & 2.50 & 0.54 & \bestcell{1.08} & 2.01 & 3.55 & 0.81 & 2.13 & 0.49 & 1.79\\
+\#6 & Covid-19 & 7 & \bestcell{0.47} & \bestcell{1.40} & 1.12 & 2.87 & 1.95 & 2.75 & 1.60 & 5.55 & 1.10 & 2.39 & 4.60 & 5.41 & 2.39 & 7.91 & 1.23 & 7.07\\
+ & & 14 & \bestcell{0.70} & \bestcell{2.42} & 1.33 & 3.94 & 1.97 & 2.85 & 2.04 & 7.64 & 1.18 & 2.97 & 2.30 & 3.88 & 2.10 & 6.78 & 1.45 & 8.50\\
+ & & 21 & \bestcell{0.98} & 3.65 & 1.58 & 5.83 & 1.98 & \bestcell{3.08} & 2.24 & 17.30 & 1.25 & 3.25 & 2.61 & 4.40 & 1.74 & 5.71 & 1.72 & 9.14\\
+\bottomrule
+\end{tabular}
+\vfill
+\papersource{Table 3, §5 Q1; baseline: Appendix B.1. Đậm = tốt nhất trong hàng theo từng metric (nhóm tô lại từ số liệu Table 3).}
+\end{frame}

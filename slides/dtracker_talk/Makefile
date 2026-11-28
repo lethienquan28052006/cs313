@@ -3,6 +3,8 @@ BUILD := build
 LOCAL_TECTONIC := $(CURDIR)/.tools/tectonic
 SIBLING_TECTONIC := $(abspath ../paper_explore/.tools/tectonic)
 SYSTEM_TECTONIC := $(shell command -v tectonic 2>/dev/null)
+LATEXMK := $(shell command -v latexmk 2>/dev/null)
+XELATEX := $(shell command -v xelatex 2>/dev/null)
 
 ifeq ($(SYSTEM_TECTONIC),)
   ifneq ($(wildcard $(SIBLING_TECTONIC)),)
@@ -24,10 +26,17 @@ OVERLEAF_FILES := main.tex theme.tex latexmkrc OVERLEAF.md figures parts
 
 all: pdf overleaf-zip
 
+ifneq ($(and $(LATEXMK),$(XELATEX)),)
 pdf: check
+	mkdir -p $(BUILD)
+	$(LATEXMK) -xelatex -interaction=nonstopmode -halt-on-error -outdir=$(BUILD) main.tex
+	cp $(BUILD)/main.pdf dtracker_talk.pdf
+else
+pdf: check $(TOOL_PREREQ)
 	mkdir -p $(BUILD)
 	$(ENGINE) --keep-logs --outdir $(BUILD) main.tex
 	cp $(BUILD)/main.pdf dtracker_talk.pdf
+endif
 
 overleaf-zip:
 	rm -f $(OVERLEAF_ZIP)

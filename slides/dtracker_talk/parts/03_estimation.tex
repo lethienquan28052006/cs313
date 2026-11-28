@@ -1,0 +1,170 @@
+\section{Tìm tham số}
+
+% ============================================================
+% SLIDE 14
+% ============================================================
+\begin{frame}{Vòng lặp streaming (Algorithm 1)}{Tổng quan}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm,node distance=6mm]
+  \node[dtbox,minimum width=2.6cm,minimum height=1.6cm,align=center] (a) at (0,0)
+    {\numcircle[DTNavy]{1}\\[1mm]\small Cắt cửa sổ\\\small $\mathcal X_c$};
+  \node[dtaccent,minimum width=3.1cm,minimum height=1.6cm,align=center] (b) at (3.6,0)
+    {\numcircle{2}\\[1mm]\small\textbf{ModelEstimation}\\\scriptsize ước lượng ứng viên $\Theta'$};
+  \node[dtgold,minimum width=3.4cm,minimum height=1.6cm,align=center] (c) at (7.6,0)
+    {\numcircle[DTGold]{3}\\[1mm]\small\textbf{ModelUpdate}\\\scriptsize giữ cũ hay thêm $\Theta'$? đổi rank?};
+  \node[dtbox,minimum width=2.6cm,minimum height=1.6cm,align=center] (d) at (11.4,0)
+    {\numcircle[DTClaret]{4}\\[1mm]\small\textbf{Forecast}\\\scriptsize $\widehat X_{t_c+L_f}$};
+  \draw[dtarrow] (a) -- (b); \draw[dtarrow] (b) -- (c); \draw[dtarrow] (c) -- (d);
+  \draw[dtdash] (d.south) -- ++(0,-.7) -| node[pos=.25,below,font=\scriptsize,text=DTMuted] {tuần mới đến: $t_c\leftarrow t_c+1$} (a.south);
+\end{tikzpicture}
+
+\vspace{6mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\begin{intuition}[Hai câu hỏi]
+  \small \textbf{Ước lượng thế nào?} $\rightarrow$ ALS (slide sau).\\
+  \textbf{Chọn cấu trúc thế nào?} ($d_k,d_l,d_s$, lúc nào đổi mô hình) $\rightarrow$ MDL.
+\end{intuition}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{questioncard}
+  \small\textbf{Khởi tạo một lần}: grid search $(d_k,d_l)\in[2,4]$, $d_s\in[0,4]$, chọn bộ có cost MDL nhỏ nhất. Sau đó mọi thứ tự cập nhật.
+\end{questioncard}
+\end{column}
+\end{columns}
+\vfill
+\papersource{§4, Algorithm 1; Appendix B.1.}
+\end{frame}
+
+% ============================================================
+% SLIDE 15
+% ============================================================
+\begin{frame}{ModelEstimation: sửa từng nhóm, cố định phần còn lại}{Alternating Least Squares}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.55\textwidth}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \node[dtaccent,minimum width=3.2cm,minimum height=1.25cm,align=center] (t) at (0,1.7)
+    {\small\textbf{\numcircle{1} $\theta=\{A,\mathcal D\}$, $w_0$}\\\scriptsize khớp ODE (Levenberg--Marquardt)};
+  \node[dtaccent,minimum width=3.2cm,minimum height=1.25cm,align=center] (w) at (4.0,1.7)
+    {\small\textbf{\numcircle{2} $W^{(\mathrm{key})},W^{(\mathrm{loc})}$}\\\scriptsize cập nhật nhân, luôn $\ge0$};
+  \node[dtgold,minimum width=3.2cm,minimum height=1.25cm,align=center] (s) at (4.0,-0.5)
+    {\small\textbf{\numcircle[DTGold]{3} $S^{(\cdot)}$}\\\scriptsize CP-ALS};
+  \node[dtbox,minimum width=3.2cm,minimum height=1.25cm,align=center] (o) at (0,-0.5)
+    {\small\textbf{\numcircle[DTClaret]{4} $\widehat{\mathcal X}_o$}\\\scriptsize làm thưa theo MDL};
+  \draw[dtarrow] (t) -- (w); \draw[dtarrow] (w) -- (s);
+  \draw[dtarrow] (s) -- (o); \draw[dtarrow] (o) -- (t);
+  \node[font=\scriptsize,text=DTMuted,align=center] at (2.0,0.6) {lặp đến\\hội tụ};
+\end{tikzpicture}
+\vspace{3mm}
+
+\small
+\begin{tabular}{@{}ll@{}}
+  \toprule
+  Bước & Khớp với phần dư \\
+  \midrule
+  \numcircle{1}\,\numcircle{2} trend & $\mathcal X_c-\widehat{\mathcal X}_s-\widehat{\mathcal X}_o$ \\
+  \numcircle[DTGold]{3} seasonal & $\mathcal X_c-\widehat{\mathcal X}_d-\widehat{\mathcal X}_o$ \\
+  \numcircle[DTClaret]{4} outlier & $\mathcal X_c-\widehat{\mathcal X}_d-\widehat{\mathcal X}_s$ \\
+  \bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{0.42\textwidth}
+\begin{intuition}[Câu chốt]
+  Mỗi thành phần được khớp trên \textbf{phần dữ liệu mà hai thành phần kia chưa giải thích được}.
+\end{intuition}
+\vspace{2mm}
+\begin{questioncard}
+  \small\textbf{Outlier không cần ngưỡng tay}: một điểm chỉ được giữ làm outlier nếu nó làm \textbf{giảm tổng cost MDL}.
+\end{questioncard}
+\vspace{2mm}
+\begin{takeaway}[Độ phức tạp (Lemma 1)]
+  \centering $O(d_k d_l^2 + k\,d_k + l\,d_l)$\par
+  \raggedright\small Không có $t_c$ $\Rightarrow$ không phụ thuộc độ dài luồng.
+\end{takeaway}
+\end{column}
+\end{columns}
+\vfill
+\papersource{§4.1, Eq.~(5)(6)(8), Algorithm 2, Lemma 1. Công thức đầy đủ: Appendix A3--A5.}
+\end{frame}
+
+% ============================================================
+% SLIDE 16
+% ============================================================
+\begin{frame}{MDL trong một slide}{Minimum Description Length}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.53\textwidth}
+  \small Nguyên lý: mô hình tốt nhất là mô hình giúp \textbf{nén dữ liệu ngắn nhất}
+  (hiểu được nhiều quy luật $\Rightarrow$ nén được nhiều).
+  \vspace{2mm}
+  \formula{\langle\mathcal X;\mathcal F\rangle=
+  \underbrace{\langle\mathcal F\rangle}_{\text{bit lưu mô hình}}+
+  \underbrace{\langle\mathcal X\mid\mathcal F\rangle}_{\text{bit lưu sai số}}}
+  \vspace{1mm}
+  \begin{itemize}
+    \item $\langle\mathcal F\rangle$: mỗi tham số khác 0 tốn khoảng 32 bit cộng chỉ số vị trí.
+    \item $\langle\mathcal X\mid\mathcal F\rangle$: sai số càng nhỏ càng ít bit (mã hóa theo phân phối Gaussian).
+  \end{itemize}
+\end{column}
+\begin{column}{0.44\textwidth}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \draw[DTNavy,line width=1pt] (-2.2,0.3) -- (2.2,-0.3);
+  \fill[DTNavy] (0,0) -- (-.25,-.7) -- (.25,-.7) -- cycle;
+  \node[dtaccent,minimum width=1.7cm,minimum height=.8cm,align=center,font=\scriptsize] at (-1.6,0.85) {mô hình\\to};
+  \node[dtgold,minimum width=1.7cm,minimum height=.8cm,align=center,font=\scriptsize] at (1.6,0.35) {sai số\\nhỏ};
+  \node[font=\scriptsize,text=DTMuted,align=center] at (0,-1.15) {mô hình to: khớp tốt nhưng tốn bit lưu\\mô hình nhỏ: rẻ nhưng sai số tốn bit};
+\end{tikzpicture}
+\vspace{2mm}
+\begin{takeaway}[MDL dùng ở 3 chỗ]
+  \small\numcircle{1} Điểm nào giữ làm \textbf{outlier}.\\[0.5mm]
+  \numcircle{2} Chọn \textbf{$d_k,d_l,d_s$}.\\[0.5mm]
+  \numcircle{3} Có nên \textbf{đổi mô hình} không.\\[1mm]
+  $\Rightarrow$ Vì vậy D-Tracker \textbf{không cần hyperparameter}.
+\end{takeaway}
+\end{column}
+\end{columns}
+\vfill
+\papersource{§4.2, Eq.~(9)(10). Công thức chi tiết: Appendix A6.}
+\end{frame}
+
+% ============================================================
+% SLIDE 17
+% ============================================================
+\begin{frame}{ModelUpdate: khi nào đổi mô hình, đổi rank}{Thích nghi}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.50\textwidth}
+\begin{mathcard}[Đổi mô hình]
+  \small So sánh tổng cost:\\[1mm]
+  \centering $\langle\mathcal X;\mathcal F\rangle$ \quad vs \quad $\langle\mathcal X;\mathcal F\cup\{\Theta'\}\rangle$\\[1mm]
+  \raggedright Thêm $\Theta'$ mà rẻ hơn $\Rightarrow$ \textbf{sang giai đoạn mới}, dùng $\Theta'$ để mô hình hóa và dự báo.
+\end{mathcard}
+\vspace{2mm}
+\begin{mathcard}[RankUpdate]
+  \small Thử tăng/giảm \textbf{đúng một} trong $d_k,d_l,d_s$ một đơn vị (giả định cấu trúc đổi từ từ), giữ phương án có cost thấp nhất.
+\end{mathcard}
+\end{column}
+\begin{column}{0.47\textwidth}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \fill[DTTeal!12] (0,0) rectangle (2.4,1.5);
+  \fill[DTGold!15] (2.4,0) rectangle (4.3,1.5);
+  \fill[DTClaret!10] (4.3,0) rectangle (6.4,1.5);
+  \draw[DTNavy,line width=1pt] plot[domain=0:6.4,samples=80]
+    (\x,{0.35+ (\x<2.4 ? 0.15*\x : (\x<4.3 ? 0.36+0.25*(\x-2.4)+0.15*sin(300*\x) : 0.6-0.05*(\x-4.3)+0.1*sin(300*\x)))});
+  \foreach \x in {2.4,4.3} \draw[DTMuted,dashed] (\x,0) -- (\x,1.7);
+  \node[font=\scriptsize,text=DTTeal] at (1.2,1.75) {$\Theta_1$};
+  \node[font=\scriptsize,text=DTGold!80!black] at (3.35,1.75) {$\Theta_2$};
+  \node[font=\scriptsize,text=DTClaret] at (5.35,1.75) {$\Theta_3$};
+  \draw[->,DTMuted] (0,0) -- (6.6,0) node[right,font=\scriptsize] {$t$};
+\end{tikzpicture}
+\vspace{3mm}
+\begin{intuition}[Ví dụ thật]
+  \small Pythonlib: $d_k$ tự đổi từ 2 (2013--2015) lên 3 (2020--2022).\\
+  Thời gian chạy có \textbf{gai nhỏ} đúng lúc RankUpdate chạy, vì nó gọi ModelEstimation nhiều lần.
+\end{intuition}
+\end{column}
+\end{columns}
+\vfill
+\papersource{§4.3, Algorithm 3--4; §5 Q2, Q3, Figure 5. Chi tiết: Appendix A8.}
+\end{frame}
