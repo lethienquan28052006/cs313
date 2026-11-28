@@ -1,5 +1,15 @@
 \appendix
-\section{Appendix}
+\section{Phụ lục}
+
+% ============================================================
+% SLIDE S5
+% ============================================================
+\SectionSlide{A}{PHỤ LỤC}{Chi tiết toán học}{Dành cho người muốn đọc thêm}{%
+  \SecItem{A1--A2}{Tucker và diễn giải}
+  \SecItem{A3--A5}{Các bước cập nhật trong ALS}
+  \SecItem{A6--A8}{MDL, Algorithm 2--4}
+  \SecItem{A9}{Table 3 đầy đủ}}
+
 
 % ============================================================
 % SLIDE A1
@@ -159,7 +169,7 @@ S^{(\mathrm m)}=X_s^{(\mathrm m)}\,U^{(\mathrm m)}\,V^{(\mathrm m)\dagger}}
 % ============================================================
 \begin{frame}{A6. Hàm cost MDL đầy đủ}{Automatic tensor compression --- §4.2}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.55\textwidth}
+\begin{column}{0.52\textwidth}
 \begin{mathcard}[Model description cost]
   \scriptsize
   $\langle\mathcal F\rangle=\sum_{\Theta\in\mathcal F}\langle\Theta\rangle,\quad
@@ -174,7 +184,7 @@ S^{(\mathrm m)}=X_s^{(\mathrm m)}\,U^{(\mathrm m)}\,V^{(\mathrm m)\dagger}}
   $\langle\widehat{\mathcal X}_o\rangle=|\widehat{\mathcal X}_o|(\log n+\log k+\log l+c_F)+\log^*|\widehat{\mathcal X}_o|$
 \end{mathcard}
 \end{column}
-\begin{column}{0.42\textwidth}
+\begin{column}{0.45\textwidth}
 \begin{mathcard}[Data encoding cost]
   \small
   \[

@@ -62,8 +62,9 @@ def check(root: Path) -> list[str]:
     if expected != actual:
         issues.append(f"slide mismatch: outline={expected}, deck={actual}")
 
-    begin = len(re.findall(r"\\begin\{frame\}", source))
-    end = len(re.findall(r"\\end\{frame\}", source))
+    sections = len(re.findall(r"^\\SectionSlide\{", source, re.MULTILINE))
+    begin = len(re.findall(r"\\begin\{frame\}", source)) + sections
+    end = len(re.findall(r"\\end\{frame\}", source)) + sections
     if begin != end or begin != len(expected):
         issues.append(f"frame mismatch: begin={begin}, end={end}, expected={len(expected)}")
 

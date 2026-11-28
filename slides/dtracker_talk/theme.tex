@@ -1,20 +1,27 @@
-% Academic-clean visual system inspired by a university seminar deck.
+% =====================================================================
+%  UIT-style visual system (ported from the team's CS222 "Prompting & PEFT"
+%  deck): Be Vietnam Pro, one-tone blue palette, hexagon-textured corners,
+%  left stripes, UIT logo, dark-blue section dividers.
+%  Page is 168 x 94.5 mm; all background drawings use a 16 x 9 grid scaled
+%  by \DTu = 1.05 cm.
+% =====================================================================
 \usepackage[main=vietnamese,english]{babel}
 \usepackage{fontspec}
-\setmainfont{lmsans10-regular.otf}[
-  BoldFont=lmsans10-bold.otf,
-  ItalicFont=lmsans10-oblique.otf,
-  BoldItalicFont=lmsans10-boldoblique.otf
-]
-\setsansfont{lmsans10-regular.otf}[
-  BoldFont=lmsans10-bold.otf,
-  ItalicFont=lmsans10-oblique.otf,
-  BoldItalicFont=lmsans10-boldoblique.otf
-]
-\setmonofont{lmmono10-regular.otf}[
-  ItalicFont=lmmono10-italic.otf,
-  Scale=0.90
-]
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{BeVietnamPro}[
+  Path=fonts/, Extension=.ttf, Scale=0.9,
+  UprightFont=*-Regular, BoldFont=*-SemiBold,
+  ItalicFont=*-Italic,   BoldItalicFont=*-SemiBoldItalic]
+\setsansfont{BeVietnamPro}[
+  Path=fonts/, Extension=.ttf, Scale=0.9,
+  UprightFont=*-Regular, BoldFont=*-SemiBold,
+  ItalicFont=*-Italic,   BoldItalicFont=*-SemiBoldItalic]
+\newfontfamily\LightFont{BeVietnamPro-Light}[Path=fonts/, Extension=.ttf, Scale=0.9]
+\newfontfamily\MediumFont{BeVietnamPro-Medium}[Path=fonts/, Extension=.ttf, Scale=0.9]
+\newfontfamily\HeavyFont{BeVietnamPro-Bold}[Path=fonts/, Extension=.ttf, Scale=0.9]
+\newfontfamily\BlackFont{BeVietnamPro-ExtraBold}[Path=fonts/, Extension=.ttf, Scale=0.9]
+\newcommand{\Track}[1]{\addfontfeatures{LetterSpace=8}#1}
+\setmonofont{lmmono10-regular.otf}[Scale=0.90]
 \usepackage{unicode-math}
 \setmathfont{latinmodern-math.otf}
 \usefonttheme{professionalfonts}
@@ -28,147 +35,223 @@
 \usepackage{array}
 \usepackage{ragged2e}
 
-\definecolor{DTNavy}{HTML}{16283F}
-\definecolor{DTBlue}{HTML}{2C4A6E}
-\definecolor{DTTeal}{HTML}{0E7A4E}
-\definecolor{DTGold}{HTML}{B67B16}
-\definecolor{DTClaret}{HTML}{B23B3B}
-\definecolor{DTInk}{HTML}{1B1F24}
-\definecolor{DTMuted}{HTML}{5A6673}
-\definecolor{DTMist}{HTML}{F3F6F9}
-\definecolor{DTWarm}{HTML}{FBF4E7}
-\definecolor{DTPaper}{HTML}{F7F8FA}
-\definecolor{DTLine}{HTML}{D7DFE7}
+% ---------------------------- Colours ----------------------------------
+% background
+\definecolor{CornerBlue}{HTML}{2E5BD8}
+\definecolor{LineBlue}{HTML}{4FBDF2}
+\definecolor{StripeBlue}{HTML}{3466E0}
+\definecolor{TraceBlue}{HTML}{A9CDF4}
+\definecolor{DotBlue}{HTML}{B5DAF9}
+\definecolor{SectionBg}{HTML}{0C4C88}
+\definecolor{Cyan}{HTML}{3FE0F8}
+% typography
+\definecolor{Navy}{HTML}{12245A}
+\definecolor{Ink}{HTML}{263042}
+\definecolor{Muted}{HTML}{6B7689}
+\definecolor{Accent}{HTML}{2A5BE0}
+\definecolor{AccentSoft}{HTML}{EEF3FE}
+\definecolor{Rule}{HTML}{DCE3EE}
+\definecolor{FootGrey}{HTML}{9AA3B2}
+\definecolor{Panel}{HTML}{F2F5FB}
+\definecolor{PaperGreen}{HTML}{14855A}
+% names used by parts/*.tex, mapped onto the UIT palette
+\colorlet{DTNavy}{Navy}
+\colorlet{DTInk}{Ink}
+\colorlet{DTMuted}{Muted}
+\colorlet{DTBlue}{Accent}
+\colorlet{DTGold}{Accent}            % primary accent (arrows, bullets, highlights)
+\definecolor{DTTeal}{HTML}{0E8A6A}   % secondary accent (trend, "intuition")
+\definecolor{DTClaret}{HTML}{C8423B} % warnings, outliers
+\colorlet{DTMist}{Panel}
+\colorlet{DTWarm}{AccentSoft}
+\definecolor{DTPaper}{HTML}{FFFFFF}
+\colorlet{DTLine}{Rule}
 
-\setbeamercolor{normal text}{fg=DTInk,bg=DTPaper}
-\setbeamercolor{structure}{fg=DTGold}
-\setbeamercolor{frametitle}{fg=DTNavy,bg=}
-\setbeamercolor{framesubtitle}{fg=DTMuted,bg=}
-\setbeamercolor{footline}{fg=DTMuted,bg=}
-\setbeamercolor{itemize item}{fg=DTGold}
-\setbeamercolor{itemize subitem}{fg=DTTeal}
-\setbeamercolor{enumerate item}{fg=DTNavy}
-\setbeamerfont{frametitle}{family=\sffamily}
-\setbeamerfont{framesubtitle}{family=\sffamily}
-\setbeamerfont{footline}{family=\sffamily}
+\setbeamercolor{normal text}{fg=Ink,bg=white}
+\setbeamercolor{structure}{fg=Accent}
+\setbeamercolor{alerted text}{fg=Accent}
+\setbeamercolor{itemize item}{fg=Accent}
+\setbeamercolor{caption name}{fg=Muted}
 
 \setbeamertemplate{navigation symbols}{}
-\setbeamersize{text margin left=0.68cm,text margin right=0.68cm}
-\setbeamertemplate{blocks}[rounded][shadow=false]
-\setbeamertemplate{itemize item}{\raise0.2ex\hbox{\scriptsize\color{DTGold}\(\blacktriangleright\)}}
-\setbeamertemplate{itemize subitem}{\raise0.2ex\hbox{\scriptsize\color{DTTeal}\(\bullet\)}}
-\setbeamertemplate{enumerate item}{\color{DTNavy}\bfseries\insertenumlabel.}
+\setbeamersize{text margin left=1.1cm,text margin right=1.0cm}
+\setbeamertemplate{itemize item}{\raisebox{0.2em}{\color{Accent}\rule{0.32em}{0.32em}}}
+\setbeamertemplate{itemize subitem}{\raisebox{0.22em}{\color{Muted}\rule{0.26em}{0.26em}}}
+\setbeamertemplate{enumerate item}{{\HeavyFont\color{Accent}\insertenumlabel.}}
+\setlength{\leftmargini}{1.2em}
+\setlength{\leftmarginii}{1.1em}
 
-\setlength{\parskip}{0.32em}
+\setlength{\parskip}{0.3em}
 \renewcommand{\familydefault}{\sfdefault}
 \renewcommand{\arraystretch}{1.12}
 \setlength{\emergencystretch}{2em}
 \raggedright
+\makeatletter
+\g@addto@macro\normalsize{%
+  \setlength\abovedisplayskip{4pt}\setlength\belowdisplayskip{4pt}%
+  \setlength\abovedisplayshortskip{2pt}\setlength\belowdisplayshortskip{2pt}}
+\makeatother
 
-\setbeamertemplate{background canvas}{%
-  \begin{tikzpicture}[remember picture,overlay]
-    \fill[DTPaper] (current page.north west) rectangle (current page.south east);
-    \fill[DTGold!3] (current page.south west) circle (3.4cm);
-  \end{tikzpicture}%
-}
+% ---------------------------- Background -------------------------------
+\newcommand{\DTu}{1.05cm}
+% A shape filled with the hexagon texture tinted by #1 (opacity #2).
+\newcommand{\HexFill}[3]{%
+  \begin{scope}
+    \clip #3;
+    \node[anchor=south west, inner sep=0] at (0,0)
+      {\includegraphics[width=16.8cm,height=9.45cm]{figures/bg_hex.jpg}};
+    \fill[#1, opacity=#2] (0,0) rectangle (16,9);
+  \end{scope}}
+% Top-left and bottom-right corners: textured triangle + thin bent line.
+\newcommand{\Corners}[2]{%
+  \HexFill{#1}{0.85}{(0,9) -- (0.95,9) -- (0,8.18) -- cycle}
+  \HexFill{#1}{0.85}{(16,0) -- (15.05,0) -- (16,0.82) -- cycle}
+  \draw[#2, line width=1.3pt, line join=miter]
+    (3.84,8.92) -- (1.04,8.92) -- (0.10,8.11) -- (0.10,6.88);
+  \draw[#2, line width=1.3pt, line join=miter]
+    (12.14,0.08) -- (14.96,0.08) -- (15.90,0.89) -- (15.90,2.11);}
+% Six gradient blocks on the left edge, white dot in the last one.
+\newcommand{\Stripes}[1]{%
+  \foreach \i in {0,...,5} {
+    \pgfmathsetmacro{\top}{2.93-0.49*\i}
+    \shade[top color=#1!15!white, bottom color=#1, middle color=#1!75!white]
+      (0,\top-0.45) rectangle (0.58,\top);
+  }
+  \fill[white] (0.29,0.21) circle (0.17);}
+\newcommand{\Logo}{%
+  \node[anchor=north east, inner sep=0] at (15.85,8.83)
+    {\includegraphics[height=0.62cm]{figures/uit_logo.png}};}
+\newcommand{\FooterText}{CS313 -- Seminar -- D-Tracker (KDD 2025)}
+\newcommand{\Footer}[2]{%
+  \node[#2, text=#1, font=\LightFont\fontsize{5.5}{6}\selectfont] {\FooterText};}
+% One "circuit trace" on the agenda slide, mirrored on the right side.
+\newcommand{\Trace}[2]{%
+  \draw[TraceBlue, line width=1pt] #1;
+  \shade[inner color=DotBlue!60!white, outer color=DotBlue!90!blue, draw=TraceBlue!80!blue, line width=0.4pt] #2 circle (0.2);
+  \begin{scope}[xscale=-1, xshift=-16cm]
+    \draw[TraceBlue, line width=1pt] #1;
+    \shade[inner color=DotBlue!60!white, outer color=DotBlue!90!blue, draw=TraceBlue!80!blue, line width=0.4pt] #2 circle (0.2);
+  \end{scope}}
 
+\def\BgMode{content}
+\setbeamertemplate{background canvas}{}
+\defbeamertemplate*{background}{uit}{%
+  \begin{tikzpicture}[x=\DTu,y=\DTu]
+    \useasboundingbox (0,0) rectangle (16,9);
+    \csname bg@\BgMode\endcsname
+  \end{tikzpicture}}
+% Ordinary content slide.
+\expandafter\def\csname bg@content\endcsname{%
+  \Corners{CornerBlue}{LineBlue}
+  \Stripes{StripeBlue}
+  \Logo
+  \node[anchor=south west, text=FootGrey, font=\LightFont\fontsize{5.5}{6}\selectfont]
+    at (0.85,0.12) {\FooterText \quad·\quad \insertframenumber\,/\,\inserttotalframenumber};}
+% Title / closing slide.
+\expandafter\def\csname bg@title\endcsname{%
+  \shade[left color=LineBlue!35, right color=LineBlue] (7.2,9) -- (16,9) -- (16,8.8) -- (7.4,8.8) -- cycle;
+  \HexFill{CornerBlue}{0.85}{(12.75,9) -- (16,9) -- (16,8.6) -- (13.15,8.6) -- cycle}
+  \HexFill{CornerBlue}{0.85}{(0,0) -- (8.86,0) -- (8.6,0.25) -- (3.3,0.25) -- (3.05,0.40) -- (0,0.40) -- cycle}
+  \fill[white] (0.25,0.20) circle (0.13);
+  \HexFill{CornerBlue}{0.85}{(0,9) -- (0.95,9) -- (0,8.18) -- cycle}
+  \draw[LineBlue, line width=1.3pt] (3.84,8.92) -- (1.04,8.92) -- (0.10,8.11) -- (0.10,6.88);
+  \HexFill{CornerBlue}{0.85}{(16,0) -- (15.05,0) -- (16,0.82) -- cycle}
+  \draw[LineBlue, line width=1.3pt] (12.14,0.08) -- (14.96,0.08) -- (15.90,0.89) -- (15.90,2.11);}
+% Agenda slide: corners + circuit traces.
+\expandafter\def\csname bg@agenda\endcsname{%
+  \Corners{CornerBlue}{LineBlue}
+  \Logo
+  \Trace{(0,6.65) -- (1.09,7.34) -- (2.91,7.34)}{(3.11,7.34)}
+  \Trace{(0,6.07) -- (1.61,6.07)}{(1.81,6.07)}
+  \Trace{(0,4.95) -- (0.18,4.95)}{(0.38,4.95)}
+  \Trace{(0,3.31) -- (0.28,3.31)}{(0.48,3.31)}
+  \Trace{(0,2.41) -- (1.57,2.41)}{(1.77,2.41)}
+  \Trace{(0,1.84) -- (1.09,1.10) -- (2.91,1.10)}{(3.11,1.10)}
+  \fill[CornerBlue] (0.25,0.2) circle (0.14);
+  \Footer{FootGrey}{anchor=south, at={(8,0.22)}}}
+% Section divider: blue hexagon background, cyan details.
+\expandafter\def\csname bg@section\endcsname{%
+  \node[anchor=south west, inner sep=0] at (0,0)
+    {\includegraphics[width=16.8cm,height=9.45cm]{figures/bg_hex.jpg}};
+  \shade[top color=SectionBg!85!black, bottom color=SectionBg, opacity=0.82] (0,0) rectangle (16,9);
+  \Corners{Cyan}{Cyan}
+  \Stripes{Cyan}
+  \Logo
+  \Footer{white!85}{anchor=south west, at={(1.21,0.2)}}}
+
+% ---------------------------- Frame title & footline -------------------
+% Eyebrow (section | subtitle) + title + short accent bar.
 \setbeamertemplate{frametitle}{%
-  \vspace{0.18cm}%
-  \begin{minipage}[b]{0.84\textwidth}
-    {\sffamily\fontsize{7.4}{8.8}\selectfont\color{DTMuted}%
-      \insertsectionhead\quad\textcolor{DTLine}{|}\quad\insertframesubtitle\par}
-    \vspace{0.04cm}
-    {\sffamily\fontsize{14.5}{17}\selectfont\bfseries\color{DTNavy}\insertframetitle\par}
-  \end{minipage}\hfill
-  \begin{minipage}[b]{0.12\textwidth}
-    \raggedleft
-    \tikz[baseline=-0.3ex]{
-      \fill[DTNavy,rounded corners=.5pt] (0,0) rectangle (.52,.52);
-      \fill[DTGold] (.39,.39) circle (.07);
-      \node[white,font=\fontsize{6}{6}\selectfont\bfseries] at (.24,.23) {D};
-    }\par
-    {\sffamily\fontsize{5.8}{6.5}\selectfont\color{DTMuted}CS313}
-  \end{minipage}
-  \vspace{0.06cm}%
-  {\color{DTGold!65}\rule{\textwidth}{0.55pt}}%
-  \vspace{0.11cm}%
-}
+  \vspace*{0.12cm}%
+  {\MediumFont\fontsize{6.4}{7.5}\selectfont\color{Accent}%
+    \Track{\MakeUppercase{\insertsectionhead}}%
+    {\color{Rule}\ \textbar\ }{\color{Muted}\insertframesubtitle}}\par\vspace{0.02cm}%
+  {\HeavyFont\fontsize{15}{18}\selectfont\color{Navy}\insertframetitle}%
+  \par\nointerlineskip\vspace{0.14cm}%
+  \noindent{\color{Accent}\rule{0.9cm}{1.6pt}}{\color{Rule}\rule[0.2pt]{\dimexpr\linewidth-2.2cm\relax}{0.6pt}}%
+  \par\nointerlineskip\vspace{0.12cm}}
+\setbeamertemplate{footline}{}
 
-\setbeamertemplate{footline}{%
-  \leavevmode
-  \hbox to\textwidth{%
-    {\sffamily\fontsize{7.2}{8.5}\selectfont\color{DTMuted}CS313 \textperiodcentered\ Nhóm D-Tracker}%
-    \hfill
-    {\sffamily\fontsize{7.2}{8.5}\selectfont\color{DTMuted}D-Tracker \textperiodcentered\ KDD 2025}%
-    \hfill
-    {\sffamily\fontsize{7.2}{8.5}\selectfont\color{DTNavy}\insertframenumber\,/\,\inserttotalframenumber}%
-  }%
-  \vspace{0.06cm}
-}
-
+% ---------------------------- Diagram styles ---------------------------
 \tikzset{
-  dtbox/.style={draw=DTLine,line width=.55pt,fill=white,rounded corners=1mm},
-  dtaccent/.style={draw=DTTeal!45,line width=.65pt,fill=DTMist,rounded corners=1mm},
-  dtgold/.style={draw=DTGold!55,line width=.65pt,fill=DTWarm,rounded corners=1mm},
-  dtarrow/.style={-{Latex[length=2.2mm,width=1.4mm]},line width=.9pt,DTGold!85},
-  dtdash/.style={-{Latex[length=2.2mm,width=1.4mm]},line width=.7pt,DTBlue!45,dashed},
-  label/.style={font=\sffamily\small,text=DTInk},
-  tinylabel/.style={font=\sffamily\scriptsize,text=DTMuted},
-  biglabel/.style={font=\sffamily\bfseries\large,text=DTNavy}
+  dtbox/.style={draw=Rule,line width=.6pt,fill=white,rounded corners=1.2mm},
+  dtaccent/.style={draw=Accent!35,line width=.6pt,fill=Panel,rounded corners=1.2mm},
+  dtgold/.style={draw=Accent!55,line width=.6pt,fill=AccentSoft,rounded corners=1.2mm},
+  dtarrow/.style={-{Latex[length=2.2mm,width=1.4mm]},line width=.9pt,Accent},
+  dtdash/.style={-{Latex[length=2.2mm,width=1.4mm]},line width=.7pt,Accent!50,dashed},
+  label/.style={font=\sffamily\small,text=Ink},
+  tinylabel/.style={font=\sffamily\scriptsize,text=Muted},
+  biglabel/.style={font=\sffamily\bfseries\large,text=Navy}
 }
 
-\newtcolorbox{intuition}[1][Trực giác]{%
-  enhanced, colback=DTMist, colframe=DTTeal,
-  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
-  title={\sffamily\bfseries\small\color{DTTeal}#1}, coltitle=DTTeal,
-  colbacktitle=DTMist, titlerule=0pt, fonttitle=\small,
-  before skip=0pt,after skip=0pt
-}
-\newtcolorbox{mathcard}[1][Công thức]{%
-  enhanced, colback=white, colframe=DTGold,
-  boxrule=0.6pt, leftrule=2.2pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
-  title={\sffamily\bfseries\small\color{DTNavy}#1}, coltitle=DTNavy,
-  colbacktitle=white, titlerule=0pt, fonttitle=\small,
-  before skip=0pt,after skip=0pt
-}
-\newtcolorbox{caution}[1][Đừng nhầm]{%
-  enhanced, colback=DTWarm, colframe=DTClaret,
-  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
-  title={\sffamily\bfseries\small\color{DTClaret}#1}, coltitle=DTClaret,
-  colbacktitle=DTWarm, titlerule=0pt, fonttitle=\small,
-  before skip=0pt,after skip=0pt
-}
-\newtcolorbox{takeaway}[1][Mang về]{%
-  enhanced, colback=DTWarm, colframe=DTGold,
-  boxrule=0pt, leftrule=2.2pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
-  title={\sffamily\bfseries\small\color{DTGold}#1}, coltitle=DTGold,
-  colbacktitle=DTWarm, titlerule=0pt, fonttitle=\small,
-  before skip=0pt,after skip=0pt
-}
-\newtcolorbox{questioncard}{%
-  enhanced, colback=white, colframe=DTLine,
-  boxrule=.55pt, arc=0pt, left=2.5mm,right=2.5mm,top=1.2mm,bottom=1.2mm,toptitle=1mm,bottomtitle=0mm,
-  before skip=0pt,after skip=0pt
-}
-
-\newcommand{\numcircle}[2][DTTeal]{%
-  \tikz[baseline=-0.7ex]\node[circle,fill=#1,text=white,font=\sffamily\bfseries\small,
-  inner sep=2pt,minimum size=4.2mm]{#2};%
-}
-\newcommand{\softlabel}[1]{{\sffamily\scriptsize\bfseries\color{DTGold}#1}}
-\newtcolorbox{formulabox}{%
-  enhanced, colback=white, colframe=DTGold,
-  boxrule=0.6pt, leftrule=2.2pt, arc=0pt, left=3mm,right=3mm,top=1.5mm,bottom=1.5mm,
-  before skip=0pt,after skip=0pt
-}
+% ---------------------------- Boxes ------------------------------------
+\tcbset{uitbox/.style={enhanced,arc=4pt,boxrule=0pt,frame hidden,
+  left=2.6mm,right=2.6mm,top=1.3mm,bottom=1.3mm,toptitle=1.3mm,bottomtitle=0mm,
+  titlerule=0pt,before skip=0pt,after skip=0pt}}
+\newtcolorbox{intuition}[1][Trực giác]{uitbox,colback=Panel,colbacktitle=Panel,
+  borderline west={2.4pt}{0pt}{DTTeal},title={\HeavyFont\small\color{DTTeal}#1}}
+\newtcolorbox{mathcard}[1][Công thức]{uitbox,colback=Panel,colbacktitle=Panel,
+  title={\HeavyFont\small\color{Accent}#1}}
+\newtcolorbox{caution}[1][Đừng nhầm]{uitbox,colback=DTClaret!6,colbacktitle=DTClaret!6,
+  borderline west={2.4pt}{0pt}{DTClaret},title={\HeavyFont\small\color{DTClaret}#1}}
+\newtcolorbox{takeaway}[1][Mang về]{uitbox,colback=AccentSoft,colbacktitle=AccentSoft,
+  borderline west={2.4pt}{0pt}{Accent},title={\HeavyFont\small\color{Accent}#1}}
+\newtcolorbox{questioncard}{uitbox,colback=white,borderline={0.6pt}{0pt}{Rule}}
+\newtcolorbox{formulabox}{uitbox,colback=Panel,left=3mm,right=3mm,top=1.6mm,bottom=1.6mm}
 \newcommand{\formula}[1]{\begin{formulabox}\centering$\displaystyle #1$\end{formulabox}}
+
+\newcommand{\numcircle}[2][Accent]{%
+  \tikz[baseline=-0.7ex]\node[circle,fill=#1,text=white,font=\HeavyFont\small,
+  inner sep=1.6pt,minimum size=4.2mm]{#2};%
+}
+\newcommand{\softlabel}[1]{{\MediumFont\fontsize{7}{8.5}\selectfont\color{Accent}\Track{\MakeUppercase{#1}}}}
 \newcommand{\papersource}[1]{%
   \begin{tikzpicture}[remember picture,overlay]
-    \node[anchor=south west,inner sep=0pt,font=\sffamily\fontsize{6.4}{7.5}\selectfont,text=DTMuted]
-      at ($(current page.south west)+(0.68cm,0.42cm)$) {Nguồn: #1};
+    \node[anchor=south west,inner sep=0pt,font=\LightFont\fontsize{6}{7.2}\selectfont,text=Muted]
+      at ($(current page.south west)+(1.1cm,0.47cm)$) {Nguồn: #1};
   \end{tikzpicture}}
-\newcommand{\emphbox}[1]{\colorbox{DTMist}{\parbox{0.96\linewidth}{\vspace{1mm}#1\vspace{1mm}}}}
+\newcommand{\emphbox}[1]{\colorbox{Panel}{\parbox{0.96\linewidth}{\vspace{1mm}#1\vspace{1mm}}}}
 
 % Table highlighting
-\newcommand{\bestcell}[1]{\textbf{\color{DTTeal}#1}}
+\newcommand{\bestcell}[1]{\textbf{\color{PaperGreen}#1}}
 \newcommand{\secondcell}[1]{\underline{#1}}
+
+% ---------------------------- Special slides ---------------------------
+% \SectionSlide{big number}{eyebrow}{title}{tagline}{list}
+\newcommand{\SectionSlide}[5]{%
+  {\def\BgMode{section}%
+  \frame[plain]{%
+    \begin{tikzpicture}[remember picture, overlay, shift={(current page.south west)}, x=\DTu, y=\DTu]
+      \node[anchor=west, inner sep=0, align=left, text width=11.4cm] (blk) at (3.95,4.55) {%
+        {\MediumFont\fontsize{8}{9}\selectfont\color{Cyan}\Track{#2}}\par\vspace{0.12cm}
+        {\HeavyFont\fontsize{23}{27}\selectfont\color{white}#3}\par
+        \ifx\relax#4\relax\else\vspace{0.06cm}{\MediumFont\fontsize{12}{14}\selectfont\color{Cyan}#4}\par\fi
+        \vspace{0.25cm}{\color{Cyan}\rule{1.1cm}{2pt}}\par\vspace{0.3cm}
+        {\color{white}\MediumFont\fontsize{11}{14}\selectfont #5}};
+      \node[anchor=east, text=Cyan, font=\BlackFont\fontsize{58}{58}\selectfont]
+        at ([xshift=-0.45cm]blk.west) {#1};
+      \draw[white, opacity=0.25, line width=0.8pt]
+        ([xshift=-0.2cm]blk.north west) -- ([xshift=-0.2cm]blk.south west);
+    \end{tikzpicture}}}}
+% Sub-item lines inside a section slide.
+\newcommand{\SecItem}[2]{{\color{Cyan}\HeavyFont #1}\quad #2\par\vspace{0.1cm}}

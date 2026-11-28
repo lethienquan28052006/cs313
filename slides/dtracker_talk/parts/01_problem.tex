@@ -1,6 +1,15 @@
 \section{Vấn đề}
 
 % ============================================================
+% SLIDE S1
+% ============================================================
+\SectionSlide{01}{CHƯƠNG 1}{Vấn đề}{Dự báo mức quan tâm theo từ khóa, địa điểm, thời gian}{%
+  \SecItem{1.1}{Vì sao dữ liệu tìm kiếm có giá trị}
+  \SecItem{1.2}{Dữ liệu là một tensor 3 chiều}
+  \SecItem{1.3}{Bài toán stream forecasting}}
+
+
+% ============================================================
 % SLIDE 2
 % ============================================================
 \begin{frame}{Lượt tìm kiếm là dấu vết của sự quan tâm}{Động lực}
@@ -133,7 +142,7 @@
     {\textbf{Input}\\[1mm]\small cửa sổ $\mathcal X_c$\\\small ($L_c$ bước gần nhất)};
   \node[dtgold,minimum width=3.4cm,minimum height=2.2cm,align=center] (m) at (5,0)
     {\textbf{\large D-Tracker}\\[1mm]\small chạy lại mỗi khi\\\small có $X_{t_c+1}$ mới};
-  \node[dtaccent,minimum width=5.2cm,minimum height=2.2cm,align=left,text width=4.8cm] (out) at (10.6,0)
+  \node[dtaccent,minimum width=5.0cm,minimum height=2.2cm,align=left,text width=4.6cm] (out) at (10.2,0)
     {\textbf{Output}\\[1mm]
      \small\numcircle{1} Động thái theo thời gian:\\
      \small\quad \textbf{trend}, \textbf{mùa vụ}, \textbf{lan truyền}\\[0.5mm]

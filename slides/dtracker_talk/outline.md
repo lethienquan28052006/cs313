@@ -21,7 +21,8 @@
 
 | # | Slide | Phần | Thời lượng | Cộng dồn |
 |---|---|---|---|---|
-| 1 | Cover | — | 0:30 | 0:30 |
+| 1 | Cover | — | 0:20 | 0:20 |
+| S0 | Nội dung | — | 0:10 | 0:30 |
 | 2 | Vì sao quan tâm dữ liệu tìm kiếm? | I. Vấn đề | 1:00 | 1:30 |
 | 3 | Vì sao khó? 3 thách thức | I | 1:15 | 2:45 |
 | 4 | Dữ liệu là một tensor 3 chiều | I | 1:00 | 3:45 |
@@ -46,7 +47,8 @@
 | 23 | Takeaways & hạn chế | V | 0:30 | 20:00 |
 | 24 | **DEMO** (trống) | — | 15:00 | 35:00 |
 | 25 | Cảm ơn / Q&A | — | — | — |
-| A1–A9 | Appendix (không tính giờ) | — | — | — |
+| S1–S4 | 4 slide chia chương (trước slide 2, 6, 14, 18) | — | ~0:05 mỗi slide | đã tính trong các phần |
+| S5, A1–A9 | Phụ lục (không tính giờ) | — | — | — |
 
 Chỗ dự phòng nếu bị cháy giờ: slide 10 chỉ nói ví dụ iPhone (bỏ COVID), slide 22 lướt nhanh.
 
@@ -64,7 +66,13 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 
 ---
 
+### Slide S0 — Nội dung (agenda)
+- 5 mục: Vấn đề · Mô hình D-Tracker · Tìm tham số · Thực nghiệm · Demo. Lướt qua, khoảng 10 giây.
+
 ## PHẦN I — VẤN ĐỀ (≈ 4 phút)
+
+### Slide S1 — Chương 01: Vấn đề
+- Slide chia chương (nền xanh đậm). Chuyển ý, khoảng 5 giây.
 
 ### Slide 2 — Vì sao quan tâm dữ liệu tìm kiếm?
 - **Mục tiêu:** Cho người nghe thấy *giá trị ứng dụng* trước khi nói tới toán.
@@ -116,6 +124,9 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 ---
 
 ## PHẦN II — MÔ HÌNH D-TRACKER (≈ 8 phút)
+
+### Slide S2 — Chương 02: Mô hình D-Tracker
+- Slide chia chương. Khoảng 5 giây.
 
 ### Slide 6 — Big picture: tách cửa sổ thành 3 thành phần
 - **Mục tiêu:** Bản đồ cho cả phần II. Người nghe phải nhớ được slide này.
@@ -220,6 +231,9 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 
 ## PHẦN III — TÌM THAM SỐ (≈ 3 phút 45, chỉ ý tưởng)
 
+### Slide S3 — Chương 03: Tìm tham số
+- Slide chia chương; nhắc rằng công thức đầy đủ nằm ở Phụ lục.
+
 ### Slide 14 — Vòng lặp streaming (Algorithm 1)
 - **Trên slide:** flowchart một vòng lặp, mỗi khi có tuần mới:
   1. Cắt cửa sổ 𝓧_c.
@@ -266,6 +280,9 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 ---
 
 ## PHẦN IV — THỰC NGHIỆM (≈ 3 phút 15)
+
+### Slide S4 — Chương 04: Thực nghiệm
+- Slide chia chương. Khoảng 5 giây.
 
 ### Slide 18 — Thiết lập
 - **Trên slide:** bảng gọn:
@@ -314,7 +331,7 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 ---
 
 ### Slide 24 — DEMO
-- Slide gần như trống: chỉ tiêu đề “Demo” (+ tùy chọn: tên dataset demo). Nhóm tự bật demo, 15 phút.
+- Slide chia chương “05 Demo”, không có nội dung khác. Nhóm tự bật demo, 15 phút.
 
 ### Slide 25 — Cảm ơn / Q&A
 - Link paper, link code gốc (github.com/Higashiguchi-Shingo/D-Tracker), repo nhóm.
@@ -322,6 +339,9 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 ---
 
 ## APPENDIX (không tính giờ, dành cho người muốn đọc / thầy hỏi)
+
+### Slide S5 — Phụ lục (slide chia chương)
+- Mục lục của phần Phụ lục A1–A9.
 
 ### Slide A1 — Mode product & unfolding
 Định nghĩa ×_key, unfold, ví dụ kích thước Device. Nguồn: Eq. (2), Kolda & Bader.

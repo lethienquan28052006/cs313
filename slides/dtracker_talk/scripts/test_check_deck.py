@@ -87,6 +87,19 @@ class CheckDeckTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("PASS", result.stdout)
 
+    def test_section_slide_counts_as_frame(self) -> None:
+        self.write("outline.md", self.outline(["1", "S1", "2"]))
+        self.write(
+            "main.tex",
+            "\\begin{document}\n"
+            "% SLIDE 1\n\\begin{frame}\na\n\\end{frame}\n"
+            "% SLIDE S1\n\\SectionSlide{01}{CHƯƠNG 1}{Tiêu đề}{}{}\n"
+            "% SLIDE 2\n\\begin{frame}\nb\n\\end{frame}\n"
+            "\\end{document}\n",
+        )
+        result = self.run_check()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_nested_inputs_expand_and_pass(self) -> None:
         slides = ["1", "A1"]
         self.write("outline.md", self.outline(slides))

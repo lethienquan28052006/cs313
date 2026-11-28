@@ -3,32 +3,25 @@
 % ============================================================
 % SLIDE 24
 % ============================================================
-\begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay]
-  \fill[DTPaper] (current page.north west) rectangle (current page.south east);
-  \fill[DTGold] ($(current page.west)+(0.72,1.1)$) rectangle ++(0.065,-2.2);
-  \node[anchor=west] at ($(current page.west)+(1.2,0)$)
-    {\sffamily\bfseries\fontsize{40}{44}\selectfont\color{DTNavy}Demo};
-\end{tikzpicture}
-\end{frame}
+\SectionSlide{05}{CHƯƠNG 5}{Demo}{Chạy D-Tracker trên dữ liệu của nhóm}{}
 
 % ============================================================
 % SLIDE 25
 % ============================================================
+{\def\BgMode{title}
 \begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay]
-  \fill[DTPaper] (current page.north west) rectangle (current page.south east);
-  \fill[DTGold!6] (current page.south east) circle (5.1cm);
-  \fill[DTGold] ($(current page.west)+(0.72,1.6)$) rectangle ++(0.065,-3.2);
-  \node[anchor=west,align=left] at ($(current page.west)+(1.2,0)$) {%
-    \begin{minipage}{14cm}
-      {\sffamily\bfseries\fontsize{30}{34}\selectfont\color{DTNavy}Cảm ơn thầy và các bạn\par}
-      \vspace{3mm}
-      {\sffamily\fontsize{18}{22}\selectfont\color{DTInk}Hỏi \& đáp\par}
-      \vspace{5mm}
-      {\small\color{DTMuted}Paper: arxiv.org/abs/2505.00242\par
-      Code gốc: github.com/Higashiguchi-Shingo/D-Tracker\par
-      Phần chi tiết toán học: Appendix A1--A9\par}
-    \end{minipage}};
-\end{tikzpicture}
-\end{frame}
+  \begin{tikzpicture}[remember picture, overlay, shift={(current page.south west)}, x=\DTu, y=\DTu]
+    \node[anchor=west, inner sep=0] (logo) at (0.55,8.37)
+      {\includegraphics[height=0.62cm]{figures/uit_logo.png}};
+    \node[anchor=west, align=left, text=Navy, font=\MediumFont\fontsize{6.5}{8}\selectfont]
+      at ([xshift=0.15cm]logo.east)
+      {ĐẠI HỌC QUỐC GIA TP. HỒ CHÍ MINH\\{\HeavyFont TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN}};
+    \node[text=Navy, font=\BlackFont\fontsize{32}{36}\selectfont] at (8,5.6) {Cảm ơn thầy và các bạn};
+    \node[text=Accent, font=\MediumFont\fontsize{16}{20}\selectfont] at (8,4.6) {Hỏi \& đáp};
+    \shade[left color=Accent, right color=LineBlue] (7.1,4.0) rectangle (8.9,4.05);
+    \node[align=center, text=Muted, font=\MediumFont\fontsize{8.5}{12}\selectfont] at (8,2.9)
+      {Paper: arxiv.org/abs/2505.00242\\
+       Code gốc: github.com/Higashiguchi-Shingo/D-Tracker\\
+       Phần chi tiết toán học: Phụ lục A1--A9};
+  \end{tikzpicture}
+\end{frame}}

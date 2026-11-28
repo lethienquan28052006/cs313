@@ -1,29 +1,61 @@
 % ============================================================
 % SLIDE 1
 % ============================================================
+{\def\BgMode{title}
 \begin{frame}[plain]
-\begin{tikzpicture}[remember picture,overlay]
-  \fill[DTPaper] (current page.north west) rectangle (current page.south east);
-  \fill[DTGold!6] (current page.south east) circle (5.1cm);
-  \fill[DTGold] ($(current page.north west)+(0.72,-0.55)$) rectangle ++(0.065,-7.9);
-  \node[anchor=north west,align=left] at ($(current page.north west)+(1.18,-0.38)$) {%
-    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}CS313 \textperiodcentered\ ĐỒ ÁN DATA MINING\par}
-    {\sffamily\fontsize{7}{8}\selectfont\color{DTMuted}PAPER SEMINAR \textperiodcentered\ 20 PHÚT + 15 PHÚT DEMO\par}};
-  \node[anchor=north east] at ($(current page.north east)+(-0.75,-0.38)$) {%
-    \tikz{\fill[DTNavy,rounded corners=.6pt] (0,0) rectangle (.7,.7);\fill[DTGold] (.54,.54) circle (.085);\node[white,font=\fontsize{8}{8}\selectfont\bfseries] at (.33,.31){D};}};
-  \node[anchor=north west,align=left] at ($(current page.north west)+(1.2,-1.55)$) {%
-    \begin{minipage}{13.5cm}
-      {\sffamily\bfseries\fontsize{38}{42}\selectfont\color{DTNavy}D-Tracker\par}
-      \vspace{2mm}
-      {\sffamily\fontsize{19}{23}\selectfont\color{DTInk}Dự báo và giải thích sự lan tỏa mối quan tâm\par}
-      \vspace{4mm}
-      {\color{DTGold}\rule{8.2cm}{1.1pt}\par}
-      \vspace{3mm}
-      {\small\color{DTMuted}Modeling Interest Diffusion in Social Activity Tensor Data Streams\par}
-      \vspace{1mm}
-      {\scriptsize\color{DTMuted}S.~Higashiguchi, Y.~Matsubara, K.~Kawabata, T.~Murayama, Y.~Sakurai \textperiodcentered\ KDD 2025 \textperiodcentered\ arXiv:2505.00242\par}
-    \end{minipage}};
-  \node[anchor=south west] at ($(current page.south west)+(1.2,0.55)$) {%
-    {\sffamily\fontsize{8}{10}\selectfont\color{DTMuted}Vấn đề \textperiodcentered\ Mô hình \textperiodcentered\ Tìm tham số \textperiodcentered\ Thực nghiệm \textperiodcentered\ Demo}};
-\end{tikzpicture}
-\end{frame}
+  \begin{tikzpicture}[remember picture, overlay, shift={(current page.south west)}, x=\DTu, y=\DTu]
+    \node[anchor=west, inner sep=0] (logo) at (0.55,8.37)
+      {\includegraphics[height=0.62cm]{figures/uit_logo.png}};
+    \node[anchor=west, align=left, text=Navy, font=\MediumFont\fontsize{6.5}{8}\selectfont]
+      at ([xshift=0.15cm]logo.east)
+      {ĐẠI HỌC QUỐC GIA TP. HỒ CHÍ MINH\\{\HeavyFont TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN}};
+
+    \node[text=Accent, font=\MediumFont\fontsize{7.5}{9}\selectfont]
+      at (8,7.0) {\Track{CS313 \,·\, ĐỒ ÁN DATA MINING \,·\, PAPER SEMINAR}};
+    \node[text=Navy, font=\BlackFont\fontsize{40}{44}\selectfont]
+      at (8,5.85) {D-Tracker};
+    \node[text=Accent, font=\MediumFont\fontsize{16}{20}\selectfont]
+      at (8,4.8) {Dự báo và giải thích sự lan tỏa mối quan tâm};
+    \shade[left color=Accent, right color=LineBlue] (7.1,4.2) rectangle (8.9,4.25);
+
+    % info row
+    \node[anchor=north east, align=right] at (5.45,3.4)
+      {{\MediumFont\fontsize{7}{8.5}\selectfont\color{Muted}\Track{PAPER}}\\[0.35em]
+       {\HeavyFont\fontsize{10.5}{13}\selectfont\color{Navy}KDD 2025}};
+    \draw[Rule, line width=0.8pt] (5.9,3.45) -- (5.9,2.3);
+    \node[anchor=north west, align=left] at (6.35,3.4)
+      {{\MediumFont\fontsize{7}{8.5}\selectfont\color{Muted}\Track{TÁC GIẢ}}\\[0.35em]
+       {\MediumFont\fontsize{9.5}{12}\selectfont\color{Ink}S.~Higashiguchi \,·\, Y.~Matsubara \,·\, K.~Kawabata}\\[0.1em]
+       {\MediumFont\fontsize{9.5}{12}\selectfont\color{Ink}T.~Murayama \,·\, Y.~Sakurai}};
+    \node[text=Muted, font=\LightFont\fontsize{6.5}{8}\selectfont] at (8,1.25)
+      {Modeling Interest Diffusion in Social Activity Tensor Data Streams \,·\, arXiv:2505.00242};
+  \end{tikzpicture}
+\end{frame}}
+
+% ============================================================
+% SLIDE S0
+% ============================================================
+{\def\BgMode{agenda}
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture, overlay, shift={(current page.south west)}, x=\DTu, y=\DTu]
+    \node[text=Navy, font=\HeavyFont\fontsize{22}{26}\selectfont] at (8,7.72) {Nội dung};
+    \shade[left color=Accent, right color=LineBlue] (7.45,7.12) rectangle (8.55,7.17);
+    \foreach \t/\tag [count=\k] in {
+        Vấn đề: dự báo mức quan tâm theo thời gian thực/,
+        Mô hình D-Tracker/Tucker + phản ứng--khuếch tán,
+        Tìm tham số/ALS \,·\, MDL,
+        Thực nghiệm/6 datasets,
+        Demo/15 phút} {
+      \pgfmathsetmacro{\y}{6.25-0.9*(\k-1)}
+      \fill[white, opacity=0.92, rounded corners=6pt] (2.9,\y-0.34) rectangle (13.1,\y+0.34);
+      \draw[Rule, rounded corners=6pt] (2.9,\y-0.34) rectangle (13.1,\y+0.34);
+      \fill[Accent] (3.4,\y) circle (0.22);
+      \node[text=white, font=\HeavyFont\fontsize{10}{10}\selectfont] at (3.4,\y) {\k};
+      \node[anchor=west, text=Ink, font=\MediumFont\fontsize{11}{14}\selectfont] at (3.85,\y) {\t};
+      \ifx\tag\empty\else
+        \node[anchor=east, fill=AccentSoft, text=Accent, rounded corners=6pt, inner xsep=0.22cm,
+              inner ysep=0.09cm, font=\MediumFont\fontsize{7.5}{9}\selectfont] at (12.85,\y) {\tag};
+      \fi
+    }
+  \end{tikzpicture}
+\end{frame}}

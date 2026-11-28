@@ -20,7 +20,7 @@ else
 endif
 
 OVERLEAF_ZIP := dtracker_talk_overleaf.zip
-OVERLEAF_FILES := main.tex theme.tex latexmkrc OVERLEAF.md figures parts
+OVERLEAF_FILES := main.tex theme.tex latexmkrc OVERLEAF.md figures fonts parts
 
 .PHONY: all pdf overleaf-zip check test clean
 

@@ -5,9 +5,10 @@ Người nghe không cần theo được chứng minh. Mỗi khái niệm đi th
 
 ## Sản phẩm
 
-- `dtracker_talk.pdf`: 34 trang = 25 slide chính (gồm slide Demo để trống và slide Q&A) + 9 slide Appendix A1–A9.
+- `dtracker_talk.pdf`: 40 trang = cover + slide Nội dung + 23 slide nội dung + 5 slide chia chương (01–05, trong đó 05 là Demo) + slide Q&A + Phụ lục (1 slide chia chương + A1–A9).
 - `outline.md`: mạch kể chuyện, bảng thời gian, nội dung và lời dẫn từng slide, cùng các điểm đã chỉnh so với outline ban đầu.
-- `main.tex`: entry point; `theme.tex`: màu, font, hộp; `parts/`: nội dung.
+- `main.tex`: entry point; `theme.tex`: giao diện UIT (font Be Vietnam Pro, tông xanh, nền vân lục giác, slide chia chương); `parts/`: nội dung.
+- `fonts/`: Be Vietnam Pro (SIL Open Font License, xem `fonts/OFL.txt`); `figures/bg_hex.jpg`, `figures/uit_logo.png`: tài nguyên nền và logo lấy từ deck CS222 của nhóm.
 - `dtracker_talk_overleaf.zip`: gói upload Overleaf (xem `OVERLEAF.md`).
 - `sources/source_map.md`: đối chiếu slide → section / equation / figure / table của paper.
 - `sources/figure_manifest.tsv`: nguồn, license, SHA-256 của các hình lấy từ paper.
@@ -15,7 +16,7 @@ Người nghe không cần theo được chứng minh. Mỗi khái niệm đi th
 ## Cấu trúc
 
 ```text
-parts/00_cover.tex        # slide 1
+parts/00_cover.tex        # slide 1 (cover UIT), S0 (Nội dung)
 parts/01_problem.tex      # slide 2–5    Vấn đề
 parts/02_model.tex        # slide 6–13   Mô hình
 parts/03_estimation.tex   # slide 14–17  Tìm tham số (ý tưởng)
@@ -24,7 +25,7 @@ parts/05_demo_qa.tex      # slide 24–25  Demo (trống), Q&A
 parts/99_appendix.tex     # slide A1–A9  Toán chi tiết, Table 3 đầy đủ
 ```
 
-Mỗi frame có marker `% SLIDE n` khớp với heading `### Slide n` trong `outline.md`. Nếu thêm hoặc bớt slide, sửa cả hai chỗ rồi chạy `make check`.
+Mỗi frame có marker `% SLIDE n` khớp với heading `### Slide n` trong `outline.md`. Slide chia chương dùng macro `\SectionSlide{số}{nhãn}{tiêu đề}{tagline}{danh sách}` và có marker `S0`–`S5`. Nếu thêm hoặc bớt slide, sửa cả hai chỗ rồi chạy `make check`.
 
 ## Build
 
