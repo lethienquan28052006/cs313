@@ -53,7 +53,8 @@ def naive_ref(ds):
 def main():
     cols = ["D-Tracker (init=0)", "D-Tracker (init=1)"] + [BLN[m] for m in BL] + ["Naive: last value"]
     out = ["# Table 3 reproduction (MAE / RMSE, ×10⁻², lower is better)", "",
-           "Bold = best MAE in the row among our runs. `–` = not finished / failed. "
+           "Bold = best MAE in the row among our runs. `not run (paper MAE x)` = we did not run it; "
+           "the paper's MAE is shown for reference and is not part of the bold ranking. "
            "† = raw forecasts diverged; scored after clipping to [0,1] (our post-processing). "
            "Naive = repeat the last observed week (reference only, not in the paper; `bench/naive.py`).", "",
            "| Dataset | lf | " + " | ".join(cols) + " |",
@@ -68,9 +69,14 @@ def main():
             maes = [round(v[0], 2) for v in vals if v]
             best = min(maes) if maes else None
             cells = []
-            for v in vals:
+            for ci, v in enumerate(vals):
                 if not v:
-                    cells.append("–")
+                    col = cols[ci]
+                    if col in BASE_NAMES:      # not run by us (user decision): show paper MAE, marked
+                        pm = BASE_MAE[ds][PAPER[ds][0].index(lf)][BASE_NAMES.index(col)]
+                        cells.append(f"not run (paper MAE {pm:.2f})")
+                    else:
+                        cells.append("–")
                     continue
                 s = f"{v[0]:.2f} / {v[1]:.2f}{v[2]}"
                 cells.append(f"**{s}**" if round(v[0], 2) == best else s)
