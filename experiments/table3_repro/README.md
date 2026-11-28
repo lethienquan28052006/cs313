@@ -1,6 +1,6 @@
 # Table 3 reproduction: D-Tracker + 5 baselines
 
-Re-runs the **official D-Tracker code** (unmodified, commit `11c181d`) and 5 baselines (DISMO, PatchTST, Autoformer, LaST, CoST) on the paper's 6 datasets, and compares with Table 3 of the paper.
+Re-runs the **official D-Tracker code** (unmodified, commit `11c181d`) and 4 baselines (DISMO, PatchTST, Autoformer, CoST; LaST, DeepAR and FluxCube use paper numbers) on the paper's 6 datasets, and compares with Table 3 of the paper.
 This folder holds **only our own scripts and small result summaries**. The author code and baseline repos are cloned locally (no license → not committed, see `third_party/README.md`).
 
 Full write-up of the D-Tracker part: [`REPORT.md`](REPORT.md). Results table: [`results/table3.md`](results/table3.md), CSV: [`results/table3.csv`](results/table3.csv).
