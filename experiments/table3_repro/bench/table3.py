@@ -43,17 +43,26 @@ def baseline(m, ds):
     return {k: (a, b, "†") for k, (a, b) in cl.items()}
 
 
+def naive_ref(ds):
+    f = os.path.join(W, "logs", "naive.json")
+    if not os.path.exists(f):
+        return None
+    return {int(h): (v[0], v[1], "") for h, v in json.load(open(f))[ds]["last value"].items()}
+
+
 def main():
-    cols = ["D-Tracker (init=0)", "D-Tracker (init=1)"] + [BLN[m] for m in BL]
+    cols = ["D-Tracker (init=0)", "D-Tracker (init=1)"] + [BLN[m] for m in BL] + ["Naive: last value"]
     out = ["# Table 3 reproduction (MAE / RMSE, ×10⁻², lower is better)", "",
            "Bold = best MAE in the row among our runs. `–` = not finished / failed. "
-           "† = raw forecasts diverged; scored after clipping to [0,1] (our post-processing).", "",
+           "† = raw forecasts diverged; scored after clipping to [0,1] (our post-processing). "
+           "Naive = repeat the last observed week (reference only, not in the paper; `bench/naive.py`).", "",
            "| Dataset | lf | " + " | ".join(cols) + " |",
            "|---|---|" + "---|" * len(cols)]
     for ds in DS:
         runs = [dtracker(ds, False), dtracker(ds, True)]
         runs = [{k: (a, b, "") for k, (a, b) in r.items()} for r in runs]
         runs += [baseline(m, ds) for m in BL]
+        runs += [naive_ref(ds)]
         for lf in data.horizons(ds):
             vals = [r.get(lf) if r else None for r in runs]
             maes = [round(v[0], 2) for v in vals if v]
@@ -89,6 +98,7 @@ def write_csv(path):
         runs = {"D-Tracker (init=0)": dtracker(ds, False), "D-Tracker (init=1)": dtracker(ds, True)}
         runs = {k: {h: (a, b, "") for h, (a, b) in r.items()} for k, r in runs.items()}
         runs.update({BLN[m]: baseline(m, ds) for m in BL})
+        runs["Naive: last value"] = naive_ref(ds)
         for meth, r in runs.items():
             for h, v in sorted((r or {}).items()):
                 note = "clip01" if v[2] else ""
