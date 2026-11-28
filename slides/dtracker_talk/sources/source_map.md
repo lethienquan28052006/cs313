@@ -27,16 +27,18 @@ Bảng đối chiếu từng slide với paper. Mọi số liệu trên slide đ
 | 16 | MDL | §4.2, Eq. (9)(10), footnote 2 ($c_F=32$) | |
 | 17 | ModelUpdate, RankUpdate; Pythonlib $d_k$: 2 → 3 | §4.3; §5 Q2 (gai thời gian); §5 Q3 | |
 | 18 | Dataset, $L_c$, $L_f$, baseline, metric | §5; Table 4; Appendix B.1 | |
-| 19 | Table 3 rút gọn; “tới 57%” | Table 3; §1 | Số được script so tự động với text paper; 57% = Covid-19, $L_f=7$: 1 − 0.47/1.10 |
-| 20 | Scalability, “tới 8.0×” | Figure 4; §5 Q2; §1 | |
-| 21 | Diễn giải Device 2010–2011 / 2019–2021; pandas | §1.1, Figure 1(b); §5 Q3, Figure 5 | |
-| 22 | Ablation | Figure 3; §5 “Ablation study” | Số % đọc từ nhãn trên cột của Figure 3 |
-| 23 | Takeaways; hạn chế | §6 | Hạn chế là nhận xét của nhóm |
-| A1–A9 | Công thức đầy đủ | Eq. (2)–(10); Appendix A.1–A.4; Table 3 | Bảng A9 được script kiểm tra 18/18 dòng |
+| 19 | Table 3 đầy đủ (chuyển từ Phụ lục) | Table 3; Appendix B.1 | Script kiểm tra 18/18 dòng; ô tô đậm = nhỏ nhất theo từng metric |
+| 20 | Table 3 rút gọn; “tới 57%” | Table 3; §1 | 57% = Covid-19, $L_f=7$: 1 − 0.47/1.10 |
+| 21 | Scalability, “tới 8.0×” | Figure 4; §5 Q2; §1 | |
+| 22 | Diễn giải Device 2010–2011 / 2019–2021; pandas | §1.1, Figure 1(b); §5 Q3, Figure 5 | |
+| 23 | Ablation | Figure 3; §5 “Ablation study” | Số % đọc từ nhãn trên cột của Figure 3 |
+| 24 | Kết quả nhóm reproduce | Cột Paper: Table 3 (D-Tracker, $L_f$ giữa) | Cột Nhóm do nhóm tự điền, không phải số của paper |
+| 25 | Takeaways; hạn chế | §6 | Hạn chế là nhận xét của nhóm |
+| A1–A8 | Công thức đầy đủ | Eq. (2)–(10); Appendix A.1–A.4 | |
 
 ## Đối chiếu tự động Table 3
 
-Bảng ở slide 19 và A9 được so với text trích từ `paper.pdf` (`pdftotext`). Thứ tự cột của paper: D-Tracker, DISMO, FluxCube, PatchTST, Autoformer, DeepAR, LaST, CoST; mỗi phương pháp có MAE ×3 rồi RMSE ×3. Kết quả: 18/18 dòng khớp. Ô tô đậm đúng là giá trị nhỏ nhất theo từng metric, và D-Tracker có MAE nhỏ nhất ở cả 18 dòng.
+Bảng ở slide 19, 20 và cột Paper ở slide 24 được so với text trích từ `paper.pdf` (`pdftotext`). Thứ tự cột của paper: D-Tracker, DISMO, FluxCube, PatchTST, Autoformer, DeepAR, LaST, CoST; mỗi phương pháp có MAE ×3 rồi RMSE ×3. Kết quả: 18/18 dòng khớp. Ô tô đậm đúng là giá trị nhỏ nhất theo từng metric, và D-Tracker có MAE nhỏ nhất ở cả 18 dòng.
 
 ## Hình
 

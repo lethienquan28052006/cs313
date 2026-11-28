@@ -5,7 +5,7 @@ Người nghe không cần theo được chứng minh. Mỗi khái niệm đi th
 
 ## Sản phẩm
 
-- `dtracker_talk.pdf`: 40 trang = cover + slide Nội dung + 23 slide nội dung + 5 slide chia chương (01–05, trong đó 05 là Demo) + slide Q&A + Phụ lục (1 slide chia chương + A1–A9).
+- `dtracker_talk.pdf`: 41 trang = cover + slide Nội dung + 24 slide nội dung (gồm slide 24 “Kết quả nhóm reproduce” để nhóm tự điền) + 5 slide chia chương (01–05, trong đó 05 là Demo) + slide Q&A + Phụ lục (1 slide chia chương + A1–A8).
 - `outline.md`: mạch kể chuyện, bảng thời gian, nội dung và lời dẫn từng slide, cùng các điểm đã chỉnh so với outline ban đầu.
 - `main.tex`: entry point; `theme.tex`: giao diện UIT (font Be Vietnam Pro, tông xanh, nền vân lục giác, slide chia chương); `parts/`: nội dung.
 - `fonts/`: Be Vietnam Pro (SIL Open Font License, xem `fonts/OFL.txt`); `figures/bg_hex.jpg`, `figures/uit_logo.png`: tài nguyên nền và logo lấy từ deck CS222 của nhóm.
@@ -20,9 +20,9 @@ parts/00_cover.tex        # slide 1 (cover UIT), S0 (Nội dung)
 parts/01_problem.tex      # slide 2–5    Vấn đề
 parts/02_model.tex        # slide 6–13   Mô hình
 parts/03_estimation.tex   # slide 14–17  Tìm tham số (ý tưởng)
-parts/04_experiments.tex  # slide 18–23  Thực nghiệm + takeaways
-parts/05_demo_qa.tex      # slide 24–25  Demo (trống), Q&A
-parts/99_appendix.tex     # slide A1–A9  Toán chi tiết, Table 3 đầy đủ
+parts/04_experiments.tex  # slide 18–25  Thực nghiệm (Table 3 đầy đủ ở slide 19, reproduce ở slide 24) + takeaways
+parts/05_demo_qa.tex      # slide 26–27  Demo (slide chương 05), Q&A
+parts/99_appendix.tex     # slide S5, A1–A8  Toán chi tiết
 ```
 
 Mỗi frame có marker `% SLIDE n` khớp với heading `### Slide n` trong `outline.md`. Slide chia chương dùng macro `\SectionSlide{số}{nhãn}{tiêu đề}{tagline}{danh sách}` và có marker `S0`–`S5`. Nếu thêm hoặc bớt slide, sửa cả hai chỗ rồi chạy `make check`.
@@ -41,6 +41,6 @@ Deck dùng `fontspec` và `unicode-math`, nên phải compile bằng **XeLaTeX**
 
 ## Quy ước nội dung
 
-- Mọi số liệu đều lấy từ paper (paper-reported), không phải kết quả nhóm chạy lại. Table 3 ở slide 19 và A9 đã được đối chiếu tự động với text paper.
+- Mọi số liệu đều lấy từ paper (paper-reported), không phải kết quả nhóm chạy lại. Table 3 ở slide 19 và 20, cùng cột Paper ở slide 24, đã được đối chiếu tự động với text paper. Cột Nhóm ở slide 24 là kết quả nhóm tự điền.
 - Ví dụ COVID, Black Friday, Tết và các chuỗi đồ chơi là minh họa của nhóm; trên slide đều có ghi chú.
 - Hình lấy từ paper (CC BY 4.0) có ghi nguồn ở chân mỗi slide.

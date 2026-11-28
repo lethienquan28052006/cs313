@@ -40,17 +40,19 @@
 | 16 | MDL trong một slide | III | 1:00 | 15:30 |
 | 17 | ModelUpdate: đổi mô hình & đổi rank | III | 0:45 | 16:15 |
 | 18 | Thiết lập thực nghiệm | IV. Thực nghiệm | 0:30 | 16:45 |
-| 19 | Độ chính xác (Q1) | IV | 0:50 | 17:35 |
-| 20 | Tốc độ (Q2) | IV | 0:35 | 18:10 |
-| 21 | Khả năng diễn giải (Q3) | IV | 0:50 | 19:00 |
-| 22 | Ablation: thành phần nào có ích? | IV | 0:30 | 19:30 |
-| 23 | Takeaways & hạn chế | V | 0:30 | 20:00 |
-| 24 | **DEMO** (trống) | — | 15:00 | 35:00 |
-| 25 | Cảm ơn / Q&A | — | — | — |
+| 19 | Kết quả đầy đủ: Table 3 | IV | 0:30 | 17:15 |
+| 20 | Q1: Độ chính xác (đọc bảng) | IV | 0:40 | 17:55 |
+| 21 | Tốc độ (Q2) | IV | 0:30 | 18:25 |
+| 22 | Khả năng diễn giải (Q3) | IV | 0:45 | 19:10 |
+| 23 | Ablation: thành phần nào có ích? | IV | 0:25 | 19:35 |
+| 24 | Kết quả nhóm reproduce | IV | 0:45 | 20:20 |
+| 25 | Takeaways & hạn chế | V | 0:30 | 20:50 |
+| 26 | **DEMO** (slide chương 05) | — | 15:00 | 35:50 |
+| 27 | Cảm ơn / Q&A | — | — | — |
 | S1–S4 | 4 slide chia chương (trước slide 2, 6, 14, 18) | — | ~0:05 mỗi slide | đã tính trong các phần |
-| S5, A1–A9 | Phụ lục (không tính giờ) | — | — | — |
+| S5, A1–A8 | Phụ lục (không tính giờ) | — | — | — |
 
-Chỗ dự phòng nếu bị cháy giờ: slide 10 chỉ nói ví dụ iPhone (bỏ COVID), slide 22 lướt nhanh.
+Tổng phần paper hiện khoảng 20:50 (thêm slide 19 và 24). Chỗ cắt để về 20:00: slide 10 chỉ nói ví dụ iPhone (bỏ COVID), slide 20 chỉ đọc hai hộp kết luận, slide 23 lướt nhanh.
 
 ---
 
@@ -61,7 +63,7 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 ---
 
 ### Slide 1 — Cover
-- **Trên slide:** Tên paper, tác giả, KDD 2025; tên môn, nhóm, GVHD, logo UIT.
+- **Trên slide:** logo UIT; “CS313 · Đồ án Data Mining”; D-Tracker + tên tiếng Anh của paper; Giảng viên: TS. Võ Nguyễn Lê Duy; Nhóm 3 (6 thành viên kèm MSSV); dòng tác giả paper, KDD 2025, arXiv.
 - **Lời nói:** “Hôm nay nhóm trình bày một phương pháp dự báo mức độ quan tâm của người dùng tới một từ khóa, ở từng quốc gia, theo thời gian thực.”
 
 ---
@@ -190,7 +192,7 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
   - **iPhone mới ra mắt:**
     - Phản ứng: sức hút tự thân tại một thị trường (quảng cáo, truyền thông).
     - Khuếch tán: sự quan tâm lan qua biên giới, từ Mỹ/EU/TQ sang các nước còn lại.
-- **Hình:** Bản đồ lan truyền thật của paper cho iPhone 2019–2021, cắt từ Figure 1(b) (`figures/Figure1b_diffusion_2019.png`) — nối sang slide 21.
+- **Hình:** Bản đồ lan truyền thật của paper cho iPhone 2019–2021, cắt từ Figure 1(b) (`figures/Figure1b_diffusion_2019.png`) — nối sang slide 22.
 - **Lời nói:** Nhấn mạnh **giả định** của paper: quan tâm đi từ nơi cao sang nơi thấp, giống chất hóa học [55, 8].
 - **Nguồn:** §3.2 (giả định lan truyền), §1.1 (iPhone). Ví dụ COVID là **minh họa của nhóm**, không phải kết quả paper — ghi chú nhỏ “ví dụ minh họa”.
 
@@ -293,19 +295,24 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
   - 3 câu hỏi: Q1 chính xác? Q2 nhanh? Q3 diễn giải được?
 - **Nguồn:** §5, Table 4, Appendix B.1.
 
-### Slide 19 — Q1: Độ chính xác
-- **Trên slide:** Table 3 rút gọn: mỗi dataset 1 dòng (L_f = 26 hoặc giữa), cột D-Tracker / DISMO / PatchTST / tốt nhất của deep learning; tô đậm best.
+### Slide 19 — Kết quả đầy đủ: Table 3
+- **Trên slide:** Table 3 đầy đủ (MAE/RMSE, 6 dataset × 3 bước dự báo × 8 phương pháp), chuyển từ Phụ lục lên ngay sau slide Thiết lập. Số đã đối chiếu tự động với text paper (18/18 dòng).
+- **Lời nói:** chỉ cho người nghe cột D-Tracker (xanh lá đậm = tốt nhất ở hàng đó), sau đó sang slide tóm tắt.
+- **Nguồn:** Table 3, §5 Q1.
+
+### Slide 20 — Q1: Độ chính xác (đọc bảng)
+- **Trên slide:** Table 3 rút gọn (bảng đầy đủ đã ở slide 19): mỗi dataset 1 dòng (L_f = 26 hoặc giữa), cột D-Tracker / DISMO / PatchTST / tốt nhất của deep learning; tô đậm best.
   - Chốt: **MAE tốt nhất trên cả 6 dataset**; cải thiện tới **57%**; RMSE cạnh tranh.
   - Vì sao baseline thua: deep learning offline không kịp thích nghi khi trend đổi; DISMO bỏ qua phụ thuộc giữa các vùng và không đổi rank.
 - **Lưu ý khi dựng:** lấy số trực tiếp từ Table 3 (đã có text trích), kiểm tra lại từng ô.
 - **Nguồn:** Table 3, §5 Q1.
 
-### Slide 20 — Q2: Tốc độ
+### Slide 21 — Q2: Tốc độ
 - **Hình:** Figure 4 (`figures/scalability.png`, `figures/avgtime.png`).
 - **Trên slide:** Thời gian mỗi bước **phẳng** theo độ dài luồng (spike nhỏ = RankUpdate); DISMO tăng dần, FluxCube rất chậm; D-Tracker nhanh nhất, **tới 8.0× nhanh hơn**.
 - **Nguồn:** Figure 4, §5 Q2, §1.
 
-### Slide 21 — Q3: Khả năng diễn giải
+### Slide 22 — Q3: Khả năng diễn giải
 - **Hình:** Figure 1(b) đầy đủ — Device, 2 giai đoạn (`figures/Figure1_b.png`).
 - **Trên slide (câu chuyện đọc được):**
   - 2010–2011: Dynamics #2 (gắn với “Galaxy”) tăng mạnh ở Đông Nam Á & Nam Mỹ; Dynamics #3 (Galaxy, iPad) lan từ Group 1 → Group 2.
@@ -314,12 +321,16 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 - **Lời nói:** Đây là thứ mà PatchTST/DeepAR không cho được: *ai lan sang ai*.
 - **Nguồn:** §1.1, Fig. 1(b), Fig. 5.
 
-### Slide 22 — Ablation
+### Slide 23 — Ablation
 - **Hình:** Figure 3 (`figures/drop_rate.png`).
 - **Trên slide:** bỏ diffusion → VoD, Chatapp tệ đi nhiều; bỏ seasonal → Device, Language, Covid tệ; bỏ outlier/RankUpdate → tệ ở một số dataset. Dataset ít mùa vụ/ít ngoại lai thì thành phần tương ứng không giúp.
 - **Nguồn:** Figure 3, §5.
 
-### Slide 23 — Takeaways & hạn chế
+### Slide 24 — Kết quả nhóm reproduce
+- **Trên slide:** bảng Paper vs Nhóm cho D-Tracker ở bước dự báo giữa (MAE, RMSE); cột Paper điền sẵn từ Table 3, cột Nhóm để `--` cho nhóm tự điền. Hộp “Thiết lập của nhóm” (môi trường, thời gian chạy, khác biệt) và hộp “Nhận xét”.
+- **Ghi chú:** nhóm tự thay các ô `--` trong `parts/04_experiments.tex` (slide 24).
+
+### Slide 25 — Takeaways & hạn chế
 - **Takeaways (3 dòng):** Phân rã + ODE phản ứng–khuếch tán → **đọc được lan truyền**; MDL → **tự động**; cửa sổ + cập nhật tăng dần → **nhanh, không phụ thuộc độ dài luồng**.
 - **Hạn chế / câu hỏi mở (nhận xét của nhóm):**
   - Lan truyền giữa **nhóm vùng ẩn**, không phải giữa từng nước; muốn nói “từ Mỹ sang Việt Nam” phải đọc qua W^(loc).
@@ -330,10 +341,10 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 
 ---
 
-### Slide 24 — DEMO
+### Slide 26 — DEMO
 - Slide chia chương “05 Demo”, không có nội dung khác. Nhóm tự bật demo, 15 phút.
 
-### Slide 25 — Cảm ơn / Q&A
+### Slide 27 — Cảm ơn / Q&A
 - Link paper, link code gốc (github.com/Higashiguchi-Shingo/D-Tracker), repo nhóm.
 
 ---
@@ -341,7 +352,7 @@ Quy ước mỗi slide: **Mục tiêu** · **Trên slide** · **Hình** · **L�
 ## APPENDIX (không tính giờ, dành cho người muốn đọc / thầy hỏi)
 
 ### Slide S5 — Phụ lục (slide chia chương)
-- Mục lục của phần Phụ lục A1–A9.
+- Mục lục của phần Phụ lục A1–A8.
 
 ### Slide A1 — Mode product & unfolding
 Định nghĩa ×_key, unfold, ví dụ kích thước Device. Nguồn: Eq. (2), Kolda & Bader.
@@ -367,9 +378,6 @@ Pseudocode + Lemma 1. Nguồn: App. A.2–A.3.
 ### Slide A8 — ModelUpdate & RankUpdate
 Algorithm 3–4. Nguồn: §4.3, App. A.4.
 
-### Slide A9 — Table 3 đầy đủ
-MAE/RMSE mọi dataset, mọi L_f; số đã đối chiếu tự động với text paper. Nguồn: Table 3.
-
 ---
 
 ## 3. Những điểm nhóm cần chỉnh so với outline gốc (đã kiểm với paper)
@@ -393,9 +401,9 @@ MAE/RMSE mọi dataset, mọi L_f; số đã đối chiếu tự động với t
   parts/01_problem.tex        # slide 2–5
   parts/02_model.tex          # slide 6–13
   parts/03_estimation.tex     # slide 14–17
-  parts/04_experiments.tex    # slide 18–23
-  parts/05_demo_qa.tex        # slide 24–25
-  parts/99_appendix.tex       # A1–A9 (\appendix, đánh số A1…)
+  parts/04_experiments.tex    # slide 18–25
+  parts/05_demo_qa.tex        # slide 26–27
+  parts/99_appendix.tex       # S5, A1–A8 (\appendix, đánh số A1…)
   ```
 - Hình khái niệm (tensor, Tucker, hai bình khuếch tán, vòng ALS, cân MDL) vẽ bằng **TikZ**; hình kết quả **cắt từ paper** (đã có trong `slides/paper_explore/figures/`), ghi nguồn dưới hình.
 - Cập nhật `outline.md`, `README.md`, `sources/source_map.md`, `sources/figure_manifest.tsv`, `scripts/check_deck.py` cho đúng số slide mới.

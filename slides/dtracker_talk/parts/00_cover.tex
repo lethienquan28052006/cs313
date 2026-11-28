@@ -1,6 +1,7 @@
 % ============================================================
 % SLIDE 1
 % ============================================================
+\newcommand{\Member}[2]{{\LightFont\color{Muted}#1} & #2}
 {\def\BgMode{title}
 \begin{frame}[plain]
   \begin{tikzpicture}[remember picture, overlay, shift={(current page.south west)}, x=\DTu, y=\DTu]
@@ -11,24 +12,28 @@
       {ĐẠI HỌC QUỐC GIA TP. HỒ CHÍ MINH\\{\HeavyFont TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN}};
 
     \node[text=Accent, font=\MediumFont\fontsize{7.5}{9}\selectfont]
-      at (8,7.0) {\Track{CS313 \,·\, ĐỒ ÁN DATA MINING \,·\, PAPER SEMINAR}};
+      at (8,7.15) {\Track{CS313 \,·\, ĐỒ ÁN DATA MINING}};
     \node[text=Navy, font=\BlackFont\fontsize{40}{44}\selectfont]
-      at (8,5.85) {D-Tracker};
-    \node[text=Accent, font=\MediumFont\fontsize{16}{20}\selectfont]
-      at (8,4.8) {Dự báo và giải thích sự lan tỏa mối quan tâm};
-    \shade[left color=Accent, right color=LineBlue] (7.1,4.2) rectangle (8.9,4.25);
+      at (8,6.1) {D-Tracker};
+    \node[text=Accent, font=\MediumFont\fontsize{12}{15}\selectfont]
+      at (8,5.15) {Modeling Interest Diffusion in Social Activity Tensor Data Streams};
+    \shade[left color=Accent, right color=LineBlue] (7.1,4.62) rectangle (8.9,4.67);
 
-    % info row
-    \node[anchor=north east, align=right] at (5.45,3.4)
-      {{\MediumFont\fontsize{7}{8.5}\selectfont\color{Muted}\Track{PAPER}}\\[0.35em]
-       {\HeavyFont\fontsize{10.5}{13}\selectfont\color{Navy}KDD 2025}};
-    \draw[Rule, line width=0.8pt] (5.9,3.45) -- (5.9,2.3);
-    \node[anchor=north west, align=left] at (6.35,3.4)
-      {{\MediumFont\fontsize{7}{8.5}\selectfont\color{Muted}\Track{TÁC GIẢ}}\\[0.35em]
-       {\MediumFont\fontsize{9.5}{12}\selectfont\color{Ink}S.~Higashiguchi \,·\, Y.~Matsubara \,·\, K.~Kawabata}\\[0.1em]
-       {\MediumFont\fontsize{9.5}{12}\selectfont\color{Ink}T.~Murayama \,·\, Y.~Sakurai}};
-    \node[text=Muted, font=\LightFont\fontsize{6.5}{8}\selectfont] at (8,1.25)
-      {Modeling Interest Diffusion in Social Activity Tensor Data Streams \,·\, arXiv:2505.00242};
+    % info row: lecturer | group
+    \node[anchor=north east, align=right] at (4.35,3.95)
+      {{\MediumFont\fontsize{7}{8.5}\selectfont\color{Muted}\Track{GIẢNG VIÊN}}\\[0.45em]
+       {\HeavyFont\fontsize{10.5}{13}\selectfont\color{Navy}TS. Võ Nguyễn Lê Duy}};
+    \draw[Rule, line width=0.8pt] (4.75,4.0) -- (4.75,2.0);
+    \node[anchor=north west, align=left, inner sep=0] at (5.15,3.95)
+      {{\MediumFont\fontsize{7}{8.5}\selectfont\color{Muted}\Track{NHÓM 3}}\\[0.45em]
+       \MediumFont\fontsize{8.6}{12.5}\selectfont\color{Ink}%
+       \begin{tabular}{@{}l@{\hspace{0.8em}}l@{\hspace{1.6em}}l@{\hspace{0.8em}}l@{}}
+         \Member{24520020}{Hà Bùi Trọng Nghĩa} & \Member{24520036}{Dương Hoàng Việt}\\
+         \Member{24520027}{Lê Thiên Quân}      & \Member{24520056}{Nguyễn Hoàng Ân}\\
+         \Member{24520029}{Hồ Hữu Tây}         & \Member{24520031}{Hà Xuân Thiện}
+       \end{tabular}};
+    \node[text=Muted, font=\LightFont\fontsize{6.5}{8}\selectfont] at (8,1.2)
+      {S.~Higashiguchi, Y.~Matsubara, K.~Kawabata, T.~Murayama, Y.~Sakurai \,·\, KDD 2025 \,·\, arXiv:2505.00242};
   \end{tikzpicture}
 \end{frame}}
 

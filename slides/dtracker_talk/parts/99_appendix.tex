@@ -7,8 +7,7 @@
 \SectionSlide{A}{PHỤ LỤC}{Chi tiết toán học}{Dành cho người muốn đọc thêm}{%
   \SecItem{A1--A2}{Tucker và diễn giải}
   \SecItem{A3--A5}{Các bước cập nhật trong ALS}
-  \SecItem{A6--A8}{MDL, Algorithm 2--4}
-  \SecItem{A9}{Table 3 đầy đủ}}
+  \SecItem{A6--A8}{MDL, Algorithm 2--4}}
 
 
 % ============================================================
@@ -277,41 +276,4 @@ S^{(\mathrm m)}=X_s^{(\mathrm m)}\,U^{(\mathrm m)}\,V^{(\mathrm m)\dagger}}
 \end{columns}
 \vfill
 \papersource{§4.3, Appendix A.4, Algorithm 3--4.}
-\end{frame}
-
-% ============================================================
-% SLIDE A9
-% ============================================================
-\begin{frame}{A9. Table 3 đầy đủ (MAE / RMSE, $\times10^{-2}$)}{Kết quả}
-\centering
-\scriptsize
-\setlength{\tabcolsep}{2.1pt}
-\renewcommand{\arraystretch}{1.02}
-\begin{tabular}{@{}llc|cc|cc|cc|cc|cc|cc|cc|cc@{}}
-\toprule
-& Dataset & $L_f$ & \multicolumn{2}{c|}{\textbf{D-Tracker}} & \multicolumn{2}{c|}{DISMO} & \multicolumn{2}{c|}{FluxCube} & \multicolumn{2}{c|}{PatchTST} & \multicolumn{2}{c|}{Autoformer} & \multicolumn{2}{c|}{DeepAR} & \multicolumn{2}{c|}{LaST} & \multicolumn{2}{c}{CoST}\\
-& & & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE & MAE & RMSE\\
-\midrule
-\#1 & Device & 13 & \bestcell{0.84} & \bestcell{1.82} & 1.08 & 2.18 & 3.86 & 7.20 & 1.39 & 3.20 & 1.21 & 2.03 & 2.14 & 2.99 & 1.91 & 4.00 & 1.63 & 3.45\\
- & & 26 & \bestcell{0.90} & \bestcell{1.95} & 1.19 & 2.45 & 3.85 & 7.26 & 1.54 & 3.19 & 1.31 & 2.13 & 2.21 & 3.16 & 2.07 & 4.31 & 1.80 & 3.79\\
- & & 39 & \bestcell{0.97} & \bestcell{2.18} & 1.22 & 2.60 & 3.97 & 7.63 & 1.21 & 2.76 & 1.34 & 2.22 & 2.37 & 3.34 & 2.37 & 5.83 & 1.74 & 3.77\\
-\#2 & Pythonlib & 13 & \bestcell{0.27} & \bestcell{1.42} & 0.47 & 1.74 & 0.86 & 3.57 & 0.89 & 4.26 & 0.49 & 1.45 & 2.01 & 3.84 & 0.71 & 2.54 & 0.40 & 2.46\\
- & & 26 & \bestcell{0.32} & 1.54 & 0.52 & 1.96 & 0.93 & 3.68 & 0.95 & 4.17 & 0.47 & \bestcell{1.35} & 2.01 & 3.84 & 0.86 & 2.80 & 0.45 & 2.76\\
- & & 39 & \bestcell{0.37} & 1.78 & 0.57 & 2.22 & 1.09 & 4.08 & 0.83 & 3.33 & 0.42 & \bestcell{1.52} & 2.01 & 3.86 & 0.92 & 2.99 & 0.47 & 3.08\\
-\#3 & VoD & 13 & \bestcell{0.53} & 1.58 & 0.56 & 1.64 & 2.83 & 6.96 & 0.95 & 2.17 & 0.56 & \bestcell{1.33} & 1.77 & 2.23 & 2.91 & 13.26 & 2.98 & 14.29\\
- & & 26 & \bestcell{0.59} & 1.83 & 0.66 & 1.91 & 2.83 & 6.95 & 0.84 & 1.82 & 0.74 & \bestcell{1.63} & 1.88 & 2.42 & 2.53 & 11.42 & 2.36 & 11.17\\
- & & 39 & \bestcell{0.63} & \bestcell{2.02} & 0.78 & 2.22 & 2.79 & 6.84 & 1.69 & 2.57 & 1.13 & 2.07 & 1.98 & 2.61 & 1.55 & 5.50 & 3.27 & 15.18\\
-\#4 & Chatapp & 13 & \bestcell{0.28} & 0.83 & 0.47 & 1.16 & 1.47 & 4.06 & 0.47 & \bestcell{0.81} & 0.84 & 1.34 & 1.85 & 2.35 & 2.66 & 13.16 & 1.76 & 7.30\\
- & & 26 & \bestcell{0.34} & \bestcell{1.01} & 0.48 & 1.21 & 1.48 & 4.02 & 0.74 & 1.13 & 0.81 & 1.43 & 2.16 & 3.04 & 2.34 & 9.91 & 2.09 & 9.11\\
- & & 39 & \bestcell{0.41} & \bestcell{1.24} & 0.50 & 1.27 & 1.47 & 3.93 & 0.88 & 1.53 & 0.54 & 1.41 & 1.93 & 2.61 & 2.18 & 8.59 & 2.18 & 7.48\\
-\#5 & Language & 13 & \bestcell{0.31} & 0.97 & 0.94 & 2.25 & 1.38 & 3.34 & 0.41 & 1.47 & 0.37 & \bestcell{0.85} & 1.98 & 3.63 & 0.74 & 1.94 & 0.40 & 1.50\\
- & & 26 & \bestcell{0.35} & 1.14 & 1.12 & 2.68 & 1.42 & 3.33 & 0.50 & 1.97 & 0.41 & \bestcell{0.93} & 2.03 & 3.65 & 0.80 & 2.13 & 0.47 & 1.73\\
- & & 39 & \bestcell{0.40} & 1.32 & 1.36 & 3.19 & 1.51 & 3.44 & 0.51 & 2.50 & 0.54 & \bestcell{1.08} & 2.01 & 3.55 & 0.81 & 2.13 & 0.49 & 1.79\\
-\#6 & Covid-19 & 7 & \bestcell{0.47} & \bestcell{1.40} & 1.12 & 2.87 & 1.95 & 2.75 & 1.60 & 5.55 & 1.10 & 2.39 & 4.60 & 5.41 & 2.39 & 7.91 & 1.23 & 7.07\\
- & & 14 & \bestcell{0.70} & \bestcell{2.42} & 1.33 & 3.94 & 1.97 & 2.85 & 2.04 & 7.64 & 1.18 & 2.97 & 2.30 & 3.88 & 2.10 & 6.78 & 1.45 & 8.50\\
- & & 21 & \bestcell{0.98} & 3.65 & 1.58 & 5.83 & 1.98 & \bestcell{3.08} & 2.24 & 17.30 & 1.25 & 3.25 & 2.61 & 4.40 & 1.74 & 5.71 & 1.72 & 9.14\\
-\bottomrule
-\end{tabular}
-\vfill
-\papersource{Table 3, §5 Q1; baseline: Appendix B.1. Đậm = tốt nhất trong hàng theo từng metric (nhóm tô lại từ số liệu Table 3).}
 \end{frame}
